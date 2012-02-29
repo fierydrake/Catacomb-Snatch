@@ -565,6 +565,23 @@ public class Player extends Mob implements LootCollector {
                 
                 if (canUpgradeBuilding(closest)) {
                     closest.upgrade(this);
+                } 
+            }
+            if (keys.capture.isDown) {
+                if (canCaptureBuilding(closest)) {
+                    if (closest.isCapturing(this)) {
+                        if (freezeTime > 0) {
+                            closest.cancelCapture();
+                        } else {
+                            closest.captureTick();
+                        }
+                    } else {
+                        closest.captureStart(this);
+                    }
+                }
+            } else {
+                if (closest.isCapturing(this)) {
+                    closest.cancelCapture();
                 }
             }
             
@@ -598,10 +615,16 @@ public class Player extends Mob implements LootCollector {
         return building.team == this.team; // Players can only upgrade their own buildings
     }
     
+    // Whether this Player is allowed to capture the building
+    // in question
+    private boolean canCaptureBuilding(Building building) {
+        return !(building.team == this.team || building.team == Team.Neutral || building instanceof ShopItem); // Players can only capture the other player's buildings that are not shops
+    }
+
     // Whether this Player is allowed to interact with the building in 
     // question
     private boolean canInteractWithBuilding(Building building) {
-        return canUseBuilding(building) || canUpgradeBuilding(building);
+        return canUseBuilding(building) || canUpgradeBuilding(building) || canCaptureBuilding(building);
     }
 
     /**

@@ -31,6 +31,7 @@ public class InputHandler implements KeyListener {
 		initKey(keys.build, KeyEvent.VK_R);
 		initKey(keys.use, KeyEvent.VK_E);
 		initKey(keys.upgrade, KeyEvent.VK_F);
+		initKey(keys.capture, KeyEvent.VK_C);
 		initKey(keys.pause, KeyEvent.VK_ESCAPE);
 		initKey(keys.screenShot, KeyEvent.VK_F2);
 		initKey(keys.fullscreen, KeyEvent.VK_F11);

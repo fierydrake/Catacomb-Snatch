@@ -47,6 +47,7 @@ public class Keys {
 	public Key build = new Key("build");
 	public Key use = new Key("use");
 	public Key upgrade = new Key("upgrade");
+	public Key capture = new Key("capture");
 	public Key pause = new Key("pause");
 	public Key fullscreen = new Key("fullscreen");
 	public Key sprint = new Key("sprint");

@@ -237,10 +237,13 @@ public class Bitmap {
 
 	private void setPixel(int x, int y, int color) {
 		pixels[x+y*w]=color;
-		
 	}
 
-	public static Bitmap rectangleBitmap(int x, int y, int x2, int y2, int color) {
+	private int getPixel(int x, int y) {
+	    return pixels[x+y*w];
+	}
+
+    public static Bitmap rectangleBitmap(int x, int y, int x2, int y2, int color) {
 		Bitmap rect = new Bitmap(x2,y2);	
 		rect.rectangle(x, y, x2, y2, color);	
 		return rect;
@@ -327,6 +330,29 @@ public class Bitmap {
 			setPixel(xx, y, color);			
 		}
 	}
-
+	
+	public Bitmap outline(int color) {
+	    Bitmap result = new Bitmap(w, h, Arrays.copyOf(pixels, pixels.length));
+	    for (int x=0; x<w; x++) {
+	        for (int y=0; y<h; y++) {
+	            if (getPixel(x, y) < 0) { // Opaque pixel
+	                result.setPixel(x, y, getPixel(x, y));
+	                if (isInBounds(x-1, y-1) && getPixel(x-1, y-1) >= 0) result.setPixel(x-1, y-1, color);
+	                if (isInBounds(x,   y-1) && getPixel(x,   y-1) >= 0) result.setPixel(x,   y-1, color);
+	                if (isInBounds(x+1, y-1) && getPixel(x+1, y-1) >= 0) result.setPixel(x+1, y-1, color);
+	                if (isInBounds(x+1, y)   && getPixel(x+1, y)   >= 0) result.setPixel(x+1, y, color);
+                    if (isInBounds(x+1, y+1) && getPixel(x+1, y+1) >= 0) result.setPixel(x+1, y+1, color);
+                    if (isInBounds(x,   y+1) && getPixel(x,   y+1) >= 0) result.setPixel(x,   y+1, color);
+                    if (isInBounds(x-1, y+1) && getPixel(x-1, y+1) >= 0) result.setPixel(x-1, y+1, color);
+                    if (isInBounds(x-1, y)   && getPixel(x-1, y)   >= 0) result.setPixel(x-1, y, color);
+	            }
+	        }
+	    }
+	    return result;
+	}
+	
+	private boolean isInBounds(int x, int y) {
+	    return x>=0 && x<w && y>=0 && y<h;
+	}
 
 }

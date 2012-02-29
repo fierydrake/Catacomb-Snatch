@@ -7,7 +7,6 @@ import java.io.InputStream;
 
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
-import com.mojang.mojam.screen.Screen;
 
 public class Font {
 
@@ -196,19 +195,19 @@ public class Font {
 	 * @param y Y coordinate
 	 * @param width Maximum line width in pixels
 	 */
-	public void draw(Screen screen, String msg, int x, int y, int width) {
+	public void draw(Bitmap bitmap, String msg, int x, int y, int width) {
 		int startX = x;
 		int length = msg.length();
 		for (int i = 0; i < length; i++) {
 			char character = msg.charAt(i);
-			Bitmap bitmap = getCharacterBitmap(character);
+			Bitmap characterBitmap = getCharacterBitmap(character);
 			int heightOffset = 0;
 			if (letters.indexOf(character) < 0) {
 				heightOffset = fontCharacterFactory.getHeightOffset(character);
 			}
-			screen.blit(bitmap, x, y+heightOffset);
-			x += bitmap.w + letterSpacing;
-			if(x > width - bitmap.w){
+			bitmap.blit(characterBitmap, x, y+heightOffset);
+			x += characterBitmap.w + letterSpacing;
+			if(x > width - characterBitmap.w){
 				x = startX;
 				y += glyphHeight + 2;
 			}
@@ -232,8 +231,8 @@ public class Font {
 	 * @param x X coordinate
 	 * @param y Y coordinate
 	 */
-	public void draw(Screen screen, String msg, int x, int y) {
-		draw(screen, msg, x, y, Integer.MAX_VALUE);
+	public void draw(Bitmap bitmap, String msg, int x, int y) {
+		draw(bitmap, msg, x, y, Integer.MAX_VALUE);
 	}
 
 	/**
@@ -246,8 +245,8 @@ public class Font {
 	 * @param x 
 	 * @param y 
 	 */
-	public void drawCentered(Screen screen, String msg, int x, int y) {
+	public void drawCentered(Bitmap bitmap, String msg, int x, int y) {
 		int width = calculateStringWidth(msg);
-		draw(screen, msg, x - width / 2, y - 4);
+		draw(bitmap, msg, x - width / 2, y - 4);
 	}
 }

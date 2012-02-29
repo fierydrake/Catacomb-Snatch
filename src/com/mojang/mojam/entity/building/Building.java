@@ -57,9 +57,35 @@ public class Building extends Mob implements IUsable {
 	public void render(Screen screen) {
 		super.render(screen);
 		renderMarker(screen);
+		if (beingCapturedBy != null) {
+		    renderCaptureBar(screen);
+		}
 	}
 
-	/**
+	// TODO: Render something nicer and with cleaner code
+	private static Bitmap capturingBitmap;
+	static {
+	    Font f = Font.FONT_GOLD_SMALL;
+	    Bitmap text = new Bitmap(f.calculateStringWidth("Capturing")+2, f.getFontHeight()+3);
+        f.draw(text, "Capturing", 1, 1, 99999);
+        capturingBitmap = text.outline(0xFF000055);
+	}
+    protected void renderCaptureBar(Screen screen) {
+        BB bb = getBB();
+        int h = 5, w = 40, fw = (w * captureTicks) / TICKS_TO_CAPTURE;
+        int x = (int)((bb.x1+bb.x0-w)/2.0), y = (int)bb.y1-38;
+        
+        // Render bar
+        screen.rectangle(x, y, w, h, 0xFF000055);
+        screen.opacityFill(x+1, y+1, w-2, h-2, 0xFFFFFFFF, 128);
+        screen.fill(x+1, y+1, fw-2, h-2, 0xFFDDFFDD);
+        screen.fill(x+1, y+1, fw-3, h-2, 0xFF00FF00);
+        
+        // Render text
+        screen.blit(capturingBitmap, (int)(Math.round(bb.x1+bb.x0-capturingBitmap.w)/2.0), (int)(bb.y1-37-capturingBitmap.h));
+    }
+
+    /**
 	 * Render the marker onto the given screen
 	 * 
 	 * @param screen
@@ -226,5 +252,34 @@ public class Building extends Mob implements IUsable {
 	public boolean isAllowedToCancel() {
 		return true;
 	}
-	
+
+	private static final int TICKS_TO_CAPTURE = 100;
+	private Player beingCapturedBy = null;
+	private int captureTicks;
+    public boolean isCapturing(Player player) {
+        return beingCapturedBy == player;
+    }
+
+    public void captureTick() {
+        if (++captureTicks >= TICKS_TO_CAPTURE) {
+            team = beingCapturedBy.team;
+            beingCapturedBy = null;
+            if (MojamComponent.localTeam == team) {
+                Notifications.getInstance().add("YOU HAVE CAPTURED AN ENEMY BUILDING!");
+            }
+        }
+    }
+    
+    public void cancelCapture() {
+        beingCapturedBy = null;
+    }
+
+    public void captureStart(Player player) {
+        if (beingCapturedBy == null) {
+            captureTicks = 1;
+            beingCapturedBy = player;
+        } else {
+            beingCapturedBy = null;
+        }
+    }
 }

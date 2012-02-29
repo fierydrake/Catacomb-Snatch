@@ -74,7 +74,6 @@ public class ShopItem extends Building {
         renderInfo(screen);
     }
     
-
 	/**
 	 * Render the shop info text onto the given screen
 	 * 
