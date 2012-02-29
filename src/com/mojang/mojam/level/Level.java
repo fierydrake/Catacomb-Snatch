@@ -445,6 +445,7 @@ public class Level {
 
 		screen.setOffset(0, 0);
 
+		// Render tiles to minimap
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				int i = x + y * width;
@@ -456,6 +457,7 @@ public class Level {
 			}
 		}
 
+		// Render entity art to minimap
 		for (int i = 0; i < entities.size(); i++) {
 			Entity e = entities.get(i);
 			if (!e.removed) {
@@ -472,6 +474,9 @@ public class Level {
 				}
 			}
 		}
+		
+		// Render screen boundary to minimap
+		minimap.opacityBlit(Bitmap.rectangleBitmap(0,0,x1-x0,y1-y0,0xFFFFFFFF), x0, y0, 150);
 		
 		// Display the real map!
 		if(largeMap){
