@@ -1,8 +1,23 @@
 package com.mojang.mojam.network;
 
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
-import com.mojang.mojam.network.packet.*;
+import com.mojang.mojam.MojamComponent;
+import com.mojang.mojam.network.packet.PingPacket;
+import com.mojang.mojam.network.packet.StartGamePacket;
+import com.mojang.mojam.network.packet.SyncCheckPacket;
+import com.mojang.mojam.network.packet.TurnPacket;
 
 public class TurnSynchronizer {
 
@@ -238,16 +253,25 @@ public class TurnSynchronizer {
             // print stacks to check
             System.err.println("Dumping all call stacks to synchedRandom since last good sync:");
             System.err.println("-----");
+            PrintStream out = System.err;
+            try {
+                out = new PrintStream("syncdump-"+MojamComponent.localTeam+".txt");
+            } catch (FileNotFoundException e) {
+                System.err.println("ERROR  : Failed to open a new file syncdump.txt in the current working directory, falling back to stderr");
+            }
             for (int t: synchedRandomUseStacks.keySet()) {
-                System.err.println("-----");
-                System.err.println("TURN " + t);
-                System.err.println("-----");
+                out.println("-----");
+                out.println("TURN " + t);
+                out.println("-----");
                 int i=0;
                 for (String stack : synchedRandomUseStacks.get(t)) {
-                    System.err.println(">> Stack "+t+"."+i);
-                    System.err.println(stack);
+                    out.println(">> Stack "+t+"."+i);
+                    out.println(stack);
                     i++;
                 }
+            }
+            if (out != System.err) {
+                out.close();
             }
             System.exit(1);
         } else {
