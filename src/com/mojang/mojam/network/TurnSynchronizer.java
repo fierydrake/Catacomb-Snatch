@@ -21,8 +21,8 @@ import com.mojang.mojam.network.packet.TurnPacket;
 
 public class TurnSynchronizer {
 
-    private static SortedMap<Integer,String[]> synchedRandomUseStacks = Collections.synchronizedSortedMap(new TreeMap<Integer, String[]>());
-    private static List<String> synchedRandomStacksCurrentTurn = Collections.synchronizedList(new ArrayList<String>(150000));
+    private static SortedMap<Integer,String[]> synchedRandomUseStacks = /*Collections.synchronizedSortedMap(*/new TreeMap<Integer, String[]>()/*)*/;
+    private static List<String> synchedRandomStacksCurrentTurn = /*Collections.synchronizedList(*/new ArrayList<String>(150000)/*)*/;
     private static boolean shownCacheWarningThisTurn = false;
     private static int synchedRandomCounter = 0; // If this wraps, it should be okay we just need a recent match
 	public static Random synchedRandom = new Random() {
@@ -30,7 +30,7 @@ public class TurnSynchronizer {
 	    public int next(int bits) {
 	        synchedRandomCounter++;
 	        if (synchedRandomStacksCurrentTurn.size() < 150000) {
-	            StringBuilder stack = new StringBuilder();
+	            StringBuilder stack = new StringBuilder(Thread.currentThread().getName()+"\n");
 	            for (StackTraceElement frame:Thread.currentThread().getStackTrace()) {
 	                stack.append(frame.toString()+"\n");
 	            }
@@ -187,6 +187,7 @@ public class TurnSynchronizer {
     	                    performSyncCheck(turnSequence, synchedRandomCounter, cached.getCount());
     	                    packetCache.remove(cached);
     	                    syncCheckCache.remove(turnSequence);
+    	                    cleanupStacksCache(turnSequence);
     	                    break;
     	                }
     	            }
@@ -222,12 +223,14 @@ public class TurnSynchronizer {
 	public synchronized void onSyncCheckPacket(SyncCheckPacket packet) {
 	    Integer localCount = syncCheckCache.get(packet.getTurn());
 	    int remoteCount = packet.getCount();
+	    boolean deferCleanup = false;
 	    if (localCount != null) {
 	        syncCheckCache.remove(packet.getTurn());
 	        performSyncCheck(packet.getTurn(), localCount, remoteCount);
 	    } else {
 	        System.err.println("WARNING: Receive sync check packet for a turn that was not cached (turn " + packet.getTurn() + ")");
 	        if (packetCache.size() < 100) {
+	            deferCleanup = true;
 	            packetCache.add(packet);
 	        } else {
 	            System.err.println("WARNING: Packet cache overflow");
@@ -235,14 +238,22 @@ public class TurnSynchronizer {
 	    }
 	    
         // remove old stuff from stack cache
-	    System.err.println("DEBUG  : Before clean: Stacks cache size="+synchedRandomUseStacks.size());
-	    Iterator<Integer> it = synchedRandomUseStacks.keySet().iterator();
-	    int key, cleaned=0;
-	    while (it.hasNext() && (key = it.next()) <= packet.getTurn()) {
-	        cleaned+=synchedRandomUseStacks.get(key).length;
-	        it.remove();
+	    if (!deferCleanup) {
+	        cleanupStacksCache(packet.getTurn());
+	    } else {
+	        System.err.println("DEBUG  : Defer cleanup of stacks cache");
 	    }
-        System.err.println("DEBUG  : After clean : Stacks cache size="+synchedRandomUseStacks.size() + " (cleaned "+cleaned+" stacks)");
+	}
+	
+	private void cleanupStacksCache(int turn) {
+        System.err.println("DEBUG  : Before clean: Stacks cache size="+synchedRandomUseStacks.size());
+        Iterator<Integer> it = synchedRandomUseStacks.keySet().iterator();
+        int key, cleaned=0;
+        while (it.hasNext() && (key = it.next()) <= turn) {
+            cleaned+=synchedRandomUseStacks.get(key).length;
+            it.remove();
+        }
+        System.err.println("DEBUG  : After clean : Stacks cache size="+synchedRandomUseStacks.size() + " (cleaned "+cleaned+" stacks)");	    
 	}
 	
 	private void performSyncCheck(int turn, int localCount, int remoteCount) {
