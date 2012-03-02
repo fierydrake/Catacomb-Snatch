@@ -6,7 +6,30 @@ import com.mojang.mojam.network.packet.*;
 
 public class TurnSynchronizer {
 
-	public static Random synchedRandom = new Random();
+    private static SortedMap<Integer,String[]> synchedRandomUseStacks = Collections.synchronizedSortedMap(new TreeMap<Integer, String[]>());
+    private static List<String> synchedRandomStacksCurrentTurn = Collections.synchronizedList(new ArrayList<String>(150000));
+    private static boolean shownCacheWarningThisTurn = false;
+    private static int synchedRandomCounter = 0; // If this wraps, it should be okay we just need a recent match
+	public static Random synchedRandom = new Random() {
+	    @Override
+	    public int next(int bits) {
+	        synchedRandomCounter++;
+	        if (synchedRandomStacksCurrentTurn.size() < 150000) {
+	            StringBuilder stack = new StringBuilder();
+	            for (StackTraceElement frame:Thread.currentThread().getStackTrace()) {
+	                stack.append(frame.toString()+"\n");
+	            }
+	            synchedRandomStacksCurrentTurn.add(stack.toString());
+	        } else {
+	            if (!shownCacheWarningThisTurn) {
+	                // only show warning once
+	                System.err.println("WARNING: Overflowed syncedRandom debug stack cache");
+	                shownCacheWarningThisTurn = true;
+	            }
+	        }
+	        return super.next(bits);
+	    }
+	};
 	public static long synchedSeed;
 
 	public static final int TURN_QUEUE_LENGTH = 3;
@@ -101,6 +124,11 @@ public class TurnSynchronizer {
 			sendLocalTurn(turnInfo[commandSequence % turnInfo.length]);
 			commandSequence++;
 			nextTurnCommands = null;
+			
+			synchedRandomUseStacks.put(turnSequence, synchedRandomStacksCurrentTurn.toArray(new String[0]));
+			synchedRandomStacksCurrentTurn.clear();
+			shownCacheWarningThisTurn = false;
+			if (turnSequence%50 == 0) sendSyncCheckPacket(); 
 		}
 		if (turnSequence%50 == 0) sendPingPacket();
 	}
@@ -128,6 +156,32 @@ public class TurnSynchronizer {
 	    }
 	}
 
+	private Map<Integer, Integer> syncCheckCache = new HashMap<Integer, Integer>();
+	private void sendSyncCheckPacket() {
+	    if (packetLink != null) {
+	        if (syncCheckCache.size() < 100) {
+                System.err.println("INFO   : Sync check cache size="+syncCheckCache.size()+" (about to add 1 entry)");
+    	        syncCheckCache.put(turnSequence, synchedRandomCounter);
+    	        System.err.println("DEBUG  : Sending synccheck "+turnSequence);
+    	        packetLink.sendPacket(new SyncCheckPacket(turnSequence, synchedRandomCounter));
+    	        if (packetCache.size()>0) {
+    	            for (SyncCheckPacket cached : packetCache) {
+    	                if (cached.getTurn() == turnSequence) {
+    	                    System.err.println("INFO   : Resolved out-of-sequence sync packet for turn " + turnSequence);
+    	                    System.err.println("DEBUG  : Packet cache size="+packetCache.size()+" (about to remove 1 entry)");
+    	                    performSyncCheck(turnSequence, synchedRandomCounter, cached.getCount());
+    	                    packetCache.remove(cached);
+    	                    syncCheckCache.remove(turnSequence);
+    	                    break;
+    	                }
+    	            }
+    	        }
+	        } else {
+	            System.err.println("WARNING: Sync check hash full, skipping sync check packet for turn " + turnSequence);
+	        }
+	    }
+	}
+
 	public void setStarted(boolean isStarted) {
 		this.isStarted = isStarted;
 	}
@@ -147,6 +201,62 @@ public class TurnSynchronizer {
 	    if (packet.getType() == PingPacket.TYPE_SYN && packetLink != null) {
 	        packetLink.sendPacket(PingPacket.ack(packet));
 	    }
+	}
+	
+	private List<SyncCheckPacket> packetCache = new ArrayList<SyncCheckPacket>();
+	public synchronized void onSyncCheckPacket(SyncCheckPacket packet) {
+	    Integer localCount = syncCheckCache.get(packet.getTurn());
+	    int remoteCount = packet.getCount();
+	    if (localCount != null) {
+	        syncCheckCache.remove(packet.getTurn());
+	        performSyncCheck(packet.getTurn(), localCount, remoteCount);
+	    } else {
+	        System.err.println("WARNING: Receive sync check packet for a turn that was not cached (turn " + packet.getTurn() + ")");
+	        if (packetCache.size() < 100) {
+	            packetCache.add(packet);
+	        } else {
+	            System.err.println("WARNING: Packet cache overflow");
+	        }
+	    }
+	    
+        // remove old stuff from stack cache
+	    System.err.println("DEBUG  : Before clean: Stacks cache size="+synchedRandomUseStacks.size());
+	    Iterator<Integer> it = synchedRandomUseStacks.keySet().iterator();
+	    int key, cleaned=0;
+	    while (it.hasNext() && (key = it.next()) <= packet.getTurn()) {
+	        cleaned+=synchedRandomUseStacks.get(key).length;
+	        it.remove();
+	    }
+        System.err.println("DEBUG  : After clean : Stacks cache size="+synchedRandomUseStacks.size() + " (cleaned "+cleaned+" stacks)");
+	}
+	
+	private void performSyncCheck(int turn, int localCount, int remoteCount) {
+        if (localCount != remoteCount) {
+            System.err.println("WARNING: >>");
+            System.err.println("WARNING: >> Remote syncedRandom count ("+remoteCount+") for turn " + turn + " does not match local count ("+localCount+"). Client and server out of sync.");
+            System.err.println("WARNING: >>");
+            // print stacks to check
+            System.err.println("Dumping all call stacks to synchedRandom since last good sync:");
+            System.err.println("-----");
+            for (int t: synchedRandomUseStacks.keySet()) {
+                System.err.println("-----");
+                System.err.println("TURN " + t);
+                System.err.println("-----");
+                int i=0;
+                for (String stack : synchedRandomUseStacks.get(t)) {
+                    System.err.println(">> Stack "+t+"."+i);
+                    System.err.println(stack);
+                    i++;
+                }
+            }
+            System.exit(1);
+        } else {
+            System.err.println("INFO   : *");
+            System.err.println("INFO   : * Sync check OK (turn="+turn+", count="+localCount + ")");
+            System.err.println("INFO   : *");
+            Runtime r = Runtime.getRuntime();
+            System.err.println("DEBUG  : Heap: " + (r.totalMemory()/(1024*1024)) + " MB /" + (r.maxMemory()/(1024*1024)) + " MB ("+(r.freeMemory()/(1024*1024)) +" MB free)");
+        }
 	}
 	
 	private class TurnInfo {

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.mojang.mojam.Keys.Key;
+import com.mojang.mojam.network.TurnSynchronizer;
 
 public class InputHandler implements KeyListener {
 
@@ -77,6 +78,7 @@ public class InputHandler implements KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent ke) {
+	    if (ke.getKeyCode() == KeyEvent.VK_U && TurnSynchronizer.synchedRandom != null ) { TurnSynchronizer.synchedRandom.nextInt(); }
 		toggle(ke, true);
 	}
 

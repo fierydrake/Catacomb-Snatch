@@ -78,6 +78,7 @@ import com.mojang.mojam.network.packet.ChatCommand;
 import com.mojang.mojam.network.packet.PingPacket;
 import com.mojang.mojam.network.packet.StartGamePacket;
 import com.mojang.mojam.network.packet.StartGamePacketCustom;
+import com.mojang.mojam.network.packet.SyncCheckPacket;
 import com.mojang.mojam.network.packet.TurnPacket;
 import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
@@ -790,7 +791,10 @@ public class MojamComponent extends Canvas implements Runnable,
 		    if (pp.getType() == PingPacket.TYPE_ACK) {
 		        addToLatencyCache(pp.getLatency());
 		    }
-		}
+		} else if (packet instanceof SyncCheckPacket) {
+		    SyncCheckPacket scp = (SyncCheckPacket)packet;
+            synchronizer.onSyncCheckPacket(scp);
+        }
 	}
 
     private void addToLatencyCache(int latency) {
