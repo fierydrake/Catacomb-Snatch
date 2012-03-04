@@ -6,7 +6,6 @@ import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.IUsable;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Mob;
-import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.gui.Notifications;
 import com.mojang.mojam.math.BB;
 import com.mojang.mojam.network.TurnSynchronizer;
@@ -213,7 +212,7 @@ public abstract class Building extends Mob implements IUsable {
 
 	@Override
 	public boolean isHighlightable() {
-		return this.team == MojamComponent.localTeam || this.team == Team.Neutral;
+		return true;
 	}
 
 	@Override
