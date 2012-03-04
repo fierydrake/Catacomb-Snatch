@@ -3,8 +3,10 @@ package com.mojang.mojam.network.debug;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -13,8 +15,9 @@ import com.mojang.mojam.MojamComponent;
 
 public class DebugSynchedRandom extends Random {
     private static final long serialVersionUID = 1L;
-    private static SortedMap<Integer,String[]> useStacks = /*Collections.synchronizedSortedMap(*/new TreeMap<Integer, String[]>()/*)*/;
-    private static List<String> useStacksCurrentTurn = /*Collections.synchronizedList(*/new ArrayList<String>(150000)/*)*/;
+    private static Map<Long, String> stackFlywheel = new HashMap<Long, String>();
+    private static SortedMap<Integer,String[]> useStacks = new TreeMap<Integer, String[]>();
+    private static List<String> useStacksCurrentTurn = new ArrayList<String>(150000);
     private static boolean shownCacheWarningThisTurn = false;
     public int count = 0; // If this wraps, it should be okay we just need a recent match
 
@@ -25,11 +28,18 @@ public class DebugSynchedRandom extends Random {
     public int next(int bits) {
         count++;
         if (useStacksCurrentTurn.size() < 150000) {
-            StringBuilder stack = new StringBuilder(Thread.currentThread().getName()+"\n");
+            StringBuilder currentStack = new StringBuilder();
+            currentStack.append(Thread.currentThread().getName()+"\n");
             for (StackTraceElement frame:Thread.currentThread().getStackTrace()) {
-                stack.append(frame.toString()+"\n");
+                currentStack.append(frame.toString()+"\n");
             }
-            useStacksCurrentTurn.add(stack.toString());
+            String stack = currentStack.toString();
+            long flywheelHash = stack.hashCode();
+
+            if (!stackFlywheel.containsKey(flywheelHash)) {
+                stackFlywheel.put(flywheelHash, stack.intern());
+            }
+            useStacksCurrentTurn.add(stackFlywheel.get(flywheelHash));
         } else {
             if (!shownCacheWarningThisTurn) {
                 // only show warning once
@@ -88,7 +98,7 @@ public class DebugSynchedRandom extends Random {
             System.exit(1);
         } else {
             System.err.println("INFO   : *");
-            System.err.println("INFO   : * Sync check OK (turn="+turn+", count="+localCount + ")");
+            System.err.println("INFO   : * Sync check OK (turn="+turn+", count="+localCount + ") [" + stackFlywheel.size() + "]");
             System.err.println("INFO   : *");
             Runtime r = Runtime.getRuntime();
             System.err.println("DEBUG  : Heap: " + (r.totalMemory()/(1024*1024)) + " MB /" + (r.maxMemory()/(1024*1024)) + " MB ("+(r.freeMemory()/(1024*1024)) +" MB free)");

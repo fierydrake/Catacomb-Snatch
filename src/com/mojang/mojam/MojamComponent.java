@@ -531,6 +531,7 @@ public class MojamComponent extends Canvas implements Runnable,
 				mouseButtons.getY() / SCALE - crosshairSizeHalf - 2);
 	}
 
+	long lastPrintTick = -1; // TODO fierydrake -- debug
 	private void tick() {
 		//Not-In-Focus-Pause
 		if (level != null && !isMultiplayer && !paused && !this.isFocusOwner()) {
@@ -622,6 +623,10 @@ public class MojamComponent extends Canvas implements Runnable,
 					}
 					
 					level.tick();
+					if (synchronizer.getLocalTick()%20==0 && synchronizer.getLocalTick()!=lastPrintTick) { // TODO fierydrake -- debug
+					    System.err.println("DEBUG  : Entities: " + level.entities.size()); // TODO fierydrake -- debug
+					    lastPrintTick = synchronizer.getLocalTick(); // TODO fierydrake -- debug
+					} // TODO fierydrake -- debug
 					if (isMultiplayer) {
 						tickChat();
 					}

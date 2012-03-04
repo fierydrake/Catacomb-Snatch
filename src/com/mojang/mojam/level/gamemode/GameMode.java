@@ -108,7 +108,7 @@ public class GameMode {
 
 
 	protected void setupPlayerSpawnArea() {
-		newLevel.maxMonsters = 1500 + (int)DifficultyInformation.calculateStrength(500);	
+		newLevel.maxMonsters = 400; //1500 + (int)DifficultyInformation.calculateStrength(500); TODO fierydrake -- debug
 		
 		newLevel.addEntity(new ShopItem(32 * (newLevel.width / 2 - 1.5), 4.5 * 32,
 				ShopItem.SHOP_TURRET, Team.Team2));

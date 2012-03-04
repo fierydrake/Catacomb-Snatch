@@ -13,7 +13,7 @@ import com.mojang.mojam.network.packet.SyncCheckPacket;
 import com.mojang.mojam.network.packet.TurnPacket;
 
 public class TurnSynchronizer {
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
     
 	public static Random synchedRandom = (DEBUG ? new DebugSynchedRandom() : new Random());
 	public static long synchedSeed;
@@ -113,7 +113,7 @@ public class TurnSynchronizer {
 			
 			if (synchedRandom instanceof DebugSynchedRandom) {
 			    ((DebugSynchedRandom)synchedRandom).postTurn(turnSequence);
-			    if (turnSequence%50 == 0) sendSyncCheckPacket(); 
+			    if (turnSequence%20 == 0) sendSyncCheckPacket(); 
 			}
 		}
 		if (turnSequence%50 == 0) sendPingPacket();
