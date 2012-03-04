@@ -76,7 +76,7 @@ public class InputHandler implements KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent ke) {
-	    if (ke.getKeyCode() == KeyEvent.VK_U && TurnSynchronizer.synchedRandom != null ) { TurnSynchronizer.synchedRandom.nextInt(); }
+//	    if (ke.getKeyCode() == KeyEvent.VK_U && TurnSynchronizer.synchedRandom != null ) { TurnSynchronizer.synchedRandom.nextInt(); } // Deliberately desync on demand
 		toggle(ke, true);
 	}
 
