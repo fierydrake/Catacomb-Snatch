@@ -19,6 +19,8 @@ import com.mojang.mojam.level.tile.FloorTile;
 import com.mojang.mojam.level.tile.SandTile;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.level.tile.UnbreakableRailTile;
+import com.mojang.mojam.network.TurnSynchronizer;
+import com.mojang.mojam.network.debug.DebugSynchedRandom;
 
 public class GameMode {
 
@@ -108,7 +110,7 @@ public class GameMode {
 
 
 	protected void setupPlayerSpawnArea() {
-		newLevel.maxMonsters = 400; //1500 + (int)DifficultyInformation.calculateStrength(500); TODO fierydrake -- debug
+		newLevel.maxMonsters = (TurnSynchronizer.synchedRandom instanceof DebugSynchedRandom) ? TurnSynchronizer.MAX_MONSTERS_UNDER_SYNC_CHECK : 1500 + (int)DifficultyInformation.calculateStrength(500);
 		
 		newLevel.addEntity(new ShopItem(32 * (newLevel.width / 2 - 1.5), 4.5 * 32,
 				ShopItem.SHOP_TURRET, Team.Team2));

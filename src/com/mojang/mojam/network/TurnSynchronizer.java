@@ -13,9 +13,10 @@ import com.mojang.mojam.network.packet.SyncCheckPacket;
 import com.mojang.mojam.network.packet.TurnPacket;
 
 public class TurnSynchronizer {
-    public static final boolean DEBUG = true;
-    
-	public static Random synchedRandom = (DEBUG ? new DebugSynchedRandom() : new Random());
+	public static final boolean SYNC_CHECK_ENABLED = true; 
+	public static final int MAX_MONSTERS_UNDER_SYNC_CHECK = 400;
+
+	public static Random synchedRandom = null;
 	public static long synchedSeed;
 
 	public static final int TURN_QUEUE_LENGTH = 3;
@@ -53,6 +54,9 @@ public class TurnSynchronizer {
 		turnInfo[0].isDone = true;
 		turnInfo[1].isDone = true;
 
+
+		synchedRandom =  (SYNC_CHECK_ENABLED && numPlayers > 1) ? new DebugSynchedRandom() : new Random(); // Feels a bit nasty :(
+		
 		synchedSeed = synchedRandom.nextLong();
 		synchedRandom.setSeed(synchedSeed);
 
