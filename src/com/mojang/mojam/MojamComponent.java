@@ -81,6 +81,7 @@ import com.mojang.mojam.network.packet.PingPacket;
 import com.mojang.mojam.network.packet.StartGamePacket;
 import com.mojang.mojam.network.packet.StartGamePacketCustom;
 import com.mojang.mojam.network.packet.TurnPacket;
+import com.mojang.mojam.resources.Constants;
 import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
@@ -97,6 +98,7 @@ public class MojamComponent extends Canvas implements Runnable, MouseMotionListe
 	public static MojamComponent instance;
 	public static Locale locale;
 	public static Texts texts;
+	public static Constants constants;
 	private static final long serialVersionUID = 1L;
 	public static final int GAME_WIDTH = 512;
 	public static final int GAME_HEIGHT = GAME_WIDTH * 3 / 4;
@@ -110,6 +112,7 @@ public class MojamComponent extends Canvas implements Runnable, MouseMotionListe
 	public static Screen screen = new Screen(GAME_WIDTH, GAME_HEIGHT);
 	private Level level;
 	private Chat chat = new Chat();
+	public Console console = new Console();
 	
 	private LatencyCache latencyCache = new LatencyCache();
 
@@ -148,6 +151,9 @@ public class MojamComponent extends Canvas implements Runnable, MouseMotionListe
 	private LocaleMenu localemenu = null;
 
 	public MojamComponent() {
+		
+		// initialize the constants
+		MojamComponent.constants = new Constants();
 
 		this.setPreferredSize(new Dimension(GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE));
 		this.setMinimumSize(new Dimension(GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE));
@@ -157,13 +163,13 @@ public class MojamComponent extends Canvas implements Runnable, MouseMotionListe
 		this.addMouseListener(this);
 
 		String localeString = Options.get(Options.LOCALE, "en");
-		System.out.println(localeString);
 		setLocale(new Locale(localeString));
 
 		menu = new TitleMenu(GAME_WIDTH, GAME_HEIGHT);
 		addMenu(menu);
 		addKeyListener(this);
 		addKeyListener(chat);
+		addKeyListener(console);
 
 		instance = this;
 		LevelList.createLevelList();
@@ -179,7 +185,6 @@ public class MojamComponent extends Canvas implements Runnable, MouseMotionListe
 	public void setLocale(Locale locale) {
 		MojamComponent.locale = locale;
 		MojamComponent.texts = new Texts(locale);
-		System.out.println("Locale changed");
 		Locale.setDefault(locale);
 	}
 	
@@ -188,7 +193,7 @@ public class MojamComponent extends Canvas implements Runnable, MouseMotionListe
 		Stack<GuiMenu> menuClone = (Stack<GuiMenu>) menuStack.clone();
 		
 		while (!menuClone.isEmpty()) {
-			menuClone.pop().change_locale();
+			menuClone.pop().changeLocale();
 		}
 	}
 
@@ -463,6 +468,9 @@ public class MojamComponent extends Canvas implements Runnable, MouseMotionListe
 		if (isMultiplayer && menuStack.isEmpty()) {
 			chat.render(screen);
 		}
+		if(console.isOpen() && menuStack.isEmpty()) {
+			console.render(screen);
+		}
 
 		g.setColor(Color.BLACK);
 
@@ -541,6 +549,21 @@ public class MojamComponent extends Canvas implements Runnable, MouseMotionListe
 	}
 
 	private void tick() {
+		//Console open/close
+		if(this.isFocusOwner() && level != null) {
+			keys.console.tick();
+			if(keys.console.wasPressed()) {
+				console.toggle();
+				paused = !paused;
+			}
+			if(console.isOpen()) {
+				if(menuStack.isEmpty()) {
+					keys.release();
+					mouseButtons.releaseAll();
+				}
+				console.tick();
+			}
+		}
 		// Not-In-Focus-Pause
 		if (level != null && !isMultiplayer && !paused && !this.isFocusOwner()) {
 			keys.release();
@@ -1013,7 +1036,6 @@ public class MojamComponent extends Canvas implements Runnable, MouseMotionListe
 			break;
 
 		case TitleMenu.EXIT_GAME_ID:
-			System.out.println(locale.getDisplayLanguage());
 			System.exit(0);
 			break;
 
@@ -1164,5 +1186,9 @@ public class MojamComponent extends Canvas implements Runnable, MouseMotionListe
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static int clampi(int val, int min, int max){
+		return (val < min) ? min : (val > max) ? max : val;
 	}
 }

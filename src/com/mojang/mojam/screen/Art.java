@@ -33,7 +33,8 @@ public class Art {
 	public static Bitmap shadow = load("/art/shadows/shadow_coin.png");
 	public static Bitmap[][] rails = cut("/art/map/rails.png", 32, 38);
     public static Bitmap[][] spikes = cut("/art/map/spiketrap.png", 32, 32);
-
+    public static Bitmap[][] dropFloor = cut("/art/map/droptrap.png", 32, 32);
+    
     // Player sheets
 	private static Bitmap[][] lordLard = cut("/art/player/lord_lard_sheet.png", 32, 32);
 	private static Bitmap[][] herrSpeck = cut("/art/player/herr_von_speck_sheet.png", 32, 32);
@@ -136,7 +137,8 @@ public class Art {
 	// Mob
     public static Bitmap[][] raildroid = cut("/art/mob/raildroid.png", 32, 32);
 	public static Bitmap[][] mummy = cut("/art/mob/enemy_mummy_anim_48.png", 48, 48);
-	public static Bitmap[][] snake = cut("/art/mob/enemy_snake_anim_48.png", 48, 48);
+	public static Bitmap[][] pharao = cut("/art/mob/enemy_pharao_anim_48.png", 48, 48);
+    public static Bitmap[][] snake = cut("/art/mob/enemy_snake_anim_48.png", 48, 48);
 	public static Bitmap[][] scarab = cut("/art/mob/enemy_scarab_anim_48.png", 48, 48);
 	public static Bitmap[][] bat = cut("/art/mob/enemy_bat_32.png", 32, 32);
 	public static Bitmap batShadow = load("/art/shadows/shadow_bat.png");

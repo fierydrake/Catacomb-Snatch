@@ -60,7 +60,8 @@ public class TitleMenu extends GuiMenu {
 	public static final int KEY_FIRE_DOWN_ID = 3012;
 	public static final int KEY_FIRE_LEFT_ID = 3013;
 	public static final int KEY_FIRE_RIGHT_ID = 3014;
-
+	public static final int KEY_CONSOLE_ID = 3015;
+	
 	public static final int CREDITS_ID = 4000;
 	public static final int CREDITS_TITLE_ID = 4001;
 	public static final int CREDITS_TEXT_ID = 4002;
@@ -144,8 +145,7 @@ public class TitleMenu extends GuiMenu {
 		// nothing
 	}
 
-	public void change_locale() {
-		System.out.println("Called");
+	public void changeLocale() {
 		select_lvl_btn.setLabel(MojamComponent.texts.getStatic(("titlemenu.start")));
 		select_host_lvl.setLabel(MojamComponent.texts.getStatic(("titlemenu.host")));
 		join_host.setLabel(MojamComponent.texts.getStatic(("titlemenu.join")));
