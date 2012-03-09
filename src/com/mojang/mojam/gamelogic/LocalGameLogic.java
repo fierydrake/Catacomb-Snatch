@@ -9,7 +9,6 @@ import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.SimpleGameElement;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Team;
-import com.mojang.mojam.gamesound.GameSound;
 import com.mojang.mojam.gameview.GameInput;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.Level;
