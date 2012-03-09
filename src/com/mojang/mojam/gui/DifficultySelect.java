@@ -3,6 +3,8 @@ package com.mojang.mojam.gui;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
+import com.mojang.mojam.CatacombSnatch;
+import com.mojang.mojam.gamelogic.LocalGameLogic;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.DifficultyList;
@@ -33,28 +35,18 @@ public class DifficultySelect extends GuiMenu {
 		DifficultyCheckboxes = new Checkbox[difficulties.size()];
 		setupDifficultyButtons();
 		
-		logic().setSelectedDifficulty(difficulties.get(DEFAULT_DIFFICULTY));
+		logic().setDifficulty(difficulties.get(DEFAULT_DIFFICULTY));
 		
 		startGameButton = new Button("diffselect.start", (GameView.WIDTH - 256 - 30), 
 				GameView.HEIGHT - 24 - 25);
 		startGameButton.addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
-				if (hosting) {
-					// TODO HOST
-				} else {
-					// TODO START
-				}
+				CatacombSnatch.startGame(hosting);
 			}
 		});
 		cancelButton = new Button("cancel", 
 				GameView.WIDTH - 128 - 20, GameView.HEIGHT - 24 - 25);
-		cancelButton.addListener(new ButtonAdapter() {
-			@Override
-			public void buttonPressed(ClickableComponent button) {
-				// TODO Interrupt host thread
-			}
-		});
 		cancelButton.addListener(menus.BACK_BUTTON_LISTENER);
 		
 		addButton(startGameButton);
@@ -91,7 +83,7 @@ public class DifficultySelect extends GuiMenu {
 			Checkbox cb = (Checkbox) button;
 			for (int i=0; i<DifficultyCheckboxes.length; i++) {
 				if (cb == DifficultyCheckboxes[i]) {
-					logic().setSelectedDifficulty(difficulties.get(i));
+					logic().setDifficulty(difficulties.get(i));
 					DifficultyCheckboxes[i].checked = true;
 				} else {
 					DifficultyCheckboxes[i].checked = false;

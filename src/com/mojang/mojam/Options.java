@@ -12,7 +12,6 @@ import java.net.URLDecoder;
 import java.util.Properties;
 
 public class Options {
-	
     public static final String DRAW_FPS = "drawFps";
     public static final String FULLSCREEN = "fullscreen";
     public static final String MUSIC = "music";
@@ -31,6 +30,10 @@ public class Options {
     
 	private static Properties properties = new Properties();
 	
+	static {
+		loadProperties();
+	}
+
 	public static int getCharacterID() {
 		String value = properties.getProperty(CHARACTER_ID);
 		if (value == null) {

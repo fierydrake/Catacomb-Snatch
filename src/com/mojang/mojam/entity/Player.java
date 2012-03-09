@@ -47,9 +47,9 @@ public class Player extends Mob implements LootCollector {
     public int mouseFireButton = 1;
     public int mouseUseButton = 3;
     
-    private GameInput gameInput;
-    
     private boolean mouseAiming;
+    
+    private GameInput input;
    
     public int takeDelay = 0;
     public int flashTime = 0;
@@ -86,12 +86,11 @@ public class Player extends Mob implements LootCollector {
      * @param y Initial y coordinate
      * @param team Team number
      */
-    public Player(GameInput gameInput, int x, int y, int team, GameCharacter character) {
+    public Player(int x, int y, int team, GameInput input, GameCharacter character) {
         super(x, y, team);
+        this.input = input;
         this.character = character;
 
-        this.gameInput = gameInput;
-        
         startX = x;
         startY = y;
 
@@ -169,8 +168,8 @@ public class Player extends Mob implements LootCollector {
     
     @Override
     public void tick() {
-    	Keys keys = gameInput.getKeys();
-    	MouseButtons mouseButtons = gameInput.getMouseButtons();
+    	Keys keys = input.getKeys();
+    	MouseButtons mouseButtons = input.getMouseButtons();
 
         // If the mouse is used, update player orientation before level tick
         if (!mouseButtons.mouseHidden) {
@@ -189,7 +188,7 @@ public class Player extends Mob implements LootCollector {
         handleLevelUp();
         flashMiniMapIcon();
         countdownTimers();
-        playStepSound();
+        playStepSound(keys);
 
         double xa = 0;
         double ya = 0;
@@ -234,7 +233,7 @@ public class Player extends Mob implements LootCollector {
             updateFacing();
         }
         
-        if (!mouseAiming && fireKeyIsDown() && xaShot * xaShot + yaShot * yaShot != 0) {
+        if (!mouseAiming && fireKeyIsDown(keys) && xaShot * xaShot + yaShot * yaShot != 0) {
             aimVector.set(xaShot, yaShot);
             aimVector.normalizeSelf();
             updateFacing();
@@ -242,7 +241,7 @@ public class Player extends Mob implements LootCollector {
 
         // Move player if it is not standing still
         if (xa != 0 || ya != 0) {
-            handleMovement(xa, ya);
+            handleMovement(keys, xa, ya);
         }
 
         if (freezeTime > 0) {
@@ -258,7 +257,7 @@ public class Player extends Mob implements LootCollector {
         yBump *= 0.8;
         muzzleImage = (muzzleImage + 1) & 3;
 
-        handleWeaponFire(xa, ya);
+        handleWeaponFire(keys, mouseButtons, xa, ya);
 
         int x = (int) pos.x / Tile.WIDTH;
         int y = (int) pos.y / Tile.HEIGHT;
@@ -279,9 +278,9 @@ public class Player extends Mob implements LootCollector {
         }
 
         if (carrying != null) {
-            handleCarrying();
+            handleCarrying(keys, mouseButtons);
         } else {
-            handleEntityInteraction();
+            handleEntityInteraction(keys, mouseButtons);
         }
 
         if (isSeeing) {
@@ -323,8 +322,7 @@ public class Player extends Mob implements LootCollector {
     /**
      * Play step sounds synchronized to player movement and carrying status
      */
-    private void playStepSound() {
-    	Keys keys = gameInput.getKeys();
+    private void playStepSound(Keys keys) {
         if (keys.up.isDown || keys.down.isDown || keys.left.isDown || keys.right.isDown) {
             int stepCount = 25;
             
@@ -349,9 +347,7 @@ public class Player extends Mob implements LootCollector {
      * @param xa Position change on the x axis
      * @param ya Position change on the y axis
      */
-    private void handleMovement(double xa, double ya) {
-    	Keys keys = gameInput.getKeys();
-
+    private void handleMovement(Keys keys, double xa, double ya) {
         int facing2 = (int) ((Math.atan2(-xa, ya) * 8 / (Math.PI * 2) + 8.5)) & 7;
         int diff = facing - facing2;
         
@@ -421,12 +417,11 @@ public class Player extends Mob implements LootCollector {
      * @param xa Position change on the x axis
      * @param ya Position change on the y axis
      */
-    private void handleWeaponFire(double xa, double ya) {
-    	MouseButtons mouseButtons = gameInput.getMouseButtons();
+    private void handleWeaponFire(Keys keys, MouseButtons mouseButtons, double xa, double ya) {
         weapon.weapontick();
         
         if (!dead
-                && (carrying == null && fireKeyIsDown()
+                && (carrying == null && fireKeyIsDown(keys)
                 || carrying == null && mouseButtons.isDown(mouseFireButton))) {
             wasShooting = true;
             if (takeDelay > 0) {
@@ -448,8 +443,7 @@ public class Player extends Mob implements LootCollector {
      * Returns true if one of the keyboard fire buttons is down
      * @return
      */
-    private boolean fireKeyIsDown() {
-    	Keys keys = gameInput.getKeys();
+    private boolean fireKeyIsDown(Keys keys) {
         return keys.fire.isDown || keys.fireUp.isDown || keys.fireDown.isDown || keys.fireRight.isDown || keys.fireLeft.isDown;
     }
 
@@ -500,10 +494,7 @@ public class Player extends Mob implements LootCollector {
     /**
      * Handle object carrying
      */
-    private void handleCarrying() {
-    	Keys keys = gameInput.getKeys();
-    	MouseButtons mouseButtons = gameInput.getMouseButtons();
-
+    private void handleCarrying(Keys keys, MouseButtons mouseButtons) {
         carrying.setPos(pos.x, pos.y - 20);
         carrying.tick();
         if (keys.use.wasPressed() || mouseButtons.isDown(mouseUseButton)) {
@@ -518,9 +509,7 @@ public class Player extends Mob implements LootCollector {
     /**
      * Handle interaction with entities
      */
-    private void handleEntityInteraction() {
-    	Keys keys = gameInput.getKeys();
-    	MouseButtons mouseButtons = gameInput.getMouseButtons();
+    private void handleEntityInteraction(Keys keys, MouseButtons mouseButtons) {
         // Unhighlight previously selected building
         if (selected != null) {
             selected.setHighlighted(false);

@@ -2,6 +2,7 @@ package com.mojang.mojam.gui;
 
 import java.awt.event.KeyEvent;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.Options;
@@ -100,7 +101,7 @@ public class CharacterSelectionMenu extends GuiMenu {
 		} else if (button == select) {
 			Options.set(Options.CHARACTER_ID, selected.getCharacter().ordinal());
 			Options.saveProperties();
-			logic().setSelectedCharacter(selected.getCharacter());
+			CatacombSnatch.selectedCharacter = selected.getCharacter();
 		}
 	}
 	

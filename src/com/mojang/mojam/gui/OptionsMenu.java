@@ -2,6 +2,7 @@ package com.mojang.mojam.gui;
 
 import java.awt.event.KeyEvent;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.Options;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.resources.Texts;
@@ -31,7 +32,7 @@ public class OptionsMenu extends GuiMenu {
 				menus.push(new KeyBindingsMenu());
 			}
 		});
-		if (logic().isPlayingLevel()) {
+		if (CatacombSnatch.isPlayingGame()) {
 			addButton(new Button("options.characterSelect", xOffset, yOffset += offset)).addListener(new ButtonAdapter() {
 				@Override
 				public void buttonPressed(ClickableComponent button) {
@@ -75,7 +76,7 @@ public class OptionsMenu extends GuiMenu {
 	@Override
 	public void render(Screen screen) {
 	    
-	    if(logic().isPlayingLevel()) {
+		if (CatacombSnatch.isPlayingGame()) {
 	    	screen.alphaFill(0, 0, screen.w, screen.h, 0xff000000, 0x30);
 	    } else {
 	    	screen.blit(Art.background, 0, 0);

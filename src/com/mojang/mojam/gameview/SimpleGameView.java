@@ -1,15 +1,15 @@
 package com.mojang.mojam.gameview;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.ScreenRenderer;
+import com.mojang.mojam.SimpleGameElement;
 import com.mojang.mojam.entity.Player;
-import com.mojang.mojam.gamelogic.GameLogic;
 import com.mojang.mojam.gamelogic.GameMenus;
+import com.mojang.mojam.level.Level;
 import com.mojang.mojam.screen.Screen;
 
-public class SimpleGameView implements GameView {
+public class SimpleGameView extends SimpleGameElement implements GameView {
 	private GameMenus menus;
-	private GameLogic logic;
-	private Player player;
 
 	private Screen screen = new Screen(GameView.WIDTH, GameView.HEIGHT);
 	private ScreenRenderer renderer;
@@ -17,41 +17,10 @@ public class SimpleGameView implements GameView {
 	private long lastRenderTime;
 	private int frames = 0;
 	
-	public SimpleGameView(GameMenus menus, GameLogic logic, ScreenRenderer renderer) {
+	public SimpleGameView(GameMenus menus, ScreenRenderer renderer) {
 		this.menus = menus;
-		
-//		this.logic = logic;
-//		logic.addGameView(this);
-		
 		this.renderer = renderer;
-		
-//		String localeString = Options.get(Options.LOCALE, "en");
-//		setLocale(new Locale(localeString));
-//
-//		addKeyListener(this);
-//		addKeyListener(chat);
-//		addKeyListener(console);
-//
-//		instance = this;
-//		LevelList.createLevelList();
 	}
-	
-//	public boolean isLocal() { return true; }
-//	public Player getPlayer() { return player; }
-//	public Keys getKeys() { return keys; }
-//	public MouseButtons getMouseButtons() { return mouseButtons; }
-//	public boolean getMouseMoved() { return mouseMoved; }
-//	public KeyInputHandler getInputHandler() { return keyInputHandler; } // FIXME: :-S
-//
-//	public void setPlayer(Player player) {
-//		this.player = player;
-//	}
-//
-//	public void gatherInput() {
-//		keys.tick();
-//		mouseButtons.tick();
-//		mouseMoved = mouseInputHandler.tickMouseMoved();
-//	}
 	
 	public void renderView() {
 		frames++;
@@ -76,13 +45,14 @@ public class SimpleGameView implements GameView {
 	}
 	
 	public void render() {
-//		if (gameLogic.isPlayingLevel()) {
-//			Level level = gameLogic.getCurrentLevel();
-//			int xScroll = (int) (player.pos.x - screen.w / 2);
-//			int yScroll = (int) (player.pos.y - (screen.h - 24) / 2);
-//			soundPlayer.setListenerPosition((float) player.pos.x, (float) player.pos.y);
-//			level.render(screen, xScroll, yScroll);
-//			
+		if (CatacombSnatch.isPlayingGame()) {
+			Level level = logic().getLevel();
+			Player player = logic().getLocalPlayer();
+			int xScroll = (int) (player.pos.x - screen.w / 2);
+			int yScroll = (int) (player.pos.y - (screen.h - 24) / 2);
+			
+			level.render(screen, xScroll, yScroll);
+			
 //			if (!gameLogic.getMenus().isShowing()) {
 				// TODO
 //				renderHealthBars(screen);
@@ -96,7 +66,7 @@ public class SimpleGameView implements GameView {
 //					chat.render(screen);
 //				}
 //			}
-//		}
+		}
 		if (menus.isShowing()) {
 			menus.getCurrent().render(screen);
 		}

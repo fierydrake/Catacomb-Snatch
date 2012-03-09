@@ -12,6 +12,7 @@ import com.mojang.mojam.entity.building.Harvester;
 import com.mojang.mojam.entity.building.SpawnerEntity;
 import com.mojang.mojam.entity.loot.Loot;
 import com.mojang.mojam.entity.weapon.IWeapon;
+import com.mojang.mojam.gameview.GameInput;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.tile.HoleTile;
 import com.mojang.mojam.level.tile.Tile;
@@ -63,7 +64,7 @@ public abstract class Mob extends Entity {
 		super();
 		setPos(x, y);
 		this.team = team;
-		DifficultyInformation difficulty = logic().getSelectedDifficulty();
+		DifficultyInformation difficulty = logic().getDifficulty();
 		this.REGEN_INTERVAL = (difficulty != null && difficulty.difficultyID == 3) ? 15 : 25;
 		this.healingTime = this.REGEN_INTERVAL;
 		aimVector = new Vec2(0, 1);
@@ -99,8 +100,9 @@ public abstract class Mob extends Entity {
 		return team != m.team;
 	}
 
+	@Override
 	public void tick() {
-		if (logic().getSelectedDifficulty().difficultyID >= 1 || this.team != Team.Neutral) {
+		if (logic().getDifficulty().difficultyID >= 1 || this.team != Team.Neutral) {
 			this.doRegenTime();
 		}
 		

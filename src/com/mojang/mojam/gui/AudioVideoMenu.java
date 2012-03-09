@@ -1,5 +1,6 @@
 package com.mojang.mojam.gui;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.Options;
 import com.mojang.mojam.gamesound.GameSound;
 import com.mojang.mojam.gameview.GameView;
@@ -106,7 +107,7 @@ public class AudioVideoMenu extends GuiMenu {
 	@Override
 	public void render(Screen screen) {
 
-		if (logic().isPlayingLevel()) {
+		if (CatacombSnatch.isPlayingGame()) {
 			screen.alphaFill(0, 0, screen.w, screen.h, 0xff000000, 0x30);
 		} else {
 			screen.blit(Art.background, 0, 0);

@@ -1,43 +1,47 @@
 package com.mojang.mojam.gamelogic;
 
+import java.io.IOException;
+
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.Keys;
 import com.mojang.mojam.MouseButtons;
-import com.mojang.mojam.Options;
+import com.mojang.mojam.SimpleGameElement;
 import com.mojang.mojam.entity.Player;
+import com.mojang.mojam.entity.mob.Team;
+import com.mojang.mojam.gamesound.GameSound;
 import com.mojang.mojam.gameview.GameInput;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.Level;
 import com.mojang.mojam.level.LevelInformation;
 import com.mojang.mojam.level.gamemode.GameMode;
+import com.mojang.mojam.level.tile.Tile;
 
-public class LocalGameLogic implements GameLogic {
-	private Level currentLevel = null;
-	
-	private GameCharacter selectedCharacter;
-	private LevelInformation selectedLevel;
-	private DifficultyInformation selectedDifficulty;
-	private GameMode selectedGameMode;
-	
+public class LocalGameLogic extends SimpleGameElement implements GameLogic {
+	private Level level = null;
+	private DifficultyInformation difficulty;
+
 	private Player[] players;
 	private Player localPlayer;
 	
-	public LocalGameLogic() {
-		selectedCharacter = GameCharacter.values()[Options.getCharacterID()];
+	public LocalGameLogic(GameCharacter character, LevelInformation levelInfo, DifficultyInformation difficulty, GameMode gameMode) 
+	throws IOException {
+		this.difficulty = difficulty;
+		level = gameMode.generateLevel(levelInfo);
+		localPlayer = new Player(level.width * Tile.WIDTH / 2 -16,
+								 (level.height - 5 - 1) * Tile.HEIGHT - 16,
+								 Team.Team1, CatacombSnatch.input, character); // TODO Should get player start position from level
+		localPlayer.setFacing(4);
+		level.addEntity(localPlayer);
+		localPlayer.setCanSee(true);
+		
+		players = new Player[] { localPlayer };
 	}
 	
-	@Override public boolean isPlayingLevel() { return currentLevel != null; }
-	public Level getCurrentLevel() { return currentLevel; }
+	@Override public Level getLevel() { return level; }
 	
-	@Override public GameCharacter getSelectedCharacter() { return selectedCharacter; }
-	@Override public LevelInformation getSelectedLevel() { return selectedLevel; }
-	@Override public DifficultyInformation getSelectedDifficulty() { return selectedDifficulty; }
-	public GameMode getSelectedGameMode() { return selectedGameMode; }
-	
-	@Override public void setSelectedCharacter(GameCharacter character) { selectedCharacter = character; }
-	@Override public void setSelectedLevel(LevelInformation level) { selectedLevel = level; }
-	@Override public void setSelectedDifficulty(DifficultyInformation difficulty) { selectedDifficulty = difficulty; }
-	public void setSelectedGameMode(GameMode mode) { selectedGameMode = mode; }
+	@Override public DifficultyInformation getDifficulty() { return difficulty; }
+	@Override public void setDifficulty(DifficultyInformation difficulty) { this.difficulty = difficulty; }
 	
 	@Override public Player getLocalPlayer() { return localPlayer; } // FIXME ?
 	@Override public Player[] getPlayers() { return players; }
@@ -50,9 +54,10 @@ public class LocalGameLogic implements GameLogic {
 		Keys keys = input.getKeys();
 		MouseButtons mouseButtons = input.getMouseButtons();
 		
-//		if (menus.isShowing()) {
-//			menus.getCurrent().tick(mouseButtons);
-//		}
+		level.tick();
+		
+		sound.setListenerPosition((float) localPlayer.pos.x, (float) localPlayer.pos.y);
+
 //		if (level != null && level.victoryConditions != null) {
 //			if (level.victoryConditions.isVictoryConditionAchieved()) {
 //				int winner = level.victoryConditions.playerVictorious();

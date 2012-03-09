@@ -1,5 +1,6 @@
 package com.mojang.mojam.gui;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.resources.Constants;
 import com.mojang.mojam.resources.Texts;
@@ -52,7 +53,7 @@ public class LocaleMenu extends GuiMenu {
 	@Override
 	public void render(Screen screen) {
 
-		if (logic().isPlayingLevel()) {
+		if (CatacombSnatch.isPlayingGame()) {
 			screen.alphaFill(0, 0, gameWidth, gameHeight, 0xff000000, 0x30);
 		} else {
 			screen.blit(Art.background, 0, 0);

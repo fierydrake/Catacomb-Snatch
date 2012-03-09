@@ -256,7 +256,7 @@ public class Level extends SimpleGameElement {
 	public void addMob(Mob m, int xTile, int yTile)
 	{
 		updateDensityList();
-		if(monsterDensity[(int)(xTile/densityTileWidth)][(int)(yTile/densityTileHeight)] <allowedDensities[logic().getSelectedDifficulty().difficultyID])
+		if(monsterDensity[(int)(xTile/densityTileWidth)][(int)(yTile/densityTileHeight)] <allowedDensities[logic().getDifficulty().difficultyID])
 		{
 			addEntity(m);
 		}
@@ -392,9 +392,10 @@ public class Level extends SimpleGameElement {
 	}
 
 	private GameCharacter getPlayerCharacter(int playerID){
-	    Player player = logic().getPlayers()[playerID];
-	    if (player == null) return GameCharacter.None;
-	    else return player.getCharacter();
+		if (playerID < logic().getPlayers().length) {
+			return logic().getPlayers()[playerID].getCharacter();
+		}
+		return GameCharacter.None;
 	}
 	
 	private boolean isNotBaseRailTile(int xt){
@@ -623,7 +624,7 @@ public class Level extends SimpleGameElement {
         Font.defaultFont().draw(screen, player1score, 280-player1score.length()*10, screen.h - 20); //adjust so it fits in the box
         screen.blit(Art.getPlayer(getPlayerCharacter(0))[0][2], 262, screen.h-42);
 
-        if (logic().getPlayers()[1] != null && getPlayerCharacter(1) != GameCharacter.None) {
+        if (logic().getPlayers().length > 1 && getPlayerCharacter(1) != GameCharacter.None) {
             Font.defaultFont().draw(screen, Texts.current().scoreCharacter(getPlayerCharacter(1), player2Score * 100 / TARGET_SCORE), 56, screen.h - 36);
             screen.blit(Art.getPlayer(getPlayerCharacter(1))[0][6], 19, screen.h-42);
         }

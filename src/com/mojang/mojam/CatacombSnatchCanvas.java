@@ -45,6 +45,7 @@ public class CatacombSnatchCanvas extends Canvas implements ScreenRenderer, Game
 		// Render screen
 		g.drawImage(screen.image, 0, 0, scaledWidth, scaledHeight, null);
 		
+		try { Thread.sleep(1); } catch (InterruptedException e) { e.printStackTrace(); }
 		bs.show();
 	}
 

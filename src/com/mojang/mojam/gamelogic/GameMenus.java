@@ -24,6 +24,7 @@ public class GameMenus {
 	public GuiMenu getCurrent() { return stack.peek(); }
 	public void push(GuiMenu menu) { stack.push(menu); }
 	public GuiMenu pop() { return stack.pop(); }
+	public void clear() { stack.clear(); }
 	
 	public void tick(GameInput input) {
 		getCurrent().tick(input.getMouseButtons()); // FIXME should not need to pass this

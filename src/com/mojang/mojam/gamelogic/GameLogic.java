@@ -1,25 +1,18 @@
 package com.mojang.mojam.gamelogic;
 
-import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.gameview.GameInput;
 import com.mojang.mojam.level.DifficultyInformation;
-import com.mojang.mojam.level.LevelInformation;
+import com.mojang.mojam.level.Level;
 
 public interface GameLogic {
-	public boolean isPlayingLevel();
+	public Level getLevel();
 
 	public Player[] getPlayers();
 	public Player getLocalPlayer();
 	
-	public DifficultyInformation getSelectedDifficulty();
-	public void setSelectedDifficulty(DifficultyInformation difficulty);
-
-	public LevelInformation getSelectedLevel();
-	public void setSelectedLevel(LevelInformation difficulty);
-
-	public GameCharacter getSelectedCharacter();
-	public void setSelectedCharacter(GameCharacter character);
+	public DifficultyInformation getDifficulty();
+	public void setDifficulty(DifficultyInformation difficulty);
 	
 	public void tick(GameInput input);
 }

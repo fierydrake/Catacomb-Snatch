@@ -24,29 +24,29 @@ public class DifficultyInformation {
 	}
 
 	public static float calculateHealth(float baseHealth) {
-		if(logic().getSelectedDifficulty() != null)
-			return baseHealth * logic().getSelectedDifficulty().mobHealthModifier;
+		if(logic().getDifficulty() != null)
+			return baseHealth * logic().getDifficulty().mobHealthModifier;
 		else
 			return 0;
 	}
 
 	public static float calculateStrength(int baseStrength) {
-		if(logic().getSelectedDifficulty() != null)
-			return baseStrength * logic().getSelectedDifficulty().mobStrengthModifier;
+		if(logic().getDifficulty() != null)
+			return baseStrength * logic().getDifficulty().mobStrengthModifier;
 		else
 			return 0;
 	}
 
 	public static int calculateSpawntime(int baseSpawntime) {
-		if(logic().getSelectedDifficulty() != null)
-			return (int)(baseSpawntime * logic().getSelectedDifficulty().mobSpawnModifier);
+		if(logic().getDifficulty() != null)
+			return (int)(baseSpawntime * logic().getDifficulty().mobSpawnModifier);
 		else
 			return 0;
 	}
 
 	public static int calculateCosts(int baseCost) {
-		if(logic().getSelectedDifficulty() != null)
-			return (int)(baseCost * logic().getSelectedDifficulty().shopCostsModifier);
+		if(logic().getDifficulty() != null)
+			return (int)(baseCost * logic().getDifficulty().shopCostsModifier);
 		else
 			return 0;
 	}

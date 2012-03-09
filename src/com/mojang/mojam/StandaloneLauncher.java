@@ -62,7 +62,6 @@ public class StandaloneLauncher {
 	}
 	
 	public static void main(String[] args) {
-		CatacombSnatch.init();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				new GameWindow(CatacombSnatch.canvas, Options.getAsBoolean(Options.FULLSCREEN, Options.VALUE_FALSE));

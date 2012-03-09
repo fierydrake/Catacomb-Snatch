@@ -3,6 +3,7 @@ package com.mojang.mojam.gui;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.LevelInformation;
@@ -38,7 +39,7 @@ public class LevelSelect extends GuiMenu {
 		// Get all levels
 		LevelList.resetLevels();
 		levels = LevelList.getLevels();
-		logic().setSelectedLevel(levels.get(0));
+		CatacombSnatch.selectedLevel = levels.get(0);
 
 		// Add main buttons
 		startGameButton = (Button) addButton(new Button("levelselect.start", 
@@ -162,7 +163,7 @@ public class LevelSelect extends GuiMenu {
     	if (button instanceof LevelButton) {
     
     		LevelButton lb = (LevelButton) button;
-    		logic().setSelectedLevel(levels.get(lb.getId()));
+    		CatacombSnatch.selectedLevel = levels.get(lb.getId());
     
     		if (activeButton != null && activeButton != lb) {
     			activeButton.setActive(false);
