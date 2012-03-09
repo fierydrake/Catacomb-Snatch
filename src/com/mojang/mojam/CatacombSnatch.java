@@ -19,7 +19,6 @@ import com.mojang.mojam.gameview.SimpleGameView;
 import com.mojang.mojam.gui.CharacterSelectionMenu;
 import com.mojang.mojam.gui.GuiError;
 import com.mojang.mojam.gui.TitleMenu;
-import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.LevelInformation;
 import com.mojang.mojam.level.gamemode.GameMode;
 import com.mojang.mojam.level.gamemode.GameModeVanilla;
@@ -79,7 +78,7 @@ public class CatacombSnatch {
 					input.gatherInput();
 					/* Render */
 					for (GameView view : views) {
-						view.renderView();
+						view.renderView(input);
 					}
 					/* Tick logic */
 					if (menus.isShowing()) {

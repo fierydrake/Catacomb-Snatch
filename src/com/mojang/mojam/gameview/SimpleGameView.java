@@ -1,6 +1,7 @@
 package com.mojang.mojam.gameview;
 
 import com.mojang.mojam.CatacombSnatch;
+import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.ScreenRenderer;
 import com.mojang.mojam.SimpleGameElement;
 import com.mojang.mojam.entity.Player;
@@ -9,6 +10,7 @@ import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.level.Level;
 import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
+import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
 
 public class SimpleGameView extends SimpleGameElement implements GameView {
@@ -27,10 +29,10 @@ public class SimpleGameView extends SimpleGameElement implements GameView {
 		this.renderer = renderer;
 	}
 	
-	public void renderView() {
+	public void renderView(GameInput input) {
 		frames++;
 		
-		render();
+		render(input);
 
 		// Render mouse
 		// TODO
@@ -49,7 +51,7 @@ public class SimpleGameView extends SimpleGameElement implements GameView {
 		renderer.render(this, screen, GameView.WIDTH * GameView.SCALE, GameView.HEIGHT * GameView.SCALE);
 	}
 	
-	public void render() {
+	public void render(GameInput input) {
 		player = logic().getLocalPlayer(); // FIXME
 		if (CatacombSnatch.isPlayingGame()) {
 			Level level = logic().getLevel();
@@ -61,6 +63,7 @@ public class SimpleGameView extends SimpleGameElement implements GameView {
 			renderHealthBars();
 			renderXpBar();
 			renderScore();
+			
 				
 //				if (gameLogic.isNetworkGame()) {
 //					Font font = Font.defaultFont();
@@ -71,6 +74,12 @@ public class SimpleGameView extends SimpleGameElement implements GameView {
 		}
 		if (menus.isShowing()) {
 			menus.getCurrent().render(screen);
+		}
+		
+		// Render mouse pointer
+		MouseButtons mouseButtons = input.getMouseButtons();
+		if (!mouseButtons.mouseHidden) {
+			renderMouse(mouseButtons.getX(), mouseButtons.getY());
 		}
 		// TODO
 //		if (Options.getAsBoolean(Options.DRAW_FPS, Options.VALUE_FALSE)) {
@@ -120,6 +129,24 @@ public class SimpleGameView extends SimpleGameElement implements GameView {
 		screen.blit(Art.panel_coin, 314, screen.h - 55);
 		Font font = Font.defaultFont();
 		font.draw(screen, Texts.current().money(player.score), 335, screen.h - 52);
+	}
+	
+	private void renderMouse(int x, int y) {
+		int crosshairSize = 15;
+		int crosshairSizeHalf = crosshairSize / 2;
+
+		Bitmap marker = new Bitmap(crosshairSize, crosshairSize);
+
+		// horizontal line
+		for (int i = 0; i < crosshairSize; i++) {
+			if (i >= crosshairSizeHalf - 1 && i <= crosshairSizeHalf + 1)
+				continue;
+
+			marker.pixels[crosshairSizeHalf + i * crosshairSize] = 0xffffffff;
+			marker.pixels[i + crosshairSizeHalf * crosshairSize] = 0xffffffff;
+		}
+
+		screen.blit(marker, x / GameView.SCALE - crosshairSizeHalf - 2, y / GameView.SCALE - crosshairSizeHalf - 2);
 	}
 }
 

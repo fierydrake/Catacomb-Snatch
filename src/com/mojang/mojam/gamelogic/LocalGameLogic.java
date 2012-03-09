@@ -48,6 +48,7 @@ public class LocalGameLogic extends SimpleGameElement implements GameLogic {
 	/*
 	 * Game logic
 	 */
+	private int mouseHideTime = 0;
 	@Override
 	public void tick(GameInput input) {
 		Keys keys = input.getKeys();
@@ -57,6 +58,17 @@ public class LocalGameLogic extends SimpleGameElement implements GameLogic {
 		
 		sound.setListenerPosition((float) localPlayer.pos.x, (float) localPlayer.pos.y);
 
+		if (input.getMouseMoved()) {
+			mouseHideTime = 0;
+			if (mouseButtons.mouseHidden) {
+				mouseButtons.mouseHidden = false;
+			}
+		}
+		if (mouseHideTime < 60) {
+			if (++mouseHideTime == 60) {
+				mouseButtons.mouseHidden = true;
+			}
+		}
 //		if (level != null && level.victoryConditions != null) {
 //			if (level.victoryConditions.isVictoryConditionAchieved()) {
 //				int winner = level.victoryConditions.playerVictorious();

@@ -5,5 +5,5 @@ public interface GameView {
 	public static final int HEIGHT = WIDTH * 3 / 4;
 	public static final int SCALE = 2;
 
-	public void renderView();
+	public void renderView(GameInput input);
 }

@@ -2,9 +2,13 @@ package com.mojang.mojam;
 
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
 
 import com.mojang.mojam.gameview.GameInput;
 import com.mojang.mojam.gameview.GameView;
@@ -21,6 +25,8 @@ public class CatacombSnatchCanvas extends Canvas implements ScreenRenderer, Game
 		setPreferredSize(size);
 		setMinimumSize(size);
 		setMaximumSize(size);
+		Cursor emptyCursor = Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "empty");
+		setCursor(emptyCursor);
 		requestFocusInWindow();
 	}
 

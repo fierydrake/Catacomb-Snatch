@@ -14,8 +14,8 @@ public class JoinGameMenu extends GuiMenu {
 	public JoinGameMenu() {
 		super();
 
-		joinButton = (Button) addButton(new Button(TitleMenu.PERFORM_JOIN_ID, "mp.join", 100, 180));
-		cancelButton = (Button) addButton(new Button(TitleMenu.CANCEL_JOIN_ID, "cancel", 250, 180));
+		joinButton = (Button) addButton(new Button("mp.join", 100, 180)); // TODO TitleMenu.PERFORM_JOIN_ID
+		cancelButton = (Button) addButton(new Button("cancel", 250, 180)); // TODO TitleMenu.CANCEL_JOIN_ID
 	}
 
 	@Override
@@ -24,7 +24,7 @@ public class JoinGameMenu extends GuiMenu {
 		screen.clear(0);
 		screen.blit(Art.emptyBackground, 0, 0);
 		Font.defaultFont().draw(screen, Texts.current().getStatic("mp.enterIP"), 100, 100);
-		Font.defaultFont().draw(screen, TitleMenu.ip + "-", 100, 120);
+		Font.defaultFont().draw(screen, "TODO", 100, 120); // TODO TitleMenu.ip + "-"
 
 		super.render(screen);
 	}
@@ -33,9 +33,10 @@ public class JoinGameMenu extends GuiMenu {
 	public void keyPressed(KeyEvent e) {
 		// Start on Enter, Cancel on Escape
 		if ((e.getKeyChar() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_E)) {
-			if (TitleMenu.ip.length() > 0) {
-				joinButton.postClick();
-			}
+			// TODO
+//			if (TitleMenu.ip.length() > 0) {
+//				joinButton.postClick();
+//			}
 		} else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 			cancelButton.postClick();	
 		} else {
@@ -50,11 +51,12 @@ public class JoinGameMenu extends GuiMenu {
 	@Override
 	public void keyTyped(KeyEvent e) {
 		if (e.getKeyChar() == KeyEvent.VK_ENTER) return;
-		if (e.getKeyChar() == KeyEvent.VK_BACK_SPACE && TitleMenu.ip.length() > 0) {
-			TitleMenu.ip = TitleMenu.ip.substring(0, TitleMenu.ip.length() - 1);
-		} else {
-			TitleMenu.ip += e.getKeyChar();
-		}
+		// TODO
+//		if (e.getKeyChar() == KeyEvent.VK_BACK_SPACE && TitleMenu.ip.length() > 0) {
+//			TitleMenu.ip = TitleMenu.ip.substring(0, TitleMenu.ip.length() - 1);
+//		} else {
+//			TitleMenu.ip += e.getKeyChar();
+//		}
 	}
 
 	@Override
