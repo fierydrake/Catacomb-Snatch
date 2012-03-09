@@ -5,15 +5,20 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mojang.mojam.MojamComponent;
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.MouseButtons;
+import com.mojang.mojam.resources.LocaleChangeListener;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Screen;
 
-public abstract class GuiMenu extends GuiComponent implements ButtonListener, KeyListener {
-
+public abstract class GuiMenu extends GuiComponent implements ButtonListener, KeyListener, LocaleChangeListener {
 	protected List<ClickableComponent> buttons = new ArrayList<ClickableComponent>();
 	protected List<Text> texts = new ArrayList<Text>();
 	protected int selectedItem = 0;
+
+	public GuiMenu() {
+		Texts.addLocaleListener(this);
+	}
 
 	protected ClickableComponent addButton(ClickableComponent button) {
 		buttons.add(button);
@@ -28,9 +33,6 @@ public abstract class GuiMenu extends GuiComponent implements ButtonListener, Ke
         else {
             return null;
 		}
-	}
-
-	public void changeLocale() {
 	}
 
 	protected Text addText(Text text) {
@@ -121,12 +123,29 @@ public abstract class GuiMenu extends GuiComponent implements ButtonListener, Ke
 			}
 			button.postClick();
 		} else if (e.getKeyCode() == KeyEvent.VK_F11) {
-			MojamComponent.toggleFullscreen();
+			CatacombSnatch.toggleFullscreen();
 		}
+	}
+	
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+	}
+
+	@Override
+	public void keyTyped(KeyEvent ke) {
 	}
 	
 	@Override
 	public void buttonHovered(ClickableComponent clickableComponent) {
 		selectedItem = buttons.indexOf(clickableComponent);
+	}
+	
+	@Override
+	public void localeChanged() {
+		for (ClickableComponent button : buttons) {
+			if (button instanceof LabelledClickableComponent) {
+				((LabelledClickableComponent) button).updateLabel();
+			}
+		}
 	}
 }

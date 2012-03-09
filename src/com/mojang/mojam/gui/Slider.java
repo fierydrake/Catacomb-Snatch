@@ -1,15 +1,12 @@
 package com.mojang.mojam.gui;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.math.Mth;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
-public class Slider extends ClickableComponent {
-	private final int id;
-
-	private String label;
+public class Slider extends LabelledClickableComponent {
 	private boolean isDown;
 	public float value = 1.0f;
 	private int pos = getX();
@@ -18,18 +15,16 @@ public class Slider extends ClickableComponent {
 	public static final int HEIGHT = 24;
 	public static final int SLIDER_WIDTH = 16;
 
-	public Slider(int id, String label, int x, int y) {
-		this(id, label, x, y, 1.0f);
+	public Slider(String label, int x, int y) {
+		this(label, x, y, 1.0f);
 	}
 
-	public Slider(int id, String label, int x, int y, float value) {
-		super(x, y, 128, 24);
-		this.id = id;
-		this.label = label;
+	public Slider(String staticTextsID, int x, int y, float value) {
+		super(x, y, 128, 24, staticTextsID);
 		this.value = value;
 		this.pos = (int) ((float) (getX() + getWidth() - SLIDER_WIDTH - getX()) * value) + getX();
 	}
-
+	
 	@Override
 	public void tick(MouseButtons mouseButtons) {
 		super.tick(mouseButtons);
@@ -39,7 +34,7 @@ public class Slider extends ClickableComponent {
 
 		if (mx >= getX() && my >= getY() && mx < (getX() + getWidth())
 				&& my < (getY() + getHeight())) {
-			if (mouseButtons.isRelased(1)) {
+			if (mouseButtons.isReleased(1)) {
 				isDown = false;
 			} else if (mouseButtons.isDown(1)) {
 				isDown = true;
@@ -71,16 +66,12 @@ public class Slider extends ClickableComponent {
 		String view = "";
 
 		if (value == 0.0f)
-			view = MojamComponent.texts.getStatic("options.mute");
+			view = Texts.current().getStatic("options.mute");
 		else
 			view = (Math.round(value * 100.0f)) + "%";
 
 		Font.defaultFont().draw(screen, label + ": " + view, getX() + getWidth() / 2, getY()
 				+ getHeight() / 2, Font.Align.CENTERED);
-	}
-
-	public int getId() {
-		return id;
 	}
 
 	public void setValue(float value) {

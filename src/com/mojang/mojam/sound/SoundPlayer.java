@@ -12,8 +12,9 @@ import paulscode.sound.codecs.CodecWav;
 import paulscode.sound.libraries.LibraryJavaSound;
 
 import com.mojang.mojam.Options;
+import com.mojang.mojam.gamesound.GameSound;
 
-public class SoundPlayer implements ISoundPlayer {
+public class SoundPlayer implements GameSound {
 
 	private final Class<? extends Library> libraryType;
 	private SoundSystem soundSystem;
@@ -225,5 +226,19 @@ public class SoundPlayer implements ISoundPlayer {
 
 	public SoundSystem getSoundSystem() {
 		return soundSystem;
+	}
+
+	@Override
+	public void setMasterVolume(float volume) {
+		if (soundSystem != null) {
+			soundSystem.setMasterVolume(volume);
+		}
+	}
+	
+	@Override
+	public void setVolume(String sourceName, float volume) {
+		if (soundSystem != null) {
+			soundSystem.setVolume(sourceName, volume);
+		}
 	}
 }

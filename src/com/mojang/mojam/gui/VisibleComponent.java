@@ -42,4 +42,12 @@ public class VisibleComponent extends GuiComponent {
 	public int getHeight() {
 		return h;
 	}
+	
+	public void setX(int x) { 
+		this.x=x; 
+	}
+	
+	public void setY(int y) { 
+		this.y=y; 
+	}
 }

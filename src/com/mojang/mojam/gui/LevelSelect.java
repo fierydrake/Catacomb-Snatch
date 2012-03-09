@@ -3,10 +3,11 @@ package com.mojang.mojam.gui;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.MouseButtons;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.LevelInformation;
 import com.mojang.mojam.level.LevelList;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
@@ -19,10 +20,10 @@ public class LevelSelect extends GuiMenu {
     private int currentPage = 0;
 	private LevelButton[] levelButtons = null;
 	
-	private final int xButtons = (MojamComponent.GAME_WIDTH / LevelButton.WIDTH);
+	private final int xButtons = (GameView.WIDTH / LevelButton.WIDTH);
 	private final int xSpacing = LevelButton.WIDTH + 8;
 	private final int ySpacing = LevelButton.HEIGHT + 8;
-	private final int xStart = (MojamComponent.GAME_WIDTH - (xSpacing * xButtons) + 8) / 2;
+	private final int xStart = (GameView.WIDTH - (xSpacing * xButtons) + 8) / 2;
 	private final int yStart = 50;
 
 	private LevelButton activeButton;
@@ -33,23 +34,31 @@ public class LevelSelect extends GuiMenu {
     private Button nextPageButton;
     private boolean outdatedLevelButtons = false;
 	
-	public boolean bHosting;
-	
-	public LevelSelect(boolean bHosting) {
-		super();		
-		this.bHosting = bHosting;
-		
+	public LevelSelect(final boolean hosting) {
 		// Get all levels
 		LevelList.resetLevels();
 		levels = LevelList.getLevels();
-		TitleMenu.level = levels.get(0);
+		logic().setSelectedLevel(levels.get(0));
 
 		// Add main buttons
-		startGameButton = (Button) addButton(new Button(bHosting ? TitleMenu.SELECT_DIFFICULTY_HOSTING_ID : 
-			TitleMenu.SELECT_DIFFICULTY_ID, MojamComponent.texts.getStatic("levelselect.start"), 
-			MojamComponent.GAME_WIDTH - 256 - 30, MojamComponent.GAME_HEIGHT - 24 - 25));
-		cancelButton = (Button) addButton(new Button(TitleMenu.CANCEL_JOIN_ID, MojamComponent.texts.getStatic("cancel"), 
-				MojamComponent.GAME_WIDTH - 128 - 20, MojamComponent.GAME_HEIGHT - 24 - 25));
+		startGameButton = (Button) addButton(new Button("levelselect.start", 
+			GameView.WIDTH - 256 - 30, GameView.HEIGHT - 24 - 25));
+		startGameButton.addListener(new ButtonAdapter() {
+			@Override
+			public void buttonPressed(ClickableComponent button) {
+				menus.push(new DifficultySelect(hosting));
+			}
+		});
+		cancelButton = (Button) addButton(new Button("cancel", 
+				GameView.WIDTH - 128 - 20, GameView.HEIGHT - 24 - 25));
+		cancelButton.addListener(new ButtonAdapter() {
+			@Override
+			public void buttonPressed(ClickableComponent button) {
+				// Interrupt host thread
+			}
+		});
+		cancelButton.addListener(menus.BACK_BUTTON_LISTENER);
+		
 		/*addButton(new Button(TitleMenu.UPDATE_LEVELS, MojamComponent.texts.getStatic("levelselect.update"), 
 				MojamComponent.GAME_WIDTH - 128 - 18, 20));
 		 //levels already load by default, no update needed
@@ -57,10 +66,10 @@ public class LevelSelect extends GuiMenu {
 
 		// Add page buttons
 		if (levels.size() > LEVELS_PER_PAGE) {
-	        previousPageButton = (Button) addButton(new Button(TitleMenu.LEVELS_PREVIOUS_PAGE_ID, "(", 
-	                xStart, MojamComponent.GAME_HEIGHT - 24 - 25, 30, Button.BUTTON_HEIGHT));
-	        nextPageButton = (Button) addButton(new Button(TitleMenu.LEVELS_PREVIOUS_PAGE_ID, ")", 
-	                xStart + 40, MojamComponent.GAME_HEIGHT - 24 - 25, 30, Button.BUTTON_HEIGHT));
+	        previousPageButton = (Button) addButton(new Button("(", 
+	                xStart, GameView.HEIGHT - 24 - 25, 30, Button.HEIGHT, false));
+	        nextPageButton = (Button) addButton(new Button(")", 
+	                xStart + 40, GameView.HEIGHT - 24 - 25, 30, Button.HEIGHT, false));
 		}
         
         // Create level
@@ -144,7 +153,7 @@ public class LevelSelect extends GuiMenu {
     	}
 
     	super.render(screen);
-    	Font.defaultFont().draw(screen, MojamComponent.texts.getStatic("levelselect.title"), 20, 20);
+    	Font.defaultFont().draw(screen, Texts.current().getStatic("levelselect.title"), 20, 20);
     }
 
     @Override
@@ -153,7 +162,7 @@ public class LevelSelect extends GuiMenu {
     	if (button instanceof LevelButton) {
     
     		LevelButton lb = (LevelButton) button;
-    		TitleMenu.level = levels.get(lb.getId());
+    		logic().setSelectedLevel(levels.get(lb.getId()));
     
     		if (activeButton != null && activeButton != lb) {
     			activeButton.setActive(false);
@@ -226,14 +235,6 @@ public class LevelSelect extends GuiMenu {
     		}
     	}
     	return -2;
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
     }
 
 }

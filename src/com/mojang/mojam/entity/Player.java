@@ -4,7 +4,6 @@ import java.util.Random;
 
 import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.Keys;
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.animation.SmokePuffAnimation;
@@ -18,13 +17,15 @@ import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.entity.mob.RailDroid;
 import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.entity.particle.Sparkle;
-import com.mojang.mojam.entity.weapon.IWeapon;
 import com.mojang.mojam.entity.weapon.Rifle;
+import com.mojang.mojam.gameview.GameInput;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Notifications;
 import com.mojang.mojam.level.tile.RailTile;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.math.Vec2;
 import com.mojang.mojam.network.TurnSynchronizer;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
@@ -43,11 +44,10 @@ public class Player extends Mob implements LootCollector {
     public boolean isSprint = false;
     public int timeSprint = 0;
     public int maxTimeSprint;
-    public Keys keys;
-    public MouseButtons mouseButtons;
     public int mouseFireButton = 1;
     public int mouseUseButton = 3;
-
+    
+    private GameInput gameInput;
     
     private boolean mouseAiming;
    
@@ -86,12 +86,12 @@ public class Player extends Mob implements LootCollector {
      * @param y Initial y coordinate
      * @param team Team number
      */
-    public Player(Keys keys, MouseButtons mouseButtons, int x, int y, int team, GameCharacter character) {
+    public Player(GameInput gameInput, int x, int y, int team, GameCharacter character) {
         super(x, y, team);
-        this.keys = keys;
-        this.mouseButtons = mouseButtons;
         this.character = character;
 
+        this.gameInput = gameInput;
+        
         startX = x;
         startY = y;
 
@@ -134,7 +134,7 @@ public class Player extends Mob implements LootCollector {
             psprint += 0.1;
             maxTimeSprint += 20;
 
-            MojamComponent.soundPlayer.playSound("/sound/levelUp.wav", (float) pos.x, (float) pos.y, true);
+            sound.playSound("/sound/levelUp.wav", (float) pos.x, (float) pos.y, true);
         }
     }
 
@@ -169,13 +169,15 @@ public class Player extends Mob implements LootCollector {
     
     @Override
     public void tick() {
+    	Keys keys = gameInput.getKeys();
+    	MouseButtons mouseButtons = gameInput.getMouseButtons();
 
         // If the mouse is used, update player orientation before level tick
         if (!mouseButtons.mouseHidden) {
             // Update player mouse, in world pixels relative to player
             setAimByMouse(
-                    ((mouseButtons.getX() / MojamComponent.SCALE) - (MojamComponent.screen.w / 2)),
-                    (((mouseButtons.getY() / MojamComponent.SCALE) + 24) - (MojamComponent.screen.h / 2)));
+                    ((mouseButtons.getX() / GameView.SCALE) - (GameView.WIDTH / 2)),
+                    (((mouseButtons.getY() / GameView.SCALE) + 24) - (GameView.HEIGHT / 2)));
         } else {
             setAimByKeyboard();
         }
@@ -322,6 +324,7 @@ public class Player extends Mob implements LootCollector {
      * Play step sounds synchronized to player movement and carrying status
      */
     private void playStepSound() {
+    	Keys keys = gameInput.getKeys();
         if (keys.up.isDown || keys.down.isDown || keys.left.isDown || keys.right.isDown) {
             int stepCount = 25;
             
@@ -334,7 +337,7 @@ public class Player extends Mob implements LootCollector {
             }
             
             if (steps % stepCount == 0) {
-                MojamComponent.soundPlayer.playSound("/sound/Step " + (TurnSynchronizer.synchedRandom.nextInt(2) + 1) + ".wav", (float) pos.x, (float) pos.y, true);
+                sound.playSound("/sound/Step " + (TurnSynchronizer.synchedRandom.nextInt(2) + 1) + ".wav", (float) pos.x, (float) pos.y, true);
             }
             steps++;
         }
@@ -347,6 +350,8 @@ public class Player extends Mob implements LootCollector {
      * @param ya Position change on the y axis
      */
     private void handleMovement(double xa, double ya) {
+    	Keys keys = gameInput.getKeys();
+
         int facing2 = (int) ((Math.atan2(-xa, ya) * 8 / (Math.PI * 2) + 8.5)) & 7;
         int diff = facing - facing2;
         
@@ -384,7 +389,7 @@ public class Player extends Mob implements LootCollector {
         double dd = Math.sqrt(xa * xa + ya * ya);
         double speed = getSpeed() / dd;
 
-        if (this.keys.sprint.isDown) {
+        if (keys.sprint.isDown) {
             if (timeSprint < maxTimeSprint) {
                 isSprint = true;
                 if (carrying == null) {
@@ -417,6 +422,7 @@ public class Player extends Mob implements LootCollector {
      * @param ya Position change on the y axis
      */
     private void handleWeaponFire(double xa, double ya) {
+    	MouseButtons mouseButtons = gameInput.getMouseButtons();
         weapon.weapontick();
         
         if (!dead
@@ -443,6 +449,7 @@ public class Player extends Mob implements LootCollector {
      * @return
      */
     private boolean fireKeyIsDown() {
+    	Keys keys = gameInput.getKeys();
         return keys.fire.isDown || keys.fireUp.isDown || keys.fireDown.isDown || keys.fireRight.isDown || keys.fireLeft.isDown;
     }
 
@@ -460,8 +467,8 @@ public class Player extends Mob implements LootCollector {
                 lastRailTick = time;
                 level.placeTile(x, y, new RailTile(level.getTile(x, y)), this);
                 payCost(COST_RAIL);
-            } else if (score < COST_RAIL && this.team == MojamComponent.localTeam) {
-            	Notifications.getInstance().add(MojamComponent.texts.buildRail(COST_RAIL));
+            } else if (score < COST_RAIL && this.team == logic().getLocalPlayer().team) { // TODO Check this
+            	Notifications.getInstance().add(Texts.current().buildRail(COST_RAIL));
             }            
         } else if (level.getTile(x, y) instanceof RailTile) {
             if ((y < 8 && team == Team.Team2) || (y > level.height - 9 && team == Team.Team1)) {
@@ -469,8 +476,8 @@ public class Player extends Mob implements LootCollector {
                     level.addEntity(new RailDroid(pos.x, pos.y, team));
                     payCost(COST_DROID);
                 } else {
-                	if(this.team == MojamComponent.localTeam) {
-                		Notifications.getInstance().add(MojamComponent.texts.buildDroid(COST_DROID));
+                	if(this.team == logic().getLocalPlayer().team) { // TODO Check this
+                		Notifications.getInstance().add(Texts.current().buildDroid(COST_DROID));
                 	}
                 }
             } else {
@@ -481,11 +488,11 @@ public class Player extends Mob implements LootCollector {
                         payCost(COST_REMOVE_RAIL);
                     }
                 } else if (score < COST_REMOVE_RAIL) {
-                	if(this.team == MojamComponent.localTeam) {
-                		Notifications.getInstance().add(MojamComponent.texts.removeRail(COST_REMOVE_RAIL));
+                	if(this.team == logic().getLocalPlayer().team) { // TODO Check this
+                		Notifications.getInstance().add(Texts.current().removeRail(COST_REMOVE_RAIL));
                 	}
                 }
-                MojamComponent.soundPlayer.playSound("/sound/Track Place.wav", (float) pos.x, (float) pos.y);
+                sound.playSound("/sound/Track Place.wav", (float) pos.x, (float) pos.y);
             }
         }
     }
@@ -494,6 +501,8 @@ public class Player extends Mob implements LootCollector {
      * Handle object carrying
      */
     private void handleCarrying() {
+    	Keys keys = gameInput.getKeys();
+    	MouseButtons mouseButtons = gameInput.getMouseButtons();
 
         carrying.setPos(pos.x, pos.y - 20);
         carrying.tick();
@@ -510,6 +519,8 @@ public class Player extends Mob implements LootCollector {
      * Handle interaction with entities
      */
     private void handleEntityInteraction() {
+    	Keys keys = gameInput.getKeys();
+    	MouseButtons mouseButtons = gameInput.getMouseButtons();
         // Unhighlight previously selected building
         if (selected != null) {
             selected.setHighlighted(false);
@@ -560,7 +571,7 @@ public class Player extends Mob implements LootCollector {
     // highlighted on their game client - this indicates that
     // they can interact with the building
     private boolean shouldHighlightBuildingOnThisGameClient(Building building) {
-        return building.isHighlightable() && canInteractWithBuilding(building) && this.team == MojamComponent.localTeam; 
+        return building.isHighlightable() && canInteractWithBuilding(building) && this.team == logic().getLocalPlayer().team; // TODO Check this 
     }
     
     // Whether this Player is allowed to use the building in 
@@ -681,7 +692,7 @@ public class Player extends Mob implements LootCollector {
     
     @Override
     protected void renderCarrying(Screen screen, int yOffs) {
-    	if(carrying != null && carrying.team == MojamComponent.localTeam ) {
+    	if(carrying != null && carrying.team == logic().getLocalPlayer().team) { // TODO Check this
 			if(carrying instanceof Turret) {
 				Turret turret = (Turret)carrying;
 				turret.drawRadius(screen);	
@@ -797,7 +808,7 @@ public class Player extends Mob implements LootCollector {
                 xBump = (pos.x - source.pos.x) / dist * 10;
                 yBump = (pos.y - source.pos.y) / dist * 10;
 
-                MojamComponent.soundPlayer.playSound("/sound/hit2.wav", (float) pos.x, (float) pos.y, true);
+                sound.playSound("/sound/hit2.wav", (float) pos.x, (float) pos.y, true);
             }
         }
     }
@@ -806,7 +817,7 @@ public class Player extends Mob implements LootCollector {
      * Revive the player. Carried items are lost, as is all the money.
      */
     private void revive() {
-        Notifications.getInstance().add(MojamComponent.texts.hasDiedCharacter(getCharacter()));
+        Notifications.getInstance().add(Texts.current().hasDiedCharacter(getCharacter()));
         carrying = null;
         dropAllMoney();
         pos.set(startX, startY);

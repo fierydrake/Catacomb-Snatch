@@ -1,7 +1,6 @@
 package com.mojang.mojam.entity.mob;
 
 import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
@@ -13,7 +12,6 @@ import com.mojang.mojam.entity.building.Harvester;
 import com.mojang.mojam.entity.building.SpawnerEntity;
 import com.mojang.mojam.entity.loot.Loot;
 import com.mojang.mojam.entity.weapon.IWeapon;
-import com.mojang.mojam.gui.TitleMenu;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.tile.HoleTile;
 import com.mojang.mojam.level.tile.Tile;
@@ -65,7 +63,7 @@ public abstract class Mob extends Entity {
 		super();
 		setPos(x, y);
 		this.team = team;
-		DifficultyInformation difficulty = TitleMenu.difficulty;
+		DifficultyInformation difficulty = logic().getSelectedDifficulty();
 		this.REGEN_INTERVAL = (difficulty != null && difficulty.difficultyID == 3) ? 15 : 25;
 		this.healingTime = this.REGEN_INTERVAL;
 		aimVector = new Vec2(0, 1);
@@ -102,7 +100,7 @@ public abstract class Mob extends Entity {
 	}
 
 	public void tick() {
-		if (TitleMenu.difficulty.difficultyID >= 1 || this.team != Team.Neutral) {
+		if (logic().getSelectedDifficulty().difficultyID >= 1 || this.team != Team.Neutral) {
 			this.doRegenTime();
 		}
 		
@@ -180,7 +178,7 @@ public abstract class Mob extends Entity {
 
 		level.addEntity(new EnemyDieAnimation(pos.x, pos.y));
 
-		MojamComponent.soundPlayer.playSound(getDeathSound(), (float) pos.x, (float) pos.y);
+		sound.playSound(getDeathSound(), (float) pos.x, (float) pos.y);
 	}
 
 	public String getDeathSound() {
@@ -420,9 +418,9 @@ public abstract class Mob extends Entity {
                 }
                 // TODO add a sex attribute to Characters
                 if (character.ordinal() < 2)
-                    MojamComponent.soundPlayer.playSound("/sound/falling_male.wav", (float) pos.x, (float) pos.y);
+                    sound.playSound("/sound/falling_male.wav", (float) pos.x, (float) pos.y);
                 else
-                    MojamComponent.soundPlayer.playSound("/sound/falling_female.wav", (float) pos.x, (float) pos.y);
+                    sound.playSound("/sound/falling_female.wav", (float) pos.x, (float) pos.y);
             }
             return true;
         }

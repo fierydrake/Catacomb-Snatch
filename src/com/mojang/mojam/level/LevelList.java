@@ -3,7 +3,7 @@ package com.mojang.mojam.level;
 import java.io.File;
 import java.util.ArrayList;
 
-import com.mojang.mojam.MojamComponent;
+import com.mojang.mojam.CatacombSnatch;
 
 public class LevelList {
 
@@ -28,7 +28,7 @@ public class LevelList {
 	}
 	
 	public static File getBaseDir(){
-		return new File(MojamComponent.getMojamDir(), "levels");
+		return new File(CatacombSnatch.getExternalsDir(), "levels");
 	}
 	
 	public static void loadDir(File file){
@@ -47,7 +47,7 @@ public class LevelList {
 	            ext=fileName.substring(mid+1);
 	            System.out.println("  Found level: "+fname+" . "+ext);
 	            if(ext.toLowerCase().equals("bmp")){
-	        		levels.add(new LevelInformation("+ "+fname, child.getPath(),false));
+	        		levels.add(new LevelInformation("+ "+fname, child.getPath(), false));
 	            }
 	        }
 	    }

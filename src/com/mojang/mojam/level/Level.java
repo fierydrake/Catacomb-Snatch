@@ -7,26 +7,26 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.MojamComponent;
+import com.mojang.mojam.SimpleGameElement;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.Notifications;
-import com.mojang.mojam.gui.TitleMenu;
 import com.mojang.mojam.level.gamemode.ILevelTickItem;
 import com.mojang.mojam.level.gamemode.IVictoryConditions;
+import com.mojang.mojam.level.tile.AnimatedTile;
 import com.mojang.mojam.level.tile.FloorTile;
 import com.mojang.mojam.level.tile.Tile;
-import com.mojang.mojam.level.tile.AnimatedTile;
 import com.mojang.mojam.level.tile.WallTile;
 import com.mojang.mojam.math.BB;
 import com.mojang.mojam.math.Vec2;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
 
-public class Level {
+public class Level extends SimpleGameElement {
 	public int TARGET_SCORE = 100;
 
 	public final int width, height;
@@ -256,7 +256,7 @@ public class Level {
 	public void addMob(Mob m, int xTile, int yTile)
 	{
 		updateDensityList();
-		if(monsterDensity[(int)(xTile/densityTileWidth)][(int)(yTile/densityTileHeight)] <allowedDensities[TitleMenu.difficulty.difficultyID])
+		if(monsterDensity[(int)(xTile/densityTileWidth)][(int)(yTile/densityTileHeight)] <allowedDensities[logic().getSelectedDifficulty().difficultyID])
 		{
 			addEntity(m);
 		}
@@ -392,7 +392,7 @@ public class Level {
 	}
 
 	private GameCharacter getPlayerCharacter(int playerID){
-	    Player player = MojamComponent.instance.players[playerID];
+	    Player player = logic().getPlayers()[playerID];
 	    if (player == null) return GameCharacter.None;
 	    else return player.getCharacter();
 	}
@@ -619,12 +619,12 @@ public class Level {
 	
 	private void renderPlayerScores(Screen screen){
 	    
-	    String player1score =  MojamComponent.texts.scoreCharacter(getPlayerCharacter(0), player1Score * 100 / TARGET_SCORE);
+	    String player1score = Texts.current().scoreCharacter(getPlayerCharacter(0), player1Score * 100 / TARGET_SCORE);
         Font.defaultFont().draw(screen, player1score, 280-player1score.length()*10, screen.h - 20); //adjust so it fits in the box
         screen.blit(Art.getPlayer(getPlayerCharacter(0))[0][2], 262, screen.h-42);
 
-        if (MojamComponent.instance.players[1] != null && getPlayerCharacter(1) != GameCharacter.None) {
-            Font.defaultFont().draw(screen, MojamComponent.texts.scoreCharacter(getPlayerCharacter(1), player2Score * 100 / TARGET_SCORE), 56, screen.h - 36);
+        if (logic().getPlayers()[1] != null && getPlayerCharacter(1) != GameCharacter.None) {
+            Font.defaultFont().draw(screen, Texts.current().scoreCharacter(getPlayerCharacter(1), player2Score * 100 / TARGET_SCORE), 56, screen.h - 36);
             screen.blit(Art.getPlayer(getPlayerCharacter(1))[0][6], 19, screen.h-42);
         }
 	}

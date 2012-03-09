@@ -1,7 +1,7 @@
 package com.mojang.mojam.gui;
 
 import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.MojamComponent;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
 
@@ -27,13 +27,18 @@ public class CharacterButton extends Button {
 	private Bitmap characterArt;
 	private boolean selected;
 	private boolean hasFocus;
-
-	public CharacterButton(int id, GameCharacter character, Bitmap characterArt, int x, int y) {
-		super(id, MojamComponent.texts.playerNameCharacter(character), x, y, WIDTH, HEIGHT);
+	
+	public CharacterButton(GameCharacter character, Bitmap characterArt, int x, int y) {
+		super(Texts.current().playerNameCharacter(character), x, y, WIDTH, HEIGHT);
 		this.character = character;
 		this.characterArt = characterArt;
 	}
-
+	
+	@Override
+	public String labelText() { 
+		return Texts.current().playerNameCharacter(character);
+	}
+	
 	public void setSelected(boolean selected) {
 		this.selected = selected;
 	}
@@ -59,6 +64,6 @@ public class CharacterButton extends Button {
 		screen.blit(backgrounds[isSelected() ? 2 : (isPressed() || hasFocus ? 1 : 0)], getX(),
 				getY());
 		screen.blit(characterArt, getX() + (WIDTH - characterArt.w) / 2, getY() + 8);
-		Font.defaultFont().draw(screen, getLabel(), getX() + WIDTH / 2, getY() + HEIGHT - 12, Font.Align.CENTERED);
+		Font.defaultFont().draw(screen, label, getX() + WIDTH / 2, getY() + HEIGHT - 12, Font.Align.CENTERED);
 	}
 }

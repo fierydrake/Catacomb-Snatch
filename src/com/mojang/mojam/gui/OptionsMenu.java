@@ -2,82 +2,70 @@ package com.mojang.mojam.gui;
 
 import java.awt.event.KeyEvent;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.Options;
+import com.mojang.mojam.gameview.GameView;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
 public class OptionsMenu extends GuiMenu {
 
 	private boolean creative;
-    private boolean inGame;
-    private int gameWidth;
-    private int gameHeight;
 
 	private int textY;
-
-	private Button key_bindings;
-	private Button character_select;
-	private Button sound_and_video;
-	private Button locale;
-	private Checkbox creativeModeBtn;
-	private Button credits;
+	
 	private Button back;
 
-	public void changeLocale() {
-		key_bindings.setLabel(MojamComponent.texts.getStatic("options.keyBindings"));
-		if (!inGame) {
-			character_select.setLabel(MojamComponent.texts.getStatic("options.characterSelect"));
-		}
-		sound_and_video.setLabel(MojamComponent.texts.getStatic("options.sound_and_video"));
-		locale.setLabel(MojamComponent.texts.getStatic("options.locale_selection"));
-		creativeModeBtn.setLabel(MojamComponent.texts.getStatic("options.creative"));
-		credits.setLabel(MojamComponent.texts.getStatic("options.credits"));
-		back.setLabel(MojamComponent.texts.getStatic("back"));
-	}
-
-	public OptionsMenu(boolean inGame) {
+	public OptionsMenu() {
 		loadOptions();
-		
-		this.inGame = inGame;
 
-		gameWidth = MojamComponent.GAME_WIDTH;
-		gameHeight = MojamComponent.GAME_HEIGHT;
 		int offset = 32;
-		int xOffset = (gameWidth - Button.BUTTON_WIDTH) / 2;
-		int yOffset = (gameHeight - (7 * offset + 20 + (offset * 2))) / 2;
+		int xOffset = (GameView.WIDTH- Button.WIDTH) / 2;
+		int yOffset = (GameView.HEIGHT - (7 * offset + 20 + (offset * 2))) / 2;
 		textY = yOffset;
 		yOffset += offset;
 
-		key_bindings = (Button) addButton(new Button(TitleMenu.KEY_BINDINGS_ID, MojamComponent.texts.getStatic("options.keyBindings"), xOffset, yOffset));
-		if (!inGame) {
-			character_select = (Button) addButton(new Button(TitleMenu.CHARACTER_ID, MojamComponent.texts.getStatic("options.characterSelect"), xOffset, yOffset += offset));
+		addButton(new Button("options.keyBindings", xOffset, yOffset)).addListener(new ButtonAdapter() {
+			@Override
+			public void buttonPressed(ClickableComponent button) {
+				menus.push(new KeyBindingsMenu());
+			}
+		});
+		if (logic().isPlayingLevel()) {
+			addButton(new Button("options.characterSelect", xOffset, yOffset += offset)).addListener(new ButtonAdapter() {
+				@Override
+				public void buttonPressed(ClickableComponent button) {
+					menus.push(new CharacterSelectionMenu());
+				}				
+			});
 		}
-		sound_and_video = (Button) addButton(new Button(TitleMenu.AUDIO_VIDEO_ID, MojamComponent.texts.getStatic("options.sound_and_video"), xOffset, yOffset += offset));
-		locale = (Button) addButton(new Button(TitleMenu.LOCALE_ID, MojamComponent.texts.getStatic("options.locale_selection"), xOffset, yOffset += offset));
-		creativeModeBtn = (Checkbox) addButton(new Checkbox(TitleMenu.CREATIVE_ID, MojamComponent.texts.getStatic("options.creative"), xOffset, yOffset += offset, Options.getAsBoolean(Options.CREATIVE, Options.VALUE_FALSE)));
-		credits = (Button) addButton(new Button(TitleMenu.CREDITS_ID, MojamComponent.texts.getStatic("options.credits"), xOffset, yOffset += offset));
-		back = (Button) addButton(new Button(TitleMenu.BACK_ID, MojamComponent.texts.getStatic("back"), xOffset, (yOffset += offset) + 20));
-
-		creativeModeBtn.addListener(new ButtonListener() {
+		addButton(new Button("options.sound_and_video", xOffset, yOffset += offset)).addListener(new ButtonAdapter() {
+			@Override
+			public void buttonPressed(ClickableComponent button) {
+				menus.push(new AudioVideoMenu());
+			}
+		});
+		addButton(new Button("options.locale_selection", xOffset, yOffset += offset)).addListener(new ButtonAdapter() {
+			@Override
+			public void buttonPressed(ClickableComponent button) {
+				menus.push(new LocaleMenu());
+			}
+		});
+		addButton(new Checkbox("options.creative", xOffset, yOffset += offset, Options.getAsBoolean(Options.CREATIVE, Options.VALUE_FALSE))).addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
 				creative = !creative;
 				Options.set(Options.CREATIVE, creative);
 			}
-			@Override
-			public void buttonHovered(ClickableComponent clickableComponent) {
-			}
 		});
-		back.addListener(new ButtonListener() {
+		addButton(new Button("options.credits", xOffset, yOffset += offset)).addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
-				Options.saveProperties();
-			}
-			@Override
-			public void buttonHovered(ClickableComponent clickableComponent) {
+				menus.push(new CreditsScreen());
 			}
 		});
+		back = (Button)addButton(new Button("back", xOffset, (yOffset += offset) + 20));
+		back.addListener(menus.BACK_BUTTON_LISTENER);
 	}
 
 	private void loadOptions() {
@@ -87,16 +75,15 @@ public class OptionsMenu extends GuiMenu {
 	@Override
 	public void render(Screen screen) {
 	    
-	    if( ! inGame) {
-	        screen.blit(Art.background, 0, 0);
+	    if(logic().isPlayingLevel()) {
+	    	screen.alphaFill(0, 0, screen.w, screen.h, 0xff000000, 0x30);
 	    } else {
-	        screen.alphaFill(0, 0, gameWidth, gameHeight, 0xff000000, 0x30);
+	    	screen.blit(Art.background, 0, 0);
 	    }
 		
-		
 		super.render(screen);
-		Font.defaultFont().draw(screen, MojamComponent.texts.getStatic("titlemenu.options"),
-				MojamComponent.GAME_WIDTH / 2, textY, Font.Align.CENTERED);
+		Font.defaultFont().draw(screen, Texts.current().getStatic("titlemenu.options"),
+				screen.w / 2, textY, Font.Align.CENTERED);
 		screen.blit(Art.getLocalPlayerArt()[0][6], buttons.get(selectedItem).getX() - 40, buttons
 				.get(selectedItem).getY() - 8);
 	}
@@ -105,9 +92,6 @@ public class OptionsMenu extends GuiMenu {
 	public void buttonPressed(ClickableComponent button) {}
 	
 	@Override
-	public void keyTyped(KeyEvent e) {}
-
-	@Override
 	public void keyPressed(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 			back.postClick();
@@ -115,7 +99,4 @@ public class OptionsMenu extends GuiMenu {
 			super.keyPressed(e);
 		}		
 	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {}
 }

@@ -3,7 +3,6 @@ package com.mojang.mojam.entity.building;
 import java.awt.Color;
 import java.util.Random;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.animation.SmokeAnimation;
@@ -143,7 +142,7 @@ public class Harvester extends Building implements LootCollector {
 	@Override
 	public void render(Screen screen) {
 		
-		if((justDroppedTicks-- > 0 || highlight) && MojamComponent.localTeam==team) {
+		if((justDroppedTicks-- > 0 || highlight) && logic().getLocalPlayer().team == team) { // TODO Check this
 			drawRadius(screen);
 		}
 		
@@ -154,7 +153,7 @@ public class Harvester extends Building implements LootCollector {
 			screen.colorBlit(image, pos.x - image.w / 2, pos.y - image.h / 2 - yOffs, 0x77ff7200);
 		}
 		
-		if(team ==MojamComponent.localTeam && !isCarried()) {
+		if(team == logic().getLocalPlayer().team && !isCarried()) { // TODO Check this
 			addMoneyBar(screen);
 		}
 		

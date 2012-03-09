@@ -3,22 +3,21 @@ package com.mojang.mojam.gui;
 import java.awt.event.KeyEvent;
 
 import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.MojamComponent;
+import com.mojang.mojam.gameview.GameView;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
 public class WinMenu extends GuiMenu {
-	private final int gameWidth;
 	private int winningPlayer;
 	private GameCharacter character;
 
-	public WinMenu(int gameWidth, int gameHeight, int winningPlayer, GameCharacter character) {
+	public WinMenu(int winningPlayer, GameCharacter character) {
 		super();
 		this.winningPlayer = winningPlayer;
-		this.gameWidth = gameWidth;
 		this.character = character;
 
-		addButton(new Button(TitleMenu.RETURN_TO_TITLESCREEN, "Ok", (gameWidth - 128) / 2, 200));
+		addButton(new Button("Ok", (GameView.WIDTH - 128) / 2, 200)); // TODO: TitleMenu.RETURN_TO_TITLESCREEN
 	}
 
 	@Override
@@ -26,11 +25,11 @@ public class WinMenu extends GuiMenu {
 		screen.clear(0);
 		screen.blit(Art.gameOverScreen, 0, 0);
 
-		Font.defaultFont().draw(screen, MojamComponent.texts.winCharacter(winningPlayer, character), 180, 160);
+		Font.defaultFont().draw(screen, Texts.current().winCharacter(winningPlayer, character), 180, 160);
 
 		super.render(screen);
 
-		screen.blit(Art.getPlayer(character)[0][6], (gameWidth - 128) / 2 - 40, 190 + selectedItem * 40);
+		screen.blit(Art.getPlayer(character)[0][6], (screen.w - 128) / 2 - 40, 190 + selectedItem * 40);
 	}
 
 	@Override

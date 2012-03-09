@@ -2,7 +2,6 @@ package com.mojang.mojam.entity.building;
 
 import java.util.Set;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.animation.LargeBombExplodeAnimation;
 import com.mojang.mojam.entity.mob.Mob;
@@ -39,7 +38,7 @@ public class Bomb extends Building {
 	@Override
 	public void die() {
 		level.addEntity(new LargeBombExplodeAnimation(pos.x, pos.y));
-		MojamComponent.soundPlayer.playSound("/sound/Explosion 2.wav",
+		sound.playSound("/sound/Explosion 2.wav",
 				(float) pos.x, (float) pos.y);
 
 		Set<Entity> entities = level.getEntities(pos.x - BOMB_DISTANCE, pos.y

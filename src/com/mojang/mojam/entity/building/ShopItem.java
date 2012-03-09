@@ -1,12 +1,12 @@
 package com.mojang.mojam.entity.building;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.Notifications;
 import com.mojang.mojam.level.DifficultyInformation;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
 
@@ -35,9 +35,9 @@ public abstract class ShopItem extends Building {
     @Override
     public void render(Screen screen) {
         super.render(screen);
-        if(team == MojamComponent.localTeam) {
+        if(team == logic().getLocalPlayer().team) { // TODO Check this
         	//Render the Cost text
-            Font.defaultFont().draw(screen, MojamComponent.texts.cost(effectiveCost),
+            Font.defaultFont().draw(screen, Texts.current().cost(effectiveCost),
             		(int) (pos.x), (int) (pos.y + 10), Font.Align.CENTERED);
         }
         renderInfo(screen);
@@ -72,7 +72,7 @@ public abstract class ShopItem extends Building {
 	}
     
     private String[] getTooltip() {
-        return MojamComponent.texts.shopTooltipLines(name);
+        return Texts.current().shopTooltipLines(name);
     }
 	
 	private int getLongestWidth(String[] string, Font font) {
@@ -116,8 +116,8 @@ public abstract class ShopItem extends Building {
             	useAction(player);
             }
             else if (player.getScore() < effectiveCost) {
-            	if(this.team == MojamComponent.localTeam) {
-            		 Notifications.getInstance().add(MojamComponent.texts.upgradeNotEnoughMoney(effectiveCost));
+            	if(this.team == logic().getLocalPlayer().team) { // TODO Check this
+            		 Notifications.getInstance().add(Texts.current().upgradeNotEnoughMoney(effectiveCost));
             	}
                
             }
@@ -133,9 +133,9 @@ public abstract class ShopItem extends Building {
     
     @Override
     public boolean upgrade(Player p) {
-        if (this.team == MojamComponent.localTeam) {
+        if (this.team == logic().getLocalPlayer().team) { // TODO Check this
             Notifications.getInstance().add(
-                    MojamComponent.texts.getStatic("upgrade.shopItem"));
+            		Texts.current().getStatic("upgrade.shopItem"));
         }
         return false;
     }   

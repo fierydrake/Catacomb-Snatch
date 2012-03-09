@@ -3,15 +3,34 @@ package com.mojang.mojam.resources;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
 import com.mojang.mojam.GameCharacter;
+import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.mob.Team;
 
 public class Texts {
 	protected final Properties texts;
 	protected final Properties fallbackTexts;
+	
+	private static Texts current = new Texts(new Locale(Options.get(Options.LOCALE, "en")));
+	public static Texts current() { return current; }
+	public static void setLocale(String localeName) { setLocale(new Locale(localeName)); }
+	public static void setLocale(Locale locale) {
+		current = new Texts(locale); 
+		fireLocaleChanged();
+	}
+	private static List<LocaleChangeListener> listeners = new ArrayList<LocaleChangeListener>();
+	public static void addLocaleListener(LocaleChangeListener listener) { listeners.add(listener); }
+	public static void removeLocaleListener(LocaleChangeListener listener) { listeners.remove(listener); }
+	private static void fireLocaleChanged() {
+		for (LocaleChangeListener listener : listeners) {
+			listener.localeChanged();
+		}
+	}
 
 	public Texts(Locale locale) {
 		InputStream stream;

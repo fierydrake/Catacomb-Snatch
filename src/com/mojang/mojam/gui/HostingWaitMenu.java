@@ -8,7 +8,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.mojang.mojam.MojamComponent;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
@@ -21,7 +21,8 @@ public class HostingWaitMenu extends GuiMenu {
 	public HostingWaitMenu() {
 		super();
 
-		cancelButton = (Button) addButton(new Button(TitleMenu.CANCEL_JOIN_ID, MojamComponent.texts.getStatic("cancel"), 364, 335));
+		cancelButton = (Button) addButton(new Button("cancel", 364, 335));
+		cancelButton.addListener(new ButtonAdapter() {}); // TODO CANCEL JOIN
 
 		searchIpLAN();
 		searchIpWAN();
@@ -33,9 +34,9 @@ public class HostingWaitMenu extends GuiMenu {
 		screen.clear(0);
 		screen.blit(Art.emptyBackground, 0, 0);
 		Font font = Font.defaultFont();
-		font.draw(screen, MojamComponent.texts.getStatic("mp.waitingForClient"), 100, 100);
-		font.draw(screen, MojamComponent.texts.getStatic("mp.localIP") + myIpLAN, 100, 120);
-		font.draw(screen, MojamComponent.texts.getStatic("mp.externalIP") + myIpWAN, 100, 140);
+		font.draw(screen, Texts.current().getStatic("mp.waitingForClient"), 100, 100);
+		font.draw(screen, Texts.current().getStatic("mp.localIP") + myIpLAN, 100, 120);
+		font.draw(screen, Texts.current().getStatic("mp.externalIP") + myIpWAN, 100, 140);
 
 		super.render(screen);
 	}

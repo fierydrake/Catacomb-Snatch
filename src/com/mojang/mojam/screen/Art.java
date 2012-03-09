@@ -7,8 +7,8 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.MojamComponent;
 
 /**
  * Art management class
@@ -59,7 +59,7 @@ public class Art {
 	}
 	
 	public static Bitmap[][] getLocalPlayerArt() {
-		return getPlayer(MojamComponent.instance.playerCharacter);
+		return getPlayer(GameCharacter.LordLard);// FIXME MojamComponent.instance.playerCharacter);
 	}
 	
     public static Bitmap exclamation_mark = load ("/art/effects/exclamation_mark.png");
@@ -201,8 +201,7 @@ public class Art {
      */
 	private static Bitmap[][] cut(String string, int w, int h, int bx, int by) {
 		try {
-			BufferedImage bi = ImageIO.read(MojamComponent.class
-					.getResource(string));
+			BufferedImage bi = ImageIO.read(CatacombSnatch.class.getResource(string));
 
 			int xTiles = (bi.getWidth() - bx) / w;
 			int yTiles = (bi.getHeight() - by) / h;
@@ -226,7 +225,7 @@ public class Art {
 
     private static Bitmap[][] cutv(String string, int h) {
         try {
-            BufferedImage bi = ImageIO.read(MojamComponent.class.getResource(string));
+            BufferedImage bi = ImageIO.read(CatacombSnatch.class.getResource(string));
 
             int yTiles = bi.getHeight() / h;
 
@@ -305,7 +304,7 @@ public class Art {
 	 */
 	private static Bitmap load(String string) {
 		try {
-			BufferedImage bi = ImageIO.read(MojamComponent.class
+			BufferedImage bi = ImageIO.read(CatacombSnatch.class
 					.getResource(string));
 
 			int w = bi.getWidth();
@@ -330,8 +329,7 @@ public class Art {
 	 */
 	private static BufferedImage loadBufferedImage(String string) {
 		try {
-			BufferedImage bi = ImageIO.read(MojamComponent.class
-					.getResource(string));
+			BufferedImage bi = ImageIO.read(CatacombSnatch.class.getResource(string));
 			return bi;
 		} catch (IOException e) {
 			e.printStackTrace();

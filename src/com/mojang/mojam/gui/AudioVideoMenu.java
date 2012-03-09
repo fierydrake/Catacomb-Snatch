@@ -1,14 +1,11 @@
 package com.mojang.mojam.gui;
 
-import java.awt.event.KeyEvent;
-
-import paulscode.sound.SoundSystem;
-
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.Options;
+import com.mojang.mojam.gamesound.GameSound;
+import com.mojang.mojam.gameview.GameView;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
-import com.mojang.mojam.sound.ISoundPlayer;
 
 public class AudioVideoMenu extends GuiMenu {
 	private boolean fullscreen;
@@ -16,97 +13,72 @@ public class AudioVideoMenu extends GuiMenu {
 	private float musicVolume;
 	private float soundsVolume;
 	private float volume;
-	private int gameWidth;
-	private int gameHeight;
 
-    private boolean inGame;
 	private int textY;
 
 	private Button back;
-	private ClickableComponent fullscreenBtn;
-	private ClickableComponent fpsBtn;
-	private ClickableComponent soundVol;
-	private ClickableComponent musicVol;
-	private ClickableComponent soundsVol;
+	private Checkbox fullscreenBtn;
+	private Checkbox fpsBtn;
+	private Slider soundVol;
+	private Slider musicVol;
+	private Slider soundsVol;
 
-	public AudioVideoMenu(boolean inGame) {
-
-		loadOptions();
+	public AudioVideoMenu() {
+		super();
 		
-		this.inGame = inGame;
+		loadOptions();
 
-		gameWidth = MojamComponent.GAME_WIDTH;
-		gameHeight = MojamComponent.GAME_HEIGHT;
 		int offset = 32;
-		int xOffset = (gameWidth - Button.BUTTON_WIDTH) / 2;
-		int yOffset = (gameHeight - (7 * offset + 20 + (offset * 2))) / 2;
+		int xOffset = (GameView.WIDTH - Button.WIDTH) / 2;
+		int yOffset = (GameView.HEIGHT - (7 * offset + 20 + (offset * 2))) / 2;
 		textY = yOffset;
 		yOffset += offset;
 
-		fullscreenBtn = (ClickableComponent) addButton(new Checkbox(TitleMenu.FULLSCREEN_ID, MojamComponent.texts.getStatic("options.fullscreen"), xOffset, yOffset += offset, Options.getAsBoolean(Options.FULLSCREEN, Options.VALUE_FALSE)));
-		fpsBtn = (ClickableComponent) addButton(new Checkbox(TitleMenu.FPS_ID, MojamComponent.texts.getStatic("options.showfps"), xOffset, yOffset += offset, Options.getAsBoolean(Options.DRAW_FPS, Options.VALUE_FALSE)));
-		soundVol = (ClickableComponent) addButton(new Slider(TitleMenu.VOLUME, MojamComponent.texts.getStatic("options.volume"), xOffset, yOffset += offset, volume));
-		musicVol = (ClickableComponent) addButton(new Slider(TitleMenu.MUSIC, MojamComponent.texts.getStatic("options.music"), xOffset - xOffset / 3 - 20, yOffset += offset, musicVolume));
-		soundsVol = (ClickableComponent) addButton(new Slider(TitleMenu.SOUND, MojamComponent.texts.getStatic("options.sounds"), xOffset + xOffset / 3 + 20, yOffset, soundsVolume));
+		fullscreenBtn = (Checkbox) addButton(new Checkbox("options.fullscreen", xOffset, yOffset += offset, Options.getAsBoolean(Options.FULLSCREEN, Options.VALUE_FALSE)));
+		fpsBtn = (Checkbox) addButton(new Checkbox("options.showfps", xOffset, yOffset += offset, Options.getAsBoolean(Options.DRAW_FPS, Options.VALUE_FALSE)));
+		soundVol = (Slider) addButton(new Slider("options.volume", xOffset, yOffset += offset, volume));
+		musicVol = (Slider) addButton(new Slider("options.music", xOffset - xOffset / 3 - 20, yOffset += offset, musicVolume));
+		soundsVol = (Slider) addButton(new Slider("options.sounds", xOffset + xOffset / 3 + 20, yOffset, soundsVolume));
 
-		back = (Button) addButton(new Button(TitleMenu.BACK_ID, MojamComponent.texts.getStatic("back"), xOffset, (yOffset += offset) + 20));
+		back = (Button) addButton(new Button("back", xOffset, (yOffset += offset) + 20));
+		back.addListener(menus.BACK_BUTTON_LISTENER);
 
-		fullscreenBtn.addListener(new ButtonListener() {
+		fullscreenBtn.addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
 				fullscreen = !fullscreen;
 				Options.set(Options.FULLSCREEN, fullscreen);
-				MojamComponent.toggleFullscreen();
-			}
-
-			@Override
-			public void buttonHovered(ClickableComponent clickableComponent) {
+				//toggleFullscreen(); // FIXME
 			}
 		});
-		fpsBtn.addListener(new ButtonListener() {
+		fpsBtn.addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
 				fps = !fps;
 				Options.set(Options.DRAW_FPS, fps);
 			}
-
-			@Override
-			public void buttonHovered(ClickableComponent clickableComponent) {
-			}
 		});
-		soundVol.addListener(new ButtonListener() {
+		soundVol.addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
 				Slider slider = (Slider) button;
 				volume = slider.value;
 
 				Options.set(Options.VOLUME, volume + "");
-				SoundSystem soundSystem = MojamComponent.soundPlayer.getSoundSystem();
-				if (soundSystem != null)
-					soundSystem.setMasterVolume(slider.value);
-			}
-
-			@Override
-			public void buttonHovered(ClickableComponent clickableComponent) {
+				sound.setMasterVolume(slider.value);
 			}
 		});
-		musicVol.addListener(new ButtonListener() {
+		musicVol.addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
 				Slider slider = (Slider) button;
 				musicVolume = slider.value;
 
 				Options.set(Options.MUSIC, musicVolume + "");
-				SoundSystem soundSystem = MojamComponent.soundPlayer.getSoundSystem();
-				if (soundSystem != null)
-					soundSystem.setVolume(ISoundPlayer.BACKGROUND_TRACK, slider.value);
-			}
-
-			@Override
-			public void buttonHovered(ClickableComponent clickableComponent) {
+				sound.setVolume(GameSound.BACKGROUND_TRACK, slider.value);
 			}
 		});
-		soundsVol.addListener(new ButtonListener() {
+		soundsVol.addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
 				Slider slider = (Slider) button;
@@ -114,18 +86,11 @@ public class AudioVideoMenu extends GuiMenu {
 
 				Options.set(Options.SOUND, soundsVolume + "");
 			}
-
-			@Override
-			public void buttonHovered(ClickableComponent clickableComponent) {
-			}
 		});
-		back.addListener(new ButtonListener() {
+		back.addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
 				Options.saveProperties();
-			}
-			@Override
-			public void buttonHovered(ClickableComponent clickableComponent) {
 			}
 		});
 	}
@@ -141,31 +106,18 @@ public class AudioVideoMenu extends GuiMenu {
 	@Override
 	public void render(Screen screen) {
 
-		if (!inGame) {
-			screen.blit(Art.background, 0, 0);
+		if (logic().isPlayingLevel()) {
+			screen.alphaFill(0, 0, screen.w, screen.h, 0xff000000, 0x30);
 		} else {
-			screen.alphaFill(0, 0, gameWidth, gameHeight, 0xff000000, 0x30);
+			screen.blit(Art.background, 0, 0);
 		}
 
 		super.render(screen);
-		Font.defaultFont().draw(screen, MojamComponent.texts.getStatic("titlemenu.sound_and_video"), MojamComponent.GAME_WIDTH / 2, textY, Font.Align.CENTERED);
+		Font.defaultFont().draw(screen, Texts.current().getStatic("titlemenu.sound_and_video"), screen.w / 2, textY, Font.Align.CENTERED);
 		screen.blit(Art.getLocalPlayerArt()[0][6], buttons.get(selectedItem).getX() - 40, buttons.get(selectedItem).getY() - 8);
 	}
 
 	@Override
 	public void buttonPressed(ClickableComponent button) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void keyReleased(KeyEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void keyTyped(KeyEvent arg0) {
-		// TODO Auto-generated method stub
 	}
 }

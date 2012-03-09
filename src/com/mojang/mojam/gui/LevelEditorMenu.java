@@ -10,7 +10,6 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.building.SpawnerForBat;
@@ -27,6 +26,7 @@ import com.mojang.mojam.entity.mob.Pharao;
 import com.mojang.mojam.entity.mob.Scarab;
 import com.mojang.mojam.entity.mob.Snake;
 import com.mojang.mojam.entity.mob.SpikeTrap;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.IEditable;
 import com.mojang.mojam.level.LevelInformation;
 import com.mojang.mojam.level.LevelList;
@@ -38,6 +38,7 @@ import com.mojang.mojam.level.tile.SandTile;
 import com.mojang.mojam.level.tile.UnbreakableRailTile;
 import com.mojang.mojam.level.tile.UnpassableSandTile;
 import com.mojang.mojam.level.tile.WallTile;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
@@ -145,7 +146,14 @@ public class LevelEditorMenu extends GuiMenu {
         updateLevels();
         
         // loads first level on the list
-        openLevel(levels.get(selectedLevel));
+
+        try {
+		    openLevel(levels.get(selectedLevel));
+		} catch (IOException e) {
+			// FIXME Should show a user facing error (GuiError?)
+			System.err.println("Sorry, could not open level");
+			e.printStackTrace();
+		}
 
         addButtonListener(this);
     }
@@ -175,8 +183,8 @@ public class LevelEditorMenu extends GuiMenu {
 
         // move level x with mouse
         if (mouseButtons.getX() - MENU_WIDTH > MENU_WIDTH) {
-            if (pencilX + TILE_WIDTH > MojamComponent.GAME_WIDTH
-                    && -(mapX - MENU_WIDTH) < mapW - (MojamComponent.GAME_WIDTH - MENU_WIDTH) + TILE_HEIGHT) {
+            if (pencilX + TILE_WIDTH > GameView.WIDTH
+                    && -(mapX - MENU_WIDTH) < mapW - (GameView.WIDTH - MENU_WIDTH) + TILE_HEIGHT) {
                 mapX -= TILE_WIDTH / 2;
             } else if (pencilX < MENU_WIDTH && mapX < MENU_WIDTH + 32) {
                 mapX += TILE_WIDTH / 2;
@@ -184,8 +192,8 @@ public class LevelEditorMenu extends GuiMenu {
         }
         
         // move level y with mouse
-        if (pencilY + TILE_HEIGHT > MojamComponent.GAME_HEIGHT
-                && -mapY < mapH - MojamComponent.GAME_HEIGHT + TILE_HEIGHT) {
+        if (pencilY + TILE_HEIGHT > GameView.HEIGHT
+                && -mapY < mapH - GameView.HEIGHT + TILE_HEIGHT) {
             mapY -= TILE_HEIGHT / 2;
         } else if (pencilY < 0 && mapY < TILE_HEIGHT) {
             mapY += TILE_HEIGHT / 2;
@@ -379,46 +387,36 @@ public class LevelEditorMenu extends GuiMenu {
        addText(levelName);
     }
 
-    private void openLevel(LevelInformation li) {
-        BufferedImage bufferedImage = null;
-        
-        try {
-            if (li.vanilla) {
-                bufferedImage = ImageIO.read(MojamComponent.class.getResource(li.getPath()));
-            } else {
-                bufferedImage = ImageIO.read(new File(li.getPath()));
-            }
-        } catch (IOException ioe) {
-        }
+    private void openLevel(LevelInformation li) throws IOException {
+    	newLevel();
 
-        int w = bufferedImage.getWidth();
-        int h = bufferedImage.getHeight();
+		BufferedImage bufferedImage = ImageIO.read(li.getURL());
+		int w = bufferedImage.getWidth();
+		int h = bufferedImage.getHeight();
+		
+		int[] rgbs = new int[w * h];
+		
+		bufferedImage.getRGB(0, 0, w, h, rgbs, 0, w);
 
-        int[] rgbs = new int[w * h];
+		removeText(levelName);
+		levelName = new Text(1, li.levelName, 120, 5);
+		addText(levelName);
 
-        bufferedImage.getRGB(0, 0, w, h, rgbs, 0, w);
+		for (int y = 0; y < h; y++) {
+			for (int x = 0; x < w; x++) {
+				int col = rgbs[x + y * w] & 0xffffffff;
 
-        newLevel();
-        
-	removeText(levelName);
-        levelName = new Text(1, li.levelName, 120, 5);
-        addText(levelName);
-        
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                int col = rgbs[x + y * w] & 0xffffffff;
+				IEditable tile = LevelUtils.getNewTileFromColor(col);
+				draw(tile, x, y);
 
-                IEditable tile = LevelUtils.getNewTileFromColor(col);
-                draw(tile, x, y);
-
-                if (tile instanceof FloorTile) {
-                    Entity entity = LevelUtils.getNewEntityFromColor(col, x, y);
-                    if (entity instanceof IEditable) {
-                        draw((IEditable) entity, x, y);
-                    }
-                }
-            }
-        }
+				if (tile instanceof FloorTile) {
+					Entity entity = LevelUtils.getNewEntityFromColor(col, x, y);
+					if (entity instanceof IEditable) {
+						draw((IEditable) entity, x, y);
+					}
+				}
+			}
+		}
     }
     
     private boolean saveLevel(String name) {
@@ -450,7 +448,7 @@ public class LevelEditorMenu extends GuiMenu {
         levelName = new Text(1,"", 120, 5);
         
         // map clickable component
-        editorComponent = addButton(new ClickableComponent(MENU_WIDTH, 0, MojamComponent.GAME_WIDTH - MENU_WIDTH, MojamComponent.GAME_HEIGHT) {
+        editorComponent = addButton(new ClickableComponent(MENU_WIDTH, 0, GameView.WIDTH - MENU_WIDTH, GameView.HEIGHT) {
 
             @Override
             protected void clicked(MouseButtons mouseButtons) {
@@ -459,10 +457,10 @@ public class LevelEditorMenu extends GuiMenu {
         });
         
         // menu panel
-        addButton(new Panel(0, 0, MENU_WIDTH, MojamComponent.GAME_HEIGHT));
+        addButton(new Panel(0, 0, MENU_WIDTH, GameView.HEIGHT));
         
         // minimap panel
-        addButton(new Panel(MojamComponent.GAME_WIDTH - minimap.w - 11, 1, minimap.w + 10, minimap.w + 10));
+        addButton(new Panel(GameView.WIDTH - minimap.w - 11, 1, minimap.w + 10, minimap.w + 10));
         
         // save menu panel
         savePanel = new Panel(180, 120, 298, 105) {
@@ -470,7 +468,7 @@ public class LevelEditorMenu extends GuiMenu {
             @Override
             public void render(Screen screen) {
                 super.render(screen);
-                Font.defaultFont().draw(screen, MojamComponent.texts.getStatic("leveleditor.enterLevelName"),
+                Font.defaultFont().draw(screen, Texts.current().getStatic("leveleditor.enterLevelName"),
                         getX() + getWidth() / 2, getY() + 20, Font.Align.CENTERED);
                 Font.defaultFont().draw(screen, saveLevelName + "_",
                         getX() + getWidth() / 2, getY() + 40, Font.Align.CENTERED);
@@ -478,23 +476,18 @@ public class LevelEditorMenu extends GuiMenu {
         };
 
         // save menu buttons
-        confirmeSaveButton = new Button(-1, MojamComponent.texts.getStatic("leveleditor.save"), 195, 190);
-        cancelSaveButton = new Button(-1, MojamComponent.texts.getStatic("cancel"), 335, 190);
+        confirmeSaveButton = new Button("leveleditor.save", 195, 190);
+        cancelSaveButton = new Button("cancel", 335, 190);
 
         // actions buttons
-        int startY = (MojamComponent.GAME_HEIGHT - 5) - 26 * 5;
-        prevPageButton = (Button) addButton(new Button(-1, "(",
-                7, startY, 30, Button.BUTTON_HEIGHT));
-        nextPageButton = (Button) addButton(new Button(-1, ")",
-                MENU_WIDTH - 37, startY, 30, Button.BUTTON_HEIGHT));
-        newButton = (Button) addButton(new Button(-1, MojamComponent.texts.getStatic("leveleditor.new"),
-                7, startY += 26));
-        openButton = (Button) addButton(new Button(-1, MojamComponent.texts.getStatic("leveleditor.open"),
-                7, startY += 26));
-        saveButton = (Button) addButton(new Button(-1, MojamComponent.texts.getStatic("leveleditor.save"),
-                7, startY += 26));
-        cancelButton = (Button) addButton(new Button(TitleMenu.BACK_ID, MojamComponent.texts.getStatic("back"),
-                7, startY += 26));
+        int startY = (GameView.HEIGHT - 5) - 26 * 5;
+        prevPageButton = (Button) addButton(new Button("(", 7, startY, 30, Button.HEIGHT, false));
+        nextPageButton = (Button) addButton(new Button(")", MENU_WIDTH - 37, startY, 30, Button.HEIGHT, false));
+        newButton = (Button) addButton(new Button("leveleditor.new", 7, startY += 26));
+        openButton = (Button) addButton(new Button("leveleditor.open", 7, startY += 26));
+        saveButton = (Button) addButton(new Button("leveleditor.save", 7, startY += 26));
+        cancelButton = (Button) addButton(new Button("back", 7, startY += 26));
+        cancelButton.addListener(menus.BACK_BUTTON_LISTENER);
     }
     
     @Override
@@ -539,8 +532,13 @@ public class LevelEditorMenu extends GuiMenu {
                 newLevel();
             } else if (button == openButton) {
                 selectedLevel = (selectedLevel < levels.size() - 1 ? selectedLevel + 1 : 0);
-                openLevel(LevelList.getLevels().get(selectedLevel));
-                
+                try {
+                	openLevel(LevelList.getLevels().get(selectedLevel));
+                } catch (IOException e) {
+                	// FIXME Should show a user facing error (GuiError?)
+                	System.err.println("Sorry, could not open level");
+                	e.printStackTrace();
+                }
             } else if (button == saveButton) {
                 saveMenuVisible = true;
                 updateButtons = true;

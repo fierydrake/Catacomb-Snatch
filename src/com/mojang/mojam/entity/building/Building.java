@@ -1,6 +1,5 @@
 package com.mojang.mojam.entity.building;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.IUsable;
@@ -9,6 +8,7 @@ import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.gui.Notifications;
 import com.mojang.mojam.math.BB;
 import com.mojang.mojam.network.TurnSynchronizer;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
@@ -154,36 +154,36 @@ public abstract class Building extends Mob implements IUsable {
 	@Override
 	public boolean upgrade(Player p) {
 		if (upgradeLevel >= maxUpgradeLevel) {
-			MojamComponent.soundPlayer.playSound("/sound/Fail.wav",
+			sound.playSound("/sound/Fail.wav",
 					(float) pos.x, (float) pos.y, true);
-			if (this.team == MojamComponent.localTeam) {
+			if (this.team == logic().getLocalPlayer().team) { // TODO Check this
 				Notifications.getInstance().add(
-						MojamComponent.texts.getStatic("upgrade.full"));
+						Texts.current().getStatic("upgrade.full"));
 			}
 			return false;
 		}
 
 		final int cost = upgradeCosts[upgradeLevel];
 		if (cost > p.getScore() && !Options.getAsBoolean(Options.CREATIVE)) {
-			MojamComponent.soundPlayer.playSound("/sound/Fail.wav",
+			sound.playSound("/sound/Fail.wav",
 					(float) pos.x, (float) pos.y, true);
-			if (this.team == MojamComponent.localTeam) {
+			if (this.team == logic().getLocalPlayer().team) { // TODO Check this
 				Notifications.getInstance().add(
-						MojamComponent.texts.upgradeNotEnoughMoney(cost));
+						Texts.current().upgradeNotEnoughMoney(cost));
 			}
 			return false;
 		}
 
-		MojamComponent.soundPlayer.playSound("/sound/Upgrade.wav",
+		sound.playSound("/sound/Upgrade.wav",
 				(float) pos.x, (float) pos.y, true);
 
 		++upgradeLevel;
 		p.useMoney(cost);
 		upgradeComplete();
 
-		if (this.team == MojamComponent.localTeam) {
+		if (this.team == logic().getLocalPlayer().team) { // TODO Check this
 			Notifications.getInstance().add(
-					MojamComponent.texts.upgradeTo(upgradeLevel + 1));
+					Texts.current().upgradeTo(upgradeLevel + 1));
 		}
 		return true;
 	}

@@ -1,13 +1,11 @@
 package com.mojang.mojam.level.gamemode;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.building.ShopItemBomb;
 import com.mojang.mojam.entity.building.ShopItemHarvester;
@@ -29,13 +27,8 @@ public class GameMode {
 	protected Level newLevel;
 	
 	public Level generateLevel(LevelInformation li)  throws IOException {
-		BufferedImage bufferedImage;
 		//System.out.println("Loading level from file: "+li.getPath());
-		if(li.vanilla){
-			bufferedImage = ImageIO.read(MojamComponent.class.getResource(li.getPath()));
-		} else {
-			bufferedImage = ImageIO.read(new File(li.getPath()));
-		}
+		BufferedImage bufferedImage = ImageIO.read(li.getURL());
 		int w = bufferedImage.getWidth() + LEVEL_BORDER_SIZE;
 		int h = bufferedImage.getHeight() + LEVEL_BORDER_SIZE;
 		

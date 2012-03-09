@@ -2,6 +2,7 @@ package com.mojang.mojam.entity;
 
 import java.util.List;
 
+import com.mojang.mojam.SimpleGameElement;
 import com.mojang.mojam.entity.animation.LargeBombExplodeAnimation;
 import com.mojang.mojam.level.Level;
 import com.mojang.mojam.level.tile.Tile;
@@ -11,8 +12,7 @@ import com.mojang.mojam.math.Vec2;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
-public abstract class Entity implements BBOwner {
-
+public abstract class Entity extends SimpleGameElement implements BBOwner {
 	public Level level;
 	public boolean removed;
 	public Vec2 pos = new Vec2(0, 0);

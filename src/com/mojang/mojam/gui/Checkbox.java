@@ -4,31 +4,18 @@ import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
-public class Checkbox extends ClickableComponent {
-	private final int id;
-
-	private String label;
+public class Checkbox extends LabelledClickableComponent {
 	public boolean checked = false;
 
 	public static final int WIDTH = 140;
 	public static final int HEIGHT = 19;
 
-	public Checkbox(int id, String label, int x, int y) {
-		this(id, label, x, y, false);
+	public Checkbox(String label, int x, int y) {
+		this(label, x, y, false);
 	}
 
-    public int getId()
-    {
-        return id;
-    }
-    
-    public void setLabel(String label){
-    	this.label = label;
-    }
-	public Checkbox(int id, String label, int x, int y, boolean checked) {
-		super(x, y, 128, 24);
-		this.id = id;
-		this.label = label;
+	public Checkbox(String staticTextsID, int x, int y, boolean checked) {
+		super(x, y, 128, 24, staticTextsID);
 		this.checked = checked;
 	}
 

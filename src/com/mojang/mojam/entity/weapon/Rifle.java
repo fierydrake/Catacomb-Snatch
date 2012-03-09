@@ -1,14 +1,14 @@
 package com.mojang.mojam.entity.weapon;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.Options;
+import com.mojang.mojam.SimpleGameElement;
 import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.network.TurnSynchronizer;
 
-public class Rifle implements IWeapon {
+public class Rifle extends SimpleGameElement implements IWeapon {
 
 	protected Mob owner;
 	protected static float BULLET_DAMAGE;
@@ -70,7 +70,7 @@ public class Rifle implements IWeapon {
 			
 			currentShootDelay = shootDelay;
 			readyToShoot= false;
-			MojamComponent.soundPlayer.playSound("/sound/Shot 1.wav",
+			sound.playSound("/sound/Shot 1.wav",
 					(float) owner.getPosition().x, (float) owner.getPosition().y);
 		}		
 	}

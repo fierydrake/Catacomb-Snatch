@@ -2,10 +2,10 @@ package com.mojang.mojam.gui;
 
 import java.awt.event.KeyEvent;
 
-import com.mojang.mojam.InputHandler;
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.Keys;
 import com.mojang.mojam.Keys.Key;
-import com.mojang.mojam.MojamComponent;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
@@ -13,46 +13,21 @@ import com.mojang.mojam.screen.Screen;
 public class KeyBindingsMenu extends GuiMenu {
 
 	class KeyBindingButton extends Button {
-
-		private final int MAX_LABEL_LENGTH = 13;
-
 		private Key key;
 		private boolean selected = false;
 
-		public KeyBindingButton(int id, Key key, int x, int y) {
-			super(id, null, x, y);
-			this.setLabel(getMenuText(key));
+		public KeyBindingButton(Key key, int x, int y) {
+			super(getMenuText(key), x, y, false);
 			this.key = key;
+		}
+		
+		@Override
+		public String labelText() {
+			return getMenuText(key);
 		}
 
 		public Key getKey() {
 			return key;
-		}
-
-		@Override
-		public String getLabel() {
-			String label = super.getLabel();
-			if (selected) {
-				label = label.substring(1, label.length() - 1);
-			}
-			return label;
-		}
-
-		@Override
-		public void setLabel(String label) {
-			if (selected) {
-				super.setLabel("-" + trimToFitButton(label) + "-");
-			} else {
-				super.setLabel(trimToFitButton(label));
-			}
-		}
-
-		public String trimToFitButton(String label) {
-			if (label.length() > MAX_LABEL_LENGTH) {
-				return label.substring(0, MAX_LABEL_LENGTH - 2) + "...";
-			} else {
-				return label;
-			}
 		}
 
 		public boolean isSelected() {
@@ -60,13 +35,16 @@ public class KeyBindingsMenu extends GuiMenu {
 		}
 
 		public void setSelected(boolean selected) {
-			String label = getLabel();
 			this.selected = selected;
-			setLabel(label);
 		}
 		
 		public void refresh() {
-			this.setLabel(getMenuText(key));
+			updateLabel();
+		}
+		
+		@Override
+		protected void blitBackground(Screen screen, int bitmapId) {
+			super.blitBackground(screen, selected ? 1 : bitmapId);
 		}
 	}
 
@@ -79,62 +57,41 @@ public class KeyBindingsMenu extends GuiMenu {
 	private ClickableComponent back;
 	private KeyBindingButton selectedKey = null;
 
-	private Keys keys;
-	private InputHandler inputHandler;
-
-	public KeyBindingsMenu(Keys keys, InputHandler inputHandler) {
+	public KeyBindingsMenu() {
 		super();
-		this.keys = keys;
-		this.inputHandler = inputHandler;
 		addButtons();
 	}
 
 	private void addButtons() {
-		int gameWidth = MojamComponent.GAME_WIDTH;
-		int gameHeight = MojamComponent.GAME_HEIGHT;
-		textWidth = (gameWidth - 2 * BORDER - 2 * 32 - 2 * Button.BUTTON_WIDTH) / 2;
+		textWidth = (GameView.WIDTH - 2 * BORDER - 2 * 32 - 2 * Button.WIDTH) / 2;
 		int numRows = 6;
 		int tab1 = BORDER + 32 + textWidth;
-		int tab2 = gameWidth - BORDER - Button.BUTTON_WIDTH;
-		yOffset = (gameHeight - (numRows * BUTTON_SPACING + 32)) / 2;
+		int tab2 = GameView.WIDTH - BORDER - Button.WIDTH;
+		yOffset = (GameView.HEIGHT - (numRows * BUTTON_SPACING + 32)) / 2;
 
-		addButton(new KeyBindingButton(TitleMenu.KEY_UP_ID, keys.up, tab1, yOffset + 0
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_DOWN_ID, keys.down, tab1, yOffset + 1
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_LEFT_ID, keys.left, tab1, yOffset + 2
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_RIGHT_ID, keys.right, tab1, yOffset + 3
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_SPRINT_ID, keys.sprint, tab1, yOffset + 4
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_FIRE_ID, keys.fire, tab1, yOffset + 5
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_CONSOLE_ID, keys.console, tab1, yOffset + 6
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_FIRE_UP_ID, keys.fireUp, tab2, yOffset + 0
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_FIRE_DOWN_ID, keys.fireDown, tab2, yOffset + 1
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_FIRE_LEFT_ID, keys.fireLeft, tab2, yOffset + 2
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_FIRE_RIGHT_ID, keys.fireRight, tab2, yOffset + 3
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_BUILD_ID, keys.build, tab2, yOffset + 4
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_USE_ID, keys.use, tab2, yOffset + 5
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_UPGRADE_ID, keys.upgrade, tab2, yOffset + 6
-				* BUTTON_SPACING));
-		addButton(new KeyBindingButton(TitleMenu.KEY_CHAT_ID, keys.chat, tab2, yOffset + 7
-				* BUTTON_SPACING));
-		back = addButton(new Button(TitleMenu.BACK_ID, MojamComponent.texts.getStatic("back"),
-				(gameWidth - Button.BUTTON_WIDTH) / 2, yOffset + numRows * BUTTON_SPACING
-						- Button.BUTTON_HEIGHT + 88));
+		Keys keys = CatacombSnatch.input.getKeys();
+		addButton(new KeyBindingButton(keys.up, tab1, yOffset + 0 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.down, tab1, yOffset + 1 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.left, tab1, yOffset + 2 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.right, tab1, yOffset + 3 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.sprint, tab1, yOffset + 4 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.fire, tab1, yOffset + 5 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.console, tab1, yOffset + 6 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.fireUp, tab2, yOffset + 0 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.fireDown, tab2, yOffset + 1 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.fireLeft, tab2, yOffset + 2 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.fireRight, tab2, yOffset + 3 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.build, tab2, yOffset + 4 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.use, tab2, yOffset + 5 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.upgrade, tab2, yOffset + 6 * BUTTON_SPACING));
+		addButton(new KeyBindingButton(keys.chat, tab2, yOffset + 7	* BUTTON_SPACING));
+		back = addButton(new Button("back",	(GameView.WIDTH - Button.WIDTH) / 2, 
+				yOffset + numRows * BUTTON_SPACING - Button.HEIGHT + 88));
+		back.addListener(menus.BACK_BUTTON_LISTENER);
 	}
 
 	private String getMenuText(Key key) {
-		Integer keyEvent = inputHandler.getKeyEvent(key);
+		Integer keyEvent = CatacombSnatch.input.getInputHandler().getKeyEvent(key);
 		if (keyEvent != null && keyEvent != KeyEvent.VK_UNDEFINED) {
 			return KeyEvent.getKeyText(keyEvent);
 		}
@@ -145,8 +102,8 @@ public class KeyBindingsMenu extends GuiMenu {
 	@Override
 	public void render(Screen screen) {
 		screen.blit(Art.background, 0, 0);
-		Texts txts = MojamComponent.texts;
-		Font.defaultFont().draw(screen, txts.getStatic("options.keyBindings"), MojamComponent.GAME_WIDTH / 2, yOffset - 40, Font.Align.CENTERED);
+		Texts txts = Texts.current();
+		Font.defaultFont().draw(screen, txts.getStatic("options.keyBindings"), screen.w / 2, yOffset - 40, Font.Align.CENTERED);
 		write(screen, txts.getStatic("keys.up"), 0, 0);
 		write(screen, txts.getStatic("keys.down"), 0, 1);
 		write(screen, txts.getStatic("keys.left"), 0, 2);
@@ -175,7 +132,7 @@ public class KeyBindingsMenu extends GuiMenu {
 
 	private void write(Screen screen, String txt, int column, int row) {
 		Font.defaultFont().draw(screen, txt + ": ", BORDER + 32 + textWidth + column
-				* (Button.BUTTON_WIDTH + 32 + textWidth), yOffset
+				* (Button.WIDTH + 32 + textWidth), yOffset
 				+ 8 + row * BUTTON_SPACING, Font.Align.RIGHT);
 	}
 
@@ -196,8 +153,7 @@ public class KeyBindingsMenu extends GuiMenu {
 	@Override
 	public void keyPressed(KeyEvent e) {
 		if (selectedKey != null) {
-			inputHandler.addMapping(selectedKey.getKey(), e.getKeyCode());
-			selectedKey.setLabel(KeyEvent.getKeyText(e.getKeyCode()));
+			CatacombSnatch.input.getInputHandler().addMapping(selectedKey.getKey(), e.getKeyCode());
 			selectedKey.setSelected(false);
 			selectedKey = null;
 			refreshKeys();	
@@ -228,11 +184,4 @@ public class KeyBindingsMenu extends GuiMenu {
 				((KeyBindingButton)button).refresh();
 		}
 	}
-	
-	@Override
-	public void keyTyped(KeyEvent e) {}
-
-	@Override
-	public void keyReleased(KeyEvent e) {}
-
 }

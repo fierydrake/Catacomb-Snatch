@@ -1,6 +1,5 @@
 package com.mojang.mojam.entity;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.entity.building.Building;
 import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.screen.Art;
@@ -31,7 +30,7 @@ public class BulletPoison extends Bullet {
 			}
 		}
 		if (hit) {
-			MojamComponent.soundPlayer.playSound("/sound/Shot 2.wav", (float) pos.x, (float) pos.y);
+			sound.playSound("/sound/Shot 2.wav", (float) pos.x, (float) pos.y);
 		}
 	}
 	

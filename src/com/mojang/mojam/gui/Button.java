@@ -5,39 +5,31 @@ import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
 
-public class Button extends ClickableComponent {
+public class Button extends LabelledClickableComponent {
 
-    public static final int BUTTON_WIDTH = 128;
-    public static final int BUTTON_HEIGHT = 24;
+    public static final int WIDTH = 128;
+    public static final int HEIGHT = 24;
     
-	private final int id;
-
-	private String label;
-
     private Bitmap mainBitmap = null;
     private Bitmap rightBorderBitmap = null;
     private Bitmap middleBitmap = null;
 
-	public Button(int id, String label, int x, int y) {
-		super(x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
-		this.id = id;
-		this.label = label;
-	}
-
-    public Button(int id, String label, int x, int y, int w, int h) {
-        super(x, y, w, h);
-        this.id = id;
-        this.label = label;
+    public Button(String staticTextsID, int x, int y) {
+    	this(staticTextsID, x, y, WIDTH, HEIGHT, true);
     }
     
-	public String getLabel() {
-		return label;
+	public Button(String staticTextsID, int x, int y, boolean isLocaleAware) {
+		this(staticTextsID, x, y, WIDTH, HEIGHT, isLocaleAware);
 	}
 
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
+    public Button(String staticTextsID, int x, int y, int w, int h) {
+    	this(staticTextsID, x, y, w, h, false);
+    }
+    
+    public Button(String staticTextsID, int x, int y, int w, int h, boolean isLocaleAware) {
+        super(x, y, w, h, staticTextsID, isLocaleAware);
+    }
+    
 	@Override
 	protected void clicked(MouseButtons mouseButtons) {
 		// do nothing, handled by button listeners
@@ -55,13 +47,22 @@ public class Button extends ClickableComponent {
 		} else {
 			blitBackground(screen, 2);
 		}
-		Font.defaultFont().draw(screen, label, getX() + getWidth() / 2, getY() + getHeight() / 2, Font.Align.CENTERED);
+		
+		if (Font.defaultFont().calculateStringWidth(label) > getWidth()) {
+			String truncatedLabel = label;
+			while (Font.defaultFont().calculateStringWidth(truncatedLabel + "...") > getWidth()) {
+				truncatedLabel = truncatedLabel.substring(0, truncatedLabel.length() - 2);
+			}
+			Font.defaultFont().draw(screen, truncatedLabel + "...", getX() + getWidth() / 2, getY() + getHeight() / 2, Font.Align.CENTERED);
+		} else {
+			Font.defaultFont().draw(screen, label, getX() + getWidth() / 2, getY() + getHeight() / 2, Font.Align.CENTERED);
+		}
 	}
 	
-	private void blitBackground(Screen screen, int bitmapId) {
+	protected void blitBackground(Screen screen, int bitmapId) {
 	    
 	    // Default width button
-	    if (getWidth() == BUTTON_WIDTH) {
+	    if (getWidth() == WIDTH) {
             screen.blit(Art.button[0][bitmapId], getX(), getY());
 	    }
 	    
@@ -70,9 +71,9 @@ public class Button extends ClickableComponent {
     	    // Cut button textures
     	    if (mainBitmap != Art.button[0][bitmapId]) {
     	        mainBitmap = Art.button[0][bitmapId];
-    	        rightBorderBitmap = new Bitmap(10, BUTTON_HEIGHT);
-    	        rightBorderBitmap.blit(mainBitmap, - BUTTON_WIDTH + 10, 0);
-                middleBitmap = new Bitmap(1, BUTTON_HEIGHT);
+    	        rightBorderBitmap = new Bitmap(10, HEIGHT);
+    	        rightBorderBitmap.blit(mainBitmap, - WIDTH + 10, 0);
+                middleBitmap = new Bitmap(1, HEIGHT);
                 middleBitmap.blit(mainBitmap, -10, 0);
     	    }
     	    
@@ -83,9 +84,5 @@ public class Button extends ClickableComponent {
             }
             screen.blit(rightBorderBitmap, getX() + getWidth() - 10, getY());
 	    }
-	}
-
-	public int getId() {
-		return id;
 	}
 }

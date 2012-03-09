@@ -265,7 +265,8 @@ public class Console implements KeyListener {
 	private Command pause = new Command("pause", 0, "Pauses the game") {
 		public void doCommand(String[] args) {
 			close();
-			MojamComponent.instance.synchronizer.addCommand(new com.mojang.mojam.network.PauseCommand(true));
+			// FIXME
+//			logic().synchronizer.addCommand(new com.mojang.mojam.network.PauseCommand(true));
 		}
 	};
 	
@@ -274,7 +275,7 @@ public class Console implements KeyListener {
 			if(args.length > 0 && args[0].equals("0"))
 				System.exit(0);
 			else
-				MojamComponent.instance.stop();
+				CatacombSnatch.stop();
 		}
 	};
 	
@@ -285,7 +286,8 @@ public class Console implements KeyListener {
 				msg += args[i] + " ";
 			}
 			msg += args[args.length-1];
-			MojamComponent.instance.synchronizer.addCommand(new com.mojang.mojam.network.packet.ChatCommand(msg));
+			// FIXME
+//			logic().synchronizer.addCommand(new com.mojang.mojam.network.packet.ChatCommand(msg));
 		}
 	};
 	

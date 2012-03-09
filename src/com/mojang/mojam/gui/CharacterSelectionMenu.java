@@ -3,9 +3,10 @@ package com.mojang.mojam.gui;
 import java.awt.event.KeyEvent;
 
 import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.Options;
+import com.mojang.mojam.gameview.GameView;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
@@ -27,27 +28,27 @@ public class CharacterSelectionMenu extends GuiMenu {
 	private int walkTime;
 
 	public CharacterSelectionMenu() {
+		super();
+		
 		addButtons();
 	}
 
 	private void addButtons() {
-		int gameWidth = MojamComponent.GAME_WIDTH;
-		int gameHeight = MojamComponent.GAME_HEIGHT;
-		xOffset = (gameWidth - (CharacterButton.WIDTH * 2 + 20)) / 2;
-		yOffset = (gameHeight - (CharacterButton.HEIGHT * 2 + 20)) / 2 - 20;
+		xOffset = (GameView.WIDTH - (CharacterButton.WIDTH * 2 + 20)) / 2;
+		yOffset = (GameView.HEIGHT - (CharacterButton.HEIGHT * 2 + 20)) / 2 - 20;
 		selected = lordLard = (CharacterButton) addButton(new CharacterButton(
-				TitleMenu.CHARACTER_BUTTON_ID, GameCharacter.LordLard, Art.getPlayer(GameCharacter.LordLard)[0][6],
+				GameCharacter.LordLard, Art.getPlayer(GameCharacter.LordLard)[0][6],
 				xOffset, yOffset));
 		selected.setSelected(true);
-		herrSpeck = (CharacterButton) addButton(new CharacterButton(TitleMenu.CHARACTER_BUTTON_ID,
+		herrSpeck = (CharacterButton) addButton(new CharacterButton(
 				GameCharacter.HerrVonSpeck, Art.getPlayer(GameCharacter.HerrVonSpeck)[0][2], xOffset + 20
 						+ CharacterButton.WIDTH, yOffset));
 		duchessDonut = (CharacterButton) addButton(new CharacterButton(
-				TitleMenu.CHARACTER_BUTTON_ID, GameCharacter.DuchessDonut,
+				GameCharacter.DuchessDonut,
 				Art.getPlayer(GameCharacter.DuchessDonut)[0][6], xOffset, yOffset + 20
 						+ CharacterButton.HEIGHT));
 		countessCruller = (CharacterButton) addButton(new CharacterButton(
-				TitleMenu.CHARACTER_BUTTON_ID, GameCharacter.CountessCruller,
+				GameCharacter.CountessCruller,
 				Art.getPlayer(GameCharacter.CountessCruller)[0][2], xOffset + 20 + CharacterButton.WIDTH,
 				yOffset + 20 + CharacterButton.HEIGHT));
 		if (Options.isCharacterIDset()) {
@@ -61,12 +62,14 @@ public class CharacterSelectionMenu extends GuiMenu {
 			}
 			selected.setSelected(true);
 		}
-		focus = select = (Button) addButton(new Button(TitleMenu.BACK_ID,
-				MojamComponent.texts.getStatic("character.select"), (gameWidth - 128) / 2, yOffset
-						+ 2 * CharacterButton.HEIGHT + 20 + 30));
-		back = (Button) addButton(new Button(TitleMenu.BACK_ID,
-				MojamComponent.texts.getStatic("back"), (gameWidth - 128) / 2, yOffset + 2
-						* CharacterButton.HEIGHT + 20 + 60));
+		focus = select = (Button) addButton(new Button("character.select", 
+													   (GameView.WIDTH - 128) / 2, 
+													   yOffset + 2 * CharacterButton.HEIGHT + 20 + 30));
+		select.addListener(menus.BACK_BUTTON_LISTENER);
+		
+		back = (Button) addButton(new Button("back", (GameView.WIDTH - 128) / 2, 
+											 yOffset + 2 * CharacterButton.HEIGHT + 20 + 60));
+		back.addListener(menus.BACK_BUTTON_LISTENER);
 	}
 
 	@Override
@@ -79,12 +82,12 @@ public class CharacterSelectionMenu extends GuiMenu {
 	public void render(Screen screen) {
 		screen.blit(Art.emptyBackground, 0, 0);
 		super.render(screen);
-		Font.defaultFont().draw(screen, MojamComponent.texts.getStatic("character.text"),
-				MojamComponent.GAME_WIDTH / 2, yOffset - 24, Font.Align.CENTERED);
+		Font.defaultFont().draw(screen, Texts.current().getStatic("character.text"),
+				screen.w / 2, yOffset - 24, Font.Align.CENTERED);
 		if (focus == back || focus == select) {
 			int frame = (walkTime / 4 % 6 + 6) % 6;
 			screen.blit(Art.getPlayer(selected.getCharacter())[frame][(walkTime / 32) % 8],
-					MojamComponent.GAME_WIDTH / 2 - 16, MojamComponent.GAME_HEIGHT / 2 - 35);
+					screen.w / 2 - 16, screen.h / 2 - 35);
 		}
 	}
 
@@ -97,14 +100,10 @@ public class CharacterSelectionMenu extends GuiMenu {
 		} else if (button == select) {
 			Options.set(Options.CHARACTER_ID, selected.getCharacter().ordinal());
 			Options.saveProperties();
-			MojamComponent.instance.playerCharacter = selected.getCharacter();
+			logic().setSelectedCharacter(selected.getCharacter());
 		}
 	}
 	
-
-	@Override
-	public void keyTyped(KeyEvent e) {}
-
 	@Override
 	public void keyPressed(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
@@ -168,8 +167,4 @@ public class CharacterSelectionMenu extends GuiMenu {
 			super.keyPressed(e);
 		}
 	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {}
-
 }

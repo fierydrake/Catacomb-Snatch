@@ -3,11 +3,11 @@ package com.mojang.mojam.gui;
 import java.io.IOException;
 import java.util.Random;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.level.Level;
 import com.mojang.mojam.level.LevelInformation;
 import com.mojang.mojam.level.gamemode.GameMode;
+import com.mojang.mojam.math.Mth;
 import com.mojang.mojam.network.TurnSynchronizer;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
@@ -161,8 +161,8 @@ public class LevelButton extends ClickableComponent {
 			}
 		}
 		if(changed) {
-			xScroll = MojamComponent.clampi(xScroll, 0, minimap.w-MAXDIM);
-			yScroll = MojamComponent.clampi(yScroll, 0, minimap.h-MAXDIM);
+			xScroll = Mth.clamp(xScroll, 0, minimap.w-MAXDIM);
+			yScroll = Mth.clamp(yScroll, 0, minimap.h-MAXDIM);
 			redrawDisplaymap();
 		}
 	}

@@ -155,3 +155,5 @@ upgrade.shopItem = YOU CAN'T UPGRADE SHOP ITEMS!
 upgrade.notEnoughMoney = YOU DONT HAVE ENOUGH MONEY ({0})
 upgrade.to = UPGRADED TO LEVEL {0}
 
+error.mainmenu = Main Menu
+

@@ -3,9 +3,11 @@ package com.mojang.mojam.gui;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
-import com.mojang.mojam.MojamComponent;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.DifficultyList;
+import com.mojang.mojam.math.Mth;
+import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
@@ -19,29 +21,44 @@ public class DifficultySelect extends GuiMenu {
 	private final int xButtons = 3;
 	private final int xSpacing = Checkbox.WIDTH + 8;
 	private final int ySpacing = Checkbox.HEIGHT + 8;
-	private final int xStart = (MojamComponent.GAME_WIDTH - (xSpacing * xButtons)) / 2;
+	private final int xStart = (GameView.WIDTH - (xSpacing * xButtons)) / 2;
 	private final int yStart = 75;
 	
 	private Button startGameButton;
 	private Button cancelButton;
 
-	public DifficultySelect(boolean hosting) {
+	public DifficultySelect(final boolean hosting) {
 		super();
 		
 		DifficultyCheckboxes = new Checkbox[difficulties.size()];
 		setupDifficultyButtons();
 		
-		TitleMenu.difficulty = difficulties.get(DEFAULT_DIFFICULTY);
+		logic().setSelectedDifficulty(difficulties.get(DEFAULT_DIFFICULTY));
 		
-		startGameButton = new Button(hosting ? TitleMenu.HOST_GAME_ID : TitleMenu.START_GAME_ID,  
-				MojamComponent.texts.getStatic("diffselect.start"), (MojamComponent.GAME_WIDTH - 256 - 30), 
-				MojamComponent.GAME_HEIGHT - 24 - 25);
-		cancelButton = new Button(TitleMenu.CANCEL_JOIN_ID, MojamComponent.texts.getStatic("cancel"), 
-				MojamComponent.GAME_WIDTH - 128 - 20, MojamComponent.GAME_HEIGHT - 24 - 25);
+		startGameButton = new Button("diffselect.start", (GameView.WIDTH - 256 - 30), 
+				GameView.HEIGHT - 24 - 25);
+		startGameButton.addListener(new ButtonAdapter() {
+			@Override
+			public void buttonPressed(ClickableComponent button) {
+				if (hosting) {
+					// TODO HOST
+				} else {
+					// TODO START
+				}
+			}
+		});
+		cancelButton = new Button("cancel", 
+				GameView.WIDTH - 128 - 20, GameView.HEIGHT - 24 - 25);
+		cancelButton.addListener(new ButtonAdapter() {
+			@Override
+			public void buttonPressed(ClickableComponent button) {
+				// TODO Interrupt host thread
+			}
+		});
+		cancelButton.addListener(menus.BACK_BUTTON_LISTENER);
 		
 		addButton(startGameButton);
 		addButton(cancelButton);
-		addButtonListener(this);
 	}
 	
 	private void setupDifficultyButtons() {
@@ -50,7 +67,7 @@ public class DifficultySelect extends GuiMenu {
         for (int i = 0; i < difficulties.size(); i++) {
             int x = i % xButtons;
             
-            DifficultyCheckboxes[i] = (Checkbox) addButton(new Checkbox(i, difficulties.get(i).difficultyName, xStart + x * xSpacing, yStart + ySpacing * y));
+            DifficultyCheckboxes[i] = (Checkbox) addButton(new Checkbox(difficulties.get(i).difficultyName, xStart + x * xSpacing, yStart + ySpacing * y));
             
             if (i == DEFAULT_DIFFICULTY) {
                 DifficultyCheckboxes[i].checked = true;
@@ -65,57 +82,34 @@ public class DifficultySelect extends GuiMenu {
 	public void render(Screen screen) {
 		screen.blit(Art.emptyBackground, 0, 0);
 		super.render(screen);
-		Font.defaultFont().draw(screen, MojamComponent.texts.getStatic("diffselect.title"), 20, 20);
+		Font.defaultFont().draw(screen, Texts.current().getStatic("diffselect.title"), 20, 20);
 	}
 
 	@Override
 	public void buttonPressed(ClickableComponent button) {
 		if (button instanceof Checkbox) {
-
-		    Checkbox cb = (Checkbox) button;
-			TitleMenu.difficulty = difficulties.get(cb.getId());
-			
-			checkOnlyOne(cb);
+			Checkbox cb = (Checkbox) button;
+			for (int i=0; i<DifficultyCheckboxes.length; i++) {
+				if (cb == DifficultyCheckboxes[i]) {
+					logic().setSelectedDifficulty(difficulties.get(i));
+					DifficultyCheckboxes[i].checked = true;
+				} else {
+					DifficultyCheckboxes[i].checked = false;
+				}
+			}
 		}
 	}
     
-    public Checkbox getActiveCheckbox()
-    {
-        for(Checkbox box : DifficultyCheckboxes) {
-            if(box.checked == true) {
-                return box;
-            }   
-        } 
-        return null;
-    }
-	
-	public void checkOnlyOne(Checkbox active)
-	{
-        for(Checkbox box : DifficultyCheckboxes) {
-            if(active.getId() == box.getId()) {
-                box.checked = true;
-            } else {
-                box.checked = false;
-            }
-        } 
-	}
-
-
 	@Override
 	public void keyPressed(KeyEvent e) {
-		// Compute new id
-		int activeButtonId = getActiveCheckbox().getId();
-		
-		
-		int nextActiveButtonId = -2;
 		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
-			nextActiveButtonId = bestExistingDifficultyId(activeButtonId - 1, difficulties.size() - 1);
-		}else if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
-			nextActiveButtonId = bestExistingDifficultyId(activeButtonId + 1, 0);
+			shiftDifficulty(-1);
+		} else if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
+			shiftDifficulty(1);
 		} else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_W) {
-			nextActiveButtonId = bestExistingDifficultyId(activeButtonId - 3, activeButtonId + 6, activeButtonId + 3);
-		}else if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
-			nextActiveButtonId = bestExistingDifficultyId(activeButtonId + 3, activeButtonId - 6, activeButtonId - 3);
+			shiftDifficulty(-xButtons);
+		} else if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
+			shiftDifficulty(xButtons);
 		} else if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_E) {
 			startGameButton.postClick();
 		} else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -123,27 +117,15 @@ public class DifficultySelect extends GuiMenu {
 		} else {
 			super.keyPressed(e);
 		}
-		
-		// Update active button
-		if (nextActiveButtonId >= 0 && nextActiveButtonId < DifficultyCheckboxes.length) {
-            checkOnlyOne(DifficultyCheckboxes[nextActiveButtonId]);
-		}	
 	}
 	
-	public int bestExistingDifficultyId(int... options) {
-		for (int option : options) {
-			if (option >= 0 && option < difficulties.size()) {
-				return option;
+	private void shiftDifficulty(int shift) {
+		for (int i=0; i<DifficultyCheckboxes.length; i++) {
+			if (DifficultyCheckboxes[i].checked) {
+				int newDifficultyIdx = Mth.clamp(i + shift, 0, DifficultyCheckboxes.length-1);
+				buttonPressed(DifficultyCheckboxes[newDifficultyIdx]);
+				break;
 			}
 		}
-		return -2;
-	}
-
-	@Override
-	public void keyReleased(KeyEvent arg0) {
-	}
-
-	@Override
-	public void keyTyped(KeyEvent arg0) {
-	}
+	}		
 }

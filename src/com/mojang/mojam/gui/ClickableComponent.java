@@ -27,7 +27,7 @@ public abstract class ClickableComponent extends VisibleComponent {
 		isPressed = false;
 		if (enabled && mx >= getX() && my >= getY() && mx < (getX() + getWidth()) && my < (getY() + getHeight())) {
 			postHover();
-			if (mouseButtons.isRelased(1)) {
+			if (mouseButtons.isReleased(1)) {
 				postClick();
 			} else if (mouseButtons.isDown(1)) {
 				isPressed = true;

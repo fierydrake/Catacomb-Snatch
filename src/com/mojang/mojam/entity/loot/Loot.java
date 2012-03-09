@@ -1,6 +1,5 @@
 package com.mojang.mojam.entity.loot;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.building.Harvester;
@@ -162,16 +161,16 @@ public class Loot extends Entity {
 		taker.take(this);
 
 		if (value > 8) {
-			MojamComponent.soundPlayer.playSound("/sound/Big Gem.wav",
+			sound.playSound("/sound/Big Gem.wav",
 					(float) pos.x, (float) pos.y);
 		} else if (value > 6) {
-			MojamComponent.soundPlayer.playSound("/sound/Gem.wav",
+			sound.playSound("/sound/Gem.wav",
 					(float) pos.x, (float) pos.y);
 		} else if (value > 4) {
-			MojamComponent.soundPlayer.playSound("/sound/Big Coin.wav",
+			sound.playSound("/sound/Big Coin.wav",
 					(float) pos.x, (float) pos.y);
 		} else {
-			MojamComponent.soundPlayer.playSound("/sound/Small Coin.wav",
+			sound.playSound("/sound/Small Coin.wav",
 					(float) pos.x, (float) pos.y);
 		}
 	}

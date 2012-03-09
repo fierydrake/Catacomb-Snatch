@@ -97,7 +97,8 @@ public class Options {
 	public static void loadProperties() {
 		BufferedInputStream stream;
 		try {
-			stream = new BufferedInputStream(new FileInputStream(MojamComponent.getMojamDir() + "/options.properties"));
+			File file = new File(CatacombSnatch.getExternalsDir(), "options.properties");
+			stream = new BufferedInputStream(new FileInputStream(file));
 			properties.load(stream);
 			stream.close();
 		} catch (FileNotFoundException e) {
@@ -111,7 +112,7 @@ public class Options {
 	public static void saveProperties() {
 		BufferedOutputStream stream;
 		try {
-			File file = new File(MojamComponent.getMojamDir() + "/options.properties");
+			File file = new File(CatacombSnatch.getExternalsDir(), "options.properties");
 			if ( !file.exists() ) {
 				System.out.println("File not there");
 				file.createNewFile();
@@ -133,7 +134,7 @@ public class Options {
 	 * @return the absolute path of the jar
 	 */
 	public static String getJarPath() {
-		String path = MojamComponent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+		String path = CatacombSnatch.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 		String decodedPath = "";
 		try {
 			decodedPath = URLDecoder.decode(path, "UTF-8");

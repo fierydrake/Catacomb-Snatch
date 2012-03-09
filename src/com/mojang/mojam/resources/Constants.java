@@ -7,15 +7,17 @@ import java.util.Properties;
 import com.mojang.mojam.entity.mob.Mob;
 
 public class Constants {
+	public static final String GAME_TITLE = "Catacomb Snatch";
+	public static final String GAME_VERSION = "1.0.0-SNAPSHOT";
 
 	private final static Properties constants = new Properties();
 
-	public Constants() {
+	static {
 
 		InputStream stream;
 
 		try {
-			stream = this.getClass().getResourceAsStream("/constants/constants.txt");
+			stream = Constants.class.getResourceAsStream("/constants/constants.txt");
 			constants.load(new InputStreamReader(stream, "UTF8"));
 			stream.close();
 		} catch (Exception e) {

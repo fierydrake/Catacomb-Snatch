@@ -1,9 +1,11 @@
 package com.mojang.mojam.level;
 
-import com.mojang.mojam.gui.TitleMenu;
+import com.mojang.mojam.CatacombSnatch;
+import com.mojang.mojam.gamelogic.GameLogic;
 
 public class DifficultyInformation {
-
+	private static GameLogic logic() { return CatacombSnatch.logic(); }
+	
 	public String difficultyName;
 	public int difficultyID;
 
@@ -22,29 +24,29 @@ public class DifficultyInformation {
 	}
 
 	public static float calculateHealth(float baseHealth) {
-		if(TitleMenu.difficulty != null)
-			return baseHealth * TitleMenu.difficulty.mobHealthModifier;
+		if(logic().getSelectedDifficulty() != null)
+			return baseHealth * logic().getSelectedDifficulty().mobHealthModifier;
 		else
 			return 0;
 	}
 
 	public static float calculateStrength(int baseStrength) {
-		if(TitleMenu.difficulty != null)
-			return baseStrength * TitleMenu.difficulty.mobStrengthModifier;
+		if(logic().getSelectedDifficulty() != null)
+			return baseStrength * logic().getSelectedDifficulty().mobStrengthModifier;
 		else
 			return 0;
 	}
 
 	public static int calculateSpawntime(int baseSpawntime) {
-		if(TitleMenu.difficulty != null)
-			return (int)(baseSpawntime * TitleMenu.difficulty.mobSpawnModifier);
+		if(logic().getSelectedDifficulty() != null)
+			return (int)(baseSpawntime * logic().getSelectedDifficulty().mobSpawnModifier);
 		else
 			return 0;
 	}
 
 	public static int calculateCosts(int baseCost) {
-		if(TitleMenu.difficulty != null)
-			return (int)(baseCost * TitleMenu.difficulty.shopCostsModifier);
+		if(logic().getSelectedDifficulty() != null)
+			return (int)(baseCost * logic().getSelectedDifficulty().shopCostsModifier);
 		else
 			return 0;
 	}

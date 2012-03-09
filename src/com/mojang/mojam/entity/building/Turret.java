@@ -3,13 +3,12 @@ package com.mojang.mojam.entity.building;
 import java.awt.Color;
 import java.util.Set;
 
-import com.mojang.mojam.MojamComponent;
 import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
+import com.mojang.mojam.entity.mob.DropTrap;
 import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.entity.mob.RailDroid;
 import com.mojang.mojam.entity.mob.SpikeTrap;
-import com.mojang.mojam.entity.mob.DropTrap;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.IEditable;
 import com.mojang.mojam.level.tile.Tile;
@@ -117,7 +116,7 @@ public class Turret extends Building implements IEditable {
 	@Override
 	public void render(Screen screen) {
 		
-		if((justDroppedTicks-- > 0 || highlight) && MojamComponent.localTeam==team) {
+		if((justDroppedTicks-- > 0 || highlight) && team == logic().getLocalPlayer().team) { // Check this
 				drawRadius(screen);
 		}
 		

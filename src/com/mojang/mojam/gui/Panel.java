@@ -15,8 +15,6 @@ public class Panel extends ClickableComponent {
     public static final int BUTTON_WIDTH = 128;
     public static final int BUTTON_HEIGHT = 24;
     
-	private String label;
-
     private Bitmap mainBitmap = null;
     private Bitmap trCorner = null;
     private Bitmap dlCorner = null;
@@ -29,14 +27,6 @@ public class Panel extends ClickableComponent {
     
 	public Panel(int x, int y, int w, int h) {
 		super(x, y, w, h);
-	}
-
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
 	}
 
 	@Override
