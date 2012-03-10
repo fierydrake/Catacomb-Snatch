@@ -13,8 +13,6 @@ public class LocaleMenu extends GuiMenu {
 	};
 	private final Button[] LOCALE_BUTTONS = new Button[LOCALES.length]; 
 
-	private int gameWidth;
-	private int gameHeight;
 	private int textY;
 
 	public LocaleMenu() {
@@ -31,10 +29,12 @@ public class LocaleMenu extends GuiMenu {
 		
 		for (int i=0; i<LOCALE_BUTTONS.length/2; i++) { 
 			LOCALE_BUTTONS[i] = new Button(Constants.getString("options.locale_" + LOCALES[i]), left_xOffset, (yOffset += offset), false);
+			addButton(LOCALE_BUTTONS[i]);
 		}
 		yOffset = TopYOffset;
 		for (int i=LOCALE_BUTTONS.length/2+1; i<LOCALE_BUTTONS.length; i++) { 
 			LOCALE_BUTTONS[i] = new Button(Constants.getString("options.locale_" + LOCALES[i]), right_xOffset, (yOffset += offset), false);
+			addButton(LOCALE_BUTTONS[i]);
 		}
 		yOffset += offset;
 		addButton(new Button("back", xOffset, (yOffset += offset) + 20)).addListener(menus.BACK_BUTTON_LISTENER);
@@ -54,7 +54,7 @@ public class LocaleMenu extends GuiMenu {
 	public void render(Screen screen) {
 
 		if (CatacombSnatch.isPlayingGame()) {
-			screen.alphaFill(0, 0, gameWidth, gameHeight, 0xff000000, 0x30);
+			screen.alphaFill(0, 0, screen.w, screen.h, 0xff000000, 0x30);
 		} else {
 			screen.blit(Art.background, 0, 0);
 		}
