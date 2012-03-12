@@ -3,7 +3,6 @@ package com.mojang.mojam.gui.menus;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
-import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.gameinput.LocalGameInput;
 import com.mojang.mojam.gameinput.PhysicalInputs;
 import com.mojang.mojam.gameview.GameView;

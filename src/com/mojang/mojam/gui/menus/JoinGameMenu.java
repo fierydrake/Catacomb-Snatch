@@ -25,13 +25,10 @@ public class JoinGameMenu extends GuiMenu {
 
 	@Override
 	public void render(Screen screen) {
-
-		screen.clear(0);
 		screen.blit(Art.emptyBackground, 0, 0);
+		super.render(screen);
 		Font.defaultFont().draw(screen, Texts.current().getStatic("mp.enterIP"), 100, 100);
 		Font.defaultFont().draw(screen, "TODO", 100, 120); // TODO TitleMenu.ip + "-"
-
-		super.render(screen);
 	}
 
 	@Override

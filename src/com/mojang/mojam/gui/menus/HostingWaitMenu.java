@@ -35,8 +35,6 @@ public class HostingWaitMenu extends GuiMenu {
 
 	@Override
 	public void render(Screen screen) {
-
-		screen.clear(0);
 		screen.blit(Art.emptyBackground, 0, 0);
 		Font font = Font.defaultFont();
 		font.draw(screen, Texts.current().getStatic("mp.waitingForClient"), 100, 100);

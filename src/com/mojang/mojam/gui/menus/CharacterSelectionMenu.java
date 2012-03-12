@@ -113,9 +113,12 @@ public class CharacterSelectionMenu extends GuiMenu {
 	
 	@Override
 	public void render(Screen screen) {
-		screen.blit(Art.emptyBackground, 0, 0);
+    	screen.blit(Art.emptyBackground, 0, 0);
 		super.render(screen);
-		Font.defaultFont().draw(screen, Texts.current().getStatic("character.text"), screen.w / 2, yOffset - 24, Font.Align.CENTERED);
+		Font.defaultFont().draw(screen, 
+				                Texts.current().getStatic("character.text"), 
+				                screen.w / 2, yOffset - 24, 
+				                Font.Align.CENTERED);
 
 		int frame = (walkTime / 4 % 6 + 6) % 6;
 		screen.blit(Art.getPlayer(selected.getCharacter())[frame][(walkTime / 32) % 8], screen.w / 2 - 16, screen.h / 2 - 35);

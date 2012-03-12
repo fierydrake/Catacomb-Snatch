@@ -45,16 +45,9 @@ public class PauseMenu extends GuiMenu {
 	}
 
 	public void render(Screen screen) {
-
-		//screen.clear(0);
-		//screen.blit(Art.emptyBackground, 0, 0);
-	    screen.alphaFill(0, 0, screen.w, screen.h, 0xff000000, 0x30);
-		screen.blit(Art.pauseScreen, 0, 0);
-
 		super.render(screen);
-
-		screen.blit(Art.getLocalPlayerArt()[0][6], (screen.w - 128) / 2 - 40,
-				130 + focusedItem * 30);
+		screen.blit(Art.pauseScreen, 0, 0);
+		screen.blit(Art.getLocalPlayerArt()[0][6], (screen.w - 128) / 2 - 40, 130 + focusedItem * 30);
 	}
 	
 	
@@ -67,8 +60,5 @@ public class PauseMenu extends GuiMenu {
 	}
 	
 	@Override
-	public void buttonPressed(ClickableComponent button) {
-		// TODO Auto-generated method stub
-
-	}
+	public void buttonPressed(ClickableComponent button) {}
 }

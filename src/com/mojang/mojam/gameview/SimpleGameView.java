@@ -74,6 +74,11 @@ public class SimpleGameView implements GameView {
 //				}
 		}
 		if (menus.isShowing()) {
+			if (menus.isPlayingGame()) {
+				screen.alphaFill(0, 0, screen.w, screen.h, 0xff000000, 0xC0);
+			} else {
+				screen.blit(Art.background, 0, 0);
+			}
 			menus.getCurrent().render(screen);
 		}
 		

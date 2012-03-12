@@ -42,13 +42,6 @@ public class HowToPlayMenu extends GuiMenu {
 	
 	@Override
 	public void render(Screen screen) {
-	    
-	    if (menus.isPlayingGame()) {
-	        screen.alphaFill(0, 0, screen.w, screen.h, 0xff000000, 0x30);
-	    } else {
-	    	screen.blit(Art.background, 0, 0);
-	    }
-		
 		super.render(screen);
 		printHelpText(screen);
 		

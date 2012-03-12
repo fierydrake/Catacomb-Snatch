@@ -31,10 +31,6 @@ public class CreditsScreen extends GuiMenu {
 	}
 
 	public void render(Screen screen) {
-		
-		screen.clear(0);
-		screen.blit(Art.emptyBackground, 0, 0);
-
 		super.render(screen);
 
 		// Mojang logo

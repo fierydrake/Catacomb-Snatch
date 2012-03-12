@@ -55,13 +55,6 @@ public class LocaleMenu extends GuiMenu {
 
 	@Override
 	public void render(Screen screen) {
-
-		if (menus.isPlayingGame()) {
-			screen.alphaFill(0, 0, screen.w, screen.h, 0xff000000, 0x30);
-		} else {
-			screen.blit(Art.background, 0, 0);
-		}
-
 		super.render(screen);
 		Font.defaultFont().draw(screen, Texts.current().getStatic("options.locale_selection"), screen.w / 2, textY, Font.Align.CENTERED);
 		screen.blit(Art.getLocalPlayerArt()[0][6], buttons.get(focusedItem).getX() - 40, buttons.get(focusedItem).getY() - 6);

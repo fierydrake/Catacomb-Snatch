@@ -98,11 +98,12 @@ public class KeyBindingsMenu extends GuiMenu {
 
 	@Override
 	public void render(Screen screen) {
-		screen.blit(Art.background, 0, 0);
-		Texts txts = Texts.current();
-		Font.defaultFont().draw(screen, txts.getStatic("options.keyBindings"), screen.w / 2, yOffset - BUTTON_SPACING, Font.Align.CENTERED);
-
 		super.render(screen);
+		Font.defaultFont().draw(screen, 
+				                Texts.current().getStatic("options.keyBindings"), 
+				                screen.w / 2, yOffset - BUTTON_SPACING, 
+				                Font.Align.CENTERED);
+
 		ClickableComponent button = buttons.get(focusedItem);
 		Bitmap playerArt = Art.getLocalPlayerArt()[0][6];
 		if (button == back) {
