@@ -30,10 +30,6 @@ public class GameMenus implements Runnable {
 	private GameView localView;
 	private GameLogic logic;
 	
-	private long lastFPSupdate;
-	private int frames = 0;
-	private int fps = 0;
-	
 	private boolean mouseActive = false;
 	private int mouseActiveTime = 0;
 	
@@ -91,12 +87,10 @@ public class GameMenus implements Runnable {
 		/* 
 		 * Game loop
 		 */
-		lastFPSupdate = System.currentTimeMillis();
 		new SimpleGameLoop(60, new Runnable() {
 			/* Render callback */
 			@Override
 			public void run() {
-				frames++;
 				localView.renderView(localInput, GameMenus.this, logic);
 
 			}
