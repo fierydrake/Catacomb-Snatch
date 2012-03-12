@@ -131,7 +131,7 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	public synchronized void keyPressed(KeyEvent e) {
 		PhysicalInput keyPressed = Key.get(e.getKeyCode());
 		if (bindings.maps(keyPressed)) {
-			LogicalInput logicalInput = next.getLogicalInputByName(bindings.getBinding(keyPressed).getLogicalInputName());
+			LogicalInput logicalInput = next.getLogicalInputByName(bindings.get(keyPressed).getLogicalInputName());
 			logicalInput.wasPressed = true;
 			logicalInput.isDown = true;
 		}
@@ -142,7 +142,7 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	public synchronized void keyReleased(KeyEvent e) {
 		PhysicalInput keyReleased = Key.get(e.getKeyCode());
 		if (bindings.maps(keyReleased)) {
-			LogicalInput logicalInput = next.getLogicalInputByName(bindings.getBinding(keyReleased).getLogicalInputName());
+			LogicalInput logicalInput = next.getLogicalInputByName(bindings.get(keyReleased).getLogicalInputName());
 			logicalInput.wasReleased = true;
 			logicalInput.isDown = false;
 		}
@@ -176,7 +176,7 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	public synchronized void mousePressed(MouseEvent e) {
 		PhysicalInput mouseButtonPressed = MouseButton.get(e.getButton());
 		if (bindings.maps(mouseButtonPressed)) {
-			LogicalInput logicalInput = next.getLogicalInputByName(bindings.getBinding(mouseButtonPressed).getLogicalInputName());
+			LogicalInput logicalInput = next.getLogicalInputByName(bindings.get(mouseButtonPressed).getLogicalInputName());
 			logicalInput.wasPressed = true;
 			logicalInput.isDown = true;
 		}
@@ -187,7 +187,7 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	public synchronized void mouseReleased(MouseEvent e) {
 		PhysicalInput mouseButtonReleased = MouseButton.get(e.getButton());
 		if (bindings.maps(mouseButtonReleased)) {
-			LogicalInput logicalInput = next.getLogicalInputByName(bindings.getBinding(mouseButtonReleased).getLogicalInputName());
+			LogicalInput logicalInput = next.getLogicalInputByName(bindings.get(mouseButtonReleased).getLogicalInputName());
 			logicalInput.wasReleased = true;
 			logicalInput.isDown = false;
 		}

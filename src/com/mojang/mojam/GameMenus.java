@@ -41,6 +41,7 @@ public class GameMenus implements Runnable {
 	
 	public boolean isMouseActive() { return mouseActive; }
 	public boolean isPlayingGame() { return !(logic instanceof NoGameLogic); }
+	public LocalGameInput getLocalInput() { return localInput; }
 	public GameLogic getGameLogic() { return logic; }
 	public GameInformation getGameInformation() { 
 		return isPlayingGame() ? logic.getGameInformation() : nextGameInformation; 

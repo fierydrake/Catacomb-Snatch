@@ -40,6 +40,20 @@ public class PhysicalInputs {
 		return false;
 	}
 	
+	public PhysicalInput consumePress() { return consume(PhysicalInputEvent.Type.PRESS); }
+	public PhysicalInput consumeRelease() { return consume(PhysicalInputEvent.Type.RELEASE); }
+	public PhysicalInput consume(PhysicalInputEvent.Type wantedType) {
+		Iterator<PhysicalInputEvent> i = events.iterator();
+		while (i.hasNext()) {
+			PhysicalInputEvent event = i.next();
+			if (event.type == wantedType) {
+				i.remove();
+				return event.physicalInput;
+			}
+		}
+		return null;
+	}
+	
 	public void consumeKeyPresses(int... keyCodes) {
 		for (int keyCode : keyCodes) { consumeKeyPresses(keyCode); }
 	}
@@ -65,12 +79,12 @@ public class PhysicalInputs {
 	public boolean wasMouseButtonPressedConsume(int buttonCode) { return consumeEvents(PhysicalInput.MouseButton.class, PhysicalInputEvent.Type.PRESS, buttonCode); }
 	public boolean wasMouseButtonReleasedConsume(int buttonCode) { return consumeEvents(PhysicalInput.MouseButton.class, PhysicalInputEvent.Type.RELEASE, buttonCode); }
 	
-	private boolean consumeEvents(Class<? extends PhysicalInput> inputClass, PhysicalInputEvent.Type type, int code) {
+	private boolean consumeEvents(Class<? extends PhysicalInput> inputClass, PhysicalInputEvent.Type wantedType, int code) {
 		boolean consumed = false;
 		Iterator<PhysicalInputEvent> i = events.iterator();
 		while (i.hasNext()) {
 			PhysicalInputEvent event = i.next();
-			if (event.type == type && inputClass.isInstance(event.physicalInput) && event.physicalInput.code == code) {
+			if (event.type == wantedType && inputClass.isInstance(event.physicalInput) && event.physicalInput.code == code) {
 				i.remove();
 				consumed = true;
 			}
@@ -78,9 +92,9 @@ public class PhysicalInputs {
 		return consumed;
 	}
 	
-	private boolean hasEvent(Class<? extends PhysicalInput> inputClass, PhysicalInputEvent.Type type, int code) {
+	private boolean hasEvent(Class<? extends PhysicalInput> inputClass, PhysicalInputEvent.Type wantedType, int code) {
 		for (PhysicalInputEvent event : events) {
-			if (event.type == type && inputClass.isInstance(event.physicalInput) && event.physicalInput.code == code) {
+			if (event.type == wantedType && inputClass.isInstance(event.physicalInput) && event.physicalInput.code == code) {
 				return true;
 			}
 		}

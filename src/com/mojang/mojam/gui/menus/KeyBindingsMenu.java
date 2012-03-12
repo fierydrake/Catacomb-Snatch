@@ -1,38 +1,38 @@
 package com.mojang.mojam.gui.menus;
 
 import java.awt.event.KeyEvent;
+import java.util.List;
 
-import com.mojang.mojam.CatacombSnatch;
-import com.mojang.mojam.gameinput.LogicalInputs;
-import com.mojang.mojam.gameinput.LogicalInputs.LogicalInput;
+import com.mojang.mojam.gameinput.InputBindings.InputBinding;
+import com.mojang.mojam.gameinput.LocalGameInput;
+import com.mojang.mojam.gameinput.PhysicalInput;
+import com.mojang.mojam.gameinput.PhysicalInputs;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Font;
-import com.mojang.mojam.gui.Font.Align;
 import com.mojang.mojam.gui.components.BackButton;
 import com.mojang.mojam.gui.components.Button;
 import com.mojang.mojam.gui.components.ClickableComponent;
 import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
+import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
 
 public class KeyBindingsMenu extends GuiMenu {
 
-	class KeyBindingButton extends Button {
-		private LogicalInput key;
+	class InputBindingButton extends Button {
+		private int id;
+		private InputBinding binding;
 		private boolean selected = false;
 
-		public KeyBindingButton(LogicalInput key, int x, int y) {
-			super(getMenuText(key), x, y, false);
-			this.key = key;
+		public InputBindingButton(int id, InputBinding binding, int x, int y) {
+			super(binding.toString(), x, y, false);
+			this.id = id;
+			this.binding = binding;
 		}
 		
 		@Override
 		public String labelText() {
-			return getMenuText(key);
-		}
-
-		public LogicalInput getKey() {
-			return key;
+			return binding.toString();
 		}
 
 		public boolean isSelected() {
@@ -43,148 +43,127 @@ public class KeyBindingsMenu extends GuiMenu {
 			this.selected = selected;
 		}
 		
-		public void refresh() {
-			updateLabel();
+		@Override
+		public void render(Screen screen) {
+			super.render(screen);
+			int x = getX();
+			int y = getY() + 8;
+			String prompt = Texts.current().logicalInput(binding.getLogicalInputName())+ ":";
+			Font.defaultFont().draw(screen, prompt, x, y, Font.Align.RIGHT); 
 		}
 		
 		@Override
 		protected void blitBackground(Screen screen, int bitmapId) {
 			super.blitBackground(screen, selected ? 1 : bitmapId);
 		}
+
+		public void refresh() {
+			// FIXME? Need this next line because when a new input is mapped 
+			//        the InputBinding object in this button is not updated
+			//        (see comment in InputBindings)
+			this.binding = menus.getLocalInput().getBindings().get(binding.getLogicalInputName());
+			updateLabel();
+		}
 	}
 
 	private static final int BORDER = 10;
-	private static final int BUTTON_SPACING = 32;
+	private static final int BUTTON_SPACING = 28;
 
 	private int textWidth;
 	private int yOffset;
+	private int numRows;
 
 	private ClickableComponent back;
-	private KeyBindingButton selectedKey = null;
+	private InputBindingButton selectedButton = null;
 
 	public KeyBindingsMenu() {
 		super();
-		addButtons();
-	}
 
-	private void addButtons() {
-		textWidth = (GameView.WIDTH - 2 * BORDER - 2 * 32 - 2 * Button.WIDTH) / 2;
-		int numRows = 6;
-		int tab1 = BORDER + 32 + textWidth;
+		List<InputBinding> bindings = menus.getLocalInput().getBindings().getAll();
+
+		textWidth = (GameView.WIDTH - 3 * BORDER - 2 * Button.WIDTH) / 2;
+		numRows = bindings.size() / 2;
+		int tab1 = BORDER + textWidth;
 		int tab2 = GameView.WIDTH - BORDER - Button.WIDTH;
-		yOffset = (GameView.HEIGHT - (numRows * BUTTON_SPACING + 32)) / 2;
+		yOffset = (GameView.HEIGHT - (numRows * BUTTON_SPACING)) / 2;
 
-		addButton(new KeyBindingButton(keys.up, tab1, yOffset + 0 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.down, tab1, yOffset + 1 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.left, tab1, yOffset + 2 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.right, tab1, yOffset + 3 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.sprint, tab1, yOffset + 4 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.fire, tab1, yOffset + 5 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.console, tab1, yOffset + 6 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.fireUp, tab2, yOffset + 0 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.fireDown, tab2, yOffset + 1 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.fireLeft, tab2, yOffset + 2 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.fireRight, tab2, yOffset + 3 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.build, tab2, yOffset + 4 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.use, tab2, yOffset + 5 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.upgrade, tab2, yOffset + 6 * BUTTON_SPACING));
-		addButton(new KeyBindingButton(keys.chat, tab2, yOffset + 7	* BUTTON_SPACING));
-		back = addButton(new BackButton((GameView.WIDTH - Button.WIDTH) / 2, 
-				yOffset + numRows * BUTTON_SPACING - Button.HEIGHT + 88));
-	}
-
-	private String getMenuText(LogicalInput key) {
-		Integer keyEvent = CatacombSnatch.input.getInputHandler().getKeyEvent(key);
-		if (keyEvent != null && keyEvent != KeyEvent.VK_UNDEFINED) {
-			return KeyEvent.getKeyText(keyEvent);
+		int id = 0, tab = tab1;
+		for (InputBinding binding : bindings) {
+			addButton(new InputBindingButton(id, binding, tab, yOffset + (id % numRows) * BUTTON_SPACING));
+			if (++id > numRows - 1) { tab = tab2; }
 		}
-		// TODO put text in translation file
-		return "NONE";
+		back = addButton(new BackButton((GameView.WIDTH - Button.WIDTH) / 2, 
+				yOffset + numRows * BUTTON_SPACING + 16));
 	}
 
 	@Override
 	public void render(Screen screen) {
 		screen.blit(Art.background, 0, 0);
 		Texts txts = Texts.current();
-		Font.defaultFont().draw(screen, txts.getStatic("options.keyBindings"), screen.w / 2, yOffset - 40, Font.Align.CENTERED);
-		write(screen, txts.getStatic("keys.up"), 0, 0);
-		write(screen, txts.getStatic("keys.down"), 0, 1);
-		write(screen, txts.getStatic("keys.left"), 0, 2);
-		write(screen, txts.getStatic("keys.right"), 0, 3);
-		write(screen, txts.getStatic("keys.sprint"), 0, 4);
-		write(screen, txts.getStatic("keys.fire"), 0, 5);
-		write(screen, "CONSOLE", 0, 6); //add translations
+		Font.defaultFont().draw(screen, txts.getStatic("options.keyBindings"), screen.w / 2, yOffset - BUTTON_SPACING, Font.Align.CENTERED);
 
-		write(screen, txts.getStatic("keys.fireUp"), 1, 0);
-		write(screen, txts.getStatic("keys.fireDown"), 1, 1);
-		write(screen, txts.getStatic("keys.fireLeft"), 1, 2);
-		write(screen, txts.getStatic("keys.fireRight"), 1, 3);
-		write(screen, txts.getStatic("keys.build"), 1, 4);
-		write(screen, txts.getStatic("keys.use"), 1, 5);
-		write(screen, txts.getStatic("keys.upgrade"), 1, 6);
-		write(screen, txts.getStatic("keys.chat"), 1, 7);
 		super.render(screen);
-		ClickableComponent button = buttons.get(selectedItem);
+		ClickableComponent button = buttons.get(focusedItem);
+		Bitmap playerArt = Art.getLocalPlayerArt()[0][6];
 		if (button == back) {
-			screen.blit(Art.getLocalPlayerArt()[0][6], back.getX() - 64, back.getY() - 8);
+			screen.blit(playerArt, back.getX() - 40, back.getY() - 8);
 		} else {
-			screen.blit(Art.getLocalPlayerArt()[0][6], button.getX() - textWidth - 32,
+			screen.blit(playerArt, button.getX() - textWidth + (BORDER - playerArt.w) / 2,
 					button.getY() - 8);
 		}
 	}
 
-	private void write(Screen screen, String txt, int column, int row) {
-		Font.defaultFont().draw(screen, txt + ": ", BORDER + 32 + textWidth + column
-				* (Button.WIDTH + 32 + textWidth), yOffset
-				+ 8 + row * BUTTON_SPACING, Font.Align.RIGHT);
-	}
-
 	@Override
-	public void buttonPressed(ClickableComponent button) {
-		boolean swapped = selectedKey == button;
-		if (selectedKey != null) {
-			selectedKey.setSelected(false);
-			selectedKey = null;
-		}
-		if (button == back || swapped) {
-			return;
-		}
-		selectedKey = (KeyBindingButton) button;
-		selectedKey.setSelected(true);
-	}
-	
-	@Override
-	public void keyPressed(KeyEvent e) {
-		if (selectedKey != null) {
-			CatacombSnatch.input.getInputHandler().addMapping(selectedKey.getKey(), e.getKeyCode());
-			selectedKey.setSelected(false);
-			selectedKey = null;
-			refreshKeys();	
-		} else {			
-			if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
-				if (buttons.get(selectedItem) == back) {
-					selectedItem -= 6;
-				} else if (selectedItem >= 5) {
-					selectedItem -= 5;
+	public void tick(LocalGameInput input) {
+		PhysicalInputs inputs = input.getCurrentPhysicalState();
+		if (selectedButton != null) {
+			/* Capture the next physical input and set as the binding */
+			PhysicalInput physicalInput = inputs.consumePress();
+			if (physicalInput != null) {
+				String logicalInputName = selectedButton.binding.getLogicalInputName();
+				input.getBindings().map(logicalInputName, physicalInput);
+				selectedButton.setSelected(false);
+				selectedButton = null;
+				refreshButtons();
+			}
+		} else {
+			if (buttons.get(focusedItem) instanceof InputBindingButton) {
+				InputBindingButton bindingButton = (InputBindingButton)buttons.get(focusedItem);
+			
+				/* Improve default focus navigation */
+				if (inputs.wasKeyPressedConsume(KeyEvent.VK_BACK_SPACE)) {
+					/* Clear the bindings of the focused button */
+					input.getBindings().unmap(bindingButton.binding.getLogicalInputName());
+					refreshButtons();
 				}
-			} else if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
-				if (selectedItem < 5) {
-					selectedItem += 5;
-				} else if (buttons.get(selectedItem) == back) {
-					selectedItem--;
+				if (bindingButton.id < numRows) {
+					if (inputs.wasKeyPressedConsume(KeyEvent.VK_RIGHT, KeyEvent.VK_D)) {
+						focusedItem = bindingButton.id + numRows;
+					}
 				}
-			} else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-				back.postClick();
-			} else {
-				super.keyPressed(e);
+				if (bindingButton.id >= numRows) {
+					if (inputs.wasKeyPressedConsume(KeyEvent.VK_LEFT, KeyEvent.VK_A)) {
+						focusedItem = bindingButton.id - numRows;
+					}
+				}
 			}
 		}
+		super.tick(input);
 	}
 	
-	public void refreshKeys() {
-		for(ClickableComponent button : super.buttons) {
-			if(button instanceof KeyBindingButton)
-				((KeyBindingButton)button).refresh();
+	@Override
+	public void buttonPressed(ClickableComponent button) {
+		if (selectedButton == null && button instanceof InputBindingButton) {
+			selectedButton = (InputBindingButton)button;
+			selectedButton.setSelected(true);
+		}
+	}
+	
+	public void refreshButtons() {
+		for (ClickableComponent button : buttons) {
+			if (button instanceof InputBindingButton) {
+				((InputBindingButton)button).refresh();
+			}
 		}
 	}
 }

@@ -144,5 +144,9 @@ public class Texts {
 	public String removeRail(int cost) {
 		return MessageFormat.format(getStatic("build.removeRail"), cost);
 	}
+	
+	public String logicalInput(String logicalInputName) {
+		return getStatic("keys." + logicalInputName);
+	}
 
 }
