@@ -34,7 +34,7 @@ public class PauseMenu extends GuiMenu {
 			public void clicked() {
 				menus.stopPlaying();
 			}
-		}); // TODO: TitleMenu.RETURN_TO_TITLESCREEN
+		});
 		addButton(new Button("pausemenu.exit", (GameView.WIDTH - 128) / 2, 260) {
 			@Override
 			public void clicked() {
