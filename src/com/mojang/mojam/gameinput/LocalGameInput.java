@@ -132,8 +132,10 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 		PhysicalInput keyPressed = Key.get(e.getKeyCode());
 		if (bindings.maps(keyPressed)) {
 			LogicalInput logicalInput = next.getLogicalInputByName(bindings.get(keyPressed).getLogicalInputName());
-			logicalInput.wasPressed = true;
-			logicalInput.isDown = true;
+			if (!logicalInput.isDown) { /* ignore multiple presses without releases, they are really auto-repeats */
+				logicalInput.wasPressed = true;
+				logicalInput.isDown = true;
+			}
 		}
 		nextPhysical.addPress(keyPressed);
 	}
