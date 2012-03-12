@@ -1,4 +1,4 @@
-# Game texts encoded in UTF-8
+﻿# Game texts encoded in UTF-8
 
 build.rail = DU BENÖTIGST {0} COINS UM EINE SCHIENE ZU PLATZIEREN
 build.droid = DU BENÖTIGST {0} COINS UM EINEN RAIL DROID ZU PLATZIEREN
@@ -6,6 +6,7 @@ build.removeRail = DU BENÖTIGST {0} COINS UM EINE SCHIENE ZU ENTFERNEN
 
 back = ZURÜCK
 cancel = ABBRECHEN
+select = AUSWÄHLEN
 
 credits.leadDev = LEITENDER ENTWICKLER:
 credits.maintainers = PROJEKT VERWALTUNG:
@@ -66,6 +67,11 @@ keys.use = BENUTZEN
 keys.build = BAUEN
 keys.upgrade = UPGRADE
 keys.chat = CHAT
+keys.weaponSlot = WAFFE {0}
+keys.cycleLeft = NÄCHSTE WAFFE
+keys.cycleRight = VORH. WAFFE
+keys.console = KONSOLE
+
 
 leveleditor.title = LEVEL EDITOR
 leveleditor.new = NEU
@@ -87,6 +93,7 @@ options.on = AN
 options.off = AUS
 options.keyBindings = TASTENBELEGUNG
 options.characterSelect = SPIELER AUSW.
+options.trapmouse = MAUS FANGEN
 options.fullscreen = VOLLBILDMODUS
 options.showfps = ZEIGE FPS
 options.music = MUSIK
@@ -107,6 +114,10 @@ pausemenu.backtomain = HAUPTMENÜ
 pausemenu.resume = FORTSETZEN 
 pausemenu.exit = SPIEL BEENDEN
 
+exitmenu.headline = MÖCHTEST DU DAS SPIEL WIRKLICH BEENDEN?
+exitmenu.cancel = NEIN 
+exitmenu.exit = JA
+
 player.hasDied = {0} IST GESTORBEN!
 player.score = {0}: {1}%
 player.cost = {0}
@@ -125,6 +136,17 @@ shop.harvesterTooltipLine2 = Nutze es um das Geld zu bekommen.
 shop.bombTooltipTitle = BOMBE
 shop.bombTooltipLine1 = Zerstört rissige Wände. Benutzen
 shop.bombTooltipLine2 = um Abkürzungen frei zu sprengen.
+
+shop.rifleTooltipTitle = BÜCHSE
+shop.rifleTooltipLine1 = Standard Waffe.
+shop.rifleTooltipLine2 = Guter Allrounder.
+shop.shotgunTooltipTitle = SCHROTFLINTE
+shop.shotgunTooltipLine1 = Schuß deckt große Fläche ab.
+shop.shotgunTooltipLine2 = Hoher Schaden, kurze Reichweite.
+shop.raygunTooltipTitle = STRAHLENKANONE
+shop.raygunTooltipLine1 = Schüße prallen von Wänden ab.
+shop.raygunTooltipLine2 = Jeder Abpraller erhöht den Schaden.
+
 
 titlemenu.start = STARTEN
 titlemenu.host = HOST

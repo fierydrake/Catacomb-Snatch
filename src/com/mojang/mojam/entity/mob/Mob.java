@@ -2,6 +2,8 @@ package com.mojang.mojam.entity.mob;
 
 import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.MojamComponent;
+import com.mojang.mojam.buff.Buff;
+import com.mojang.mojam.buff.Buffs;
 import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
@@ -14,7 +16,6 @@ import com.mojang.mojam.entity.building.SpawnerEntity;
 import com.mojang.mojam.entity.loot.Loot;
 import com.mojang.mojam.entity.weapon.IWeapon;
 import com.mojang.mojam.gui.TitleMenu;
-import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.tile.HoleTile;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.math.Vec2;
@@ -60,13 +61,13 @@ public abstract class Mob extends Entity {
 	public boolean isSprint = false;
     public Vec2 aimVector;
     public IWeapon weapon;
-    
+	protected Buffs buffs = new Buffs();
+	
 	public Mob(double x, double y, int team) {
 		super();
 		setPos(x, y);
 		this.team = team;
-		DifficultyInformation difficulty = TitleMenu.difficulty;
-		this.REGEN_INTERVAL = (difficulty != null && difficulty.difficultyID == 3) ? 15 : 25;
+		this.REGEN_INTERVAL = TitleMenu.difficulty.getRegenerationInterval();
 		this.healingTime = this.REGEN_INTERVAL;
 		aimVector = new Vec2(0, 1);
 	}
@@ -102,7 +103,8 @@ public abstract class Mob extends Entity {
 	}
 
 	public void tick() {
-		if (TitleMenu.difficulty.difficultyID >= 1 || this.team != Team.Neutral) {
+		this.buffs.tick();
+		if (TitleMenu.difficulty.isMobRegenerationAllowed() || this.team != Team.Neutral) {
 			this.doRegenTime();
 		}
 		
@@ -136,9 +138,13 @@ public abstract class Mob extends Entity {
 		handleWeaponFire(xd, yd);
 	}
 	
+	public void addBuff( Buff buff ) {
+		this.buffs.add(buff);
+	}
+	
 	public void doRegenTime() {
 		if (!this.REGEN_HEALTH) {
-			// DO NOTHING
+			// DO NOTHING -> REGEN_HEALTH Apply to all health based buff, so prefer REGEN_AMOUNT = 0 for entity that can apply Poison, and Healing potion.
 		} else if (hurtTime <= 0 && health < maxHealth && --healingTime <= 0) {
 			this.healingTime = this.REGEN_INTERVAL;
 			this.onRegenTime();
@@ -146,8 +152,13 @@ public abstract class Mob extends Entity {
 	}
 	
 	public void onRegenTime() {
-			this.regenerateHealthBy( this.REGEN_AMOUNT );
-			// Can add thing here like a custom regen action
+		float regen = this.REGEN_AMOUNT ;
+		// Can add thing here like a custom regen action
+		// Like apply buffs based to Health effects
+		regen = this.buffs.effectsOf(Buff.BuffType.HEALTH_MODIF, regen);
+		regen = this.buffs.effectsOf(Buff.BuffType.REGEN_RATE  , regen);
+
+		this.regenerateHealthBy( regen );
 	}
 	
 	public void regenerateHealthBy(float a) { 
