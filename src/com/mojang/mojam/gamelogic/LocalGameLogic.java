@@ -11,6 +11,7 @@ import com.mojang.mojam.gameinput.GameInput;
 import com.mojang.mojam.gameinput.LogicalInputs;
 import com.mojang.mojam.gamesound.GameSound;
 import com.mojang.mojam.gui.menus.PauseMenu;
+import com.mojang.mojam.gui.menus.WinMenu;
 import com.mojang.mojam.level.Level;
 import com.mojang.mojam.level.tile.Tile;
 
@@ -63,17 +64,18 @@ public class LocalGameLogic implements GameLogic {
 //			synchronizer.addCommand(new PauseCommand(true));
 			CatacombSnatch.menus.push(new PauseMenu()); // FIXME
 		}
-//		if (level != null && level.victoryConditions != null) {
-//			if (level.victoryConditions.isVictoryConditionAchieved()) {
-//				int winner = level.victoryConditions.playerVictorious();
-//				GameCharacter winningCharacter = winner == players[0].getTeam() ? players[0].getCharacter()
-//						: players[1].getCharacter();
-//				addMenu(new WinMenu(GAME_WIDTH, GAME_HEIGHT, winner, winningCharacter));
-//                level = null;
-//                return;
-//            }
-//        }
-//		
+
+		if (level.victoryConditions != null) {
+			if (level.victoryConditions.isVictoryConditionAchieved()) {
+				Team winner = level.victoryConditions.playerVictorious();
+				GameCharacter winningCharacter = winner == players[0].getTeam() ? players[0].getCharacter()
+						: players[1].getCharacter();
+				CatacombSnatch.sound.startEndMusic();
+				CatacombSnatch.menus.push(new WinMenu(winner, winningCharacter));
+                return;
+            }
+        }
+		
 //		if (packetLink != null) {
 //			packetLink.tick();
 //		}

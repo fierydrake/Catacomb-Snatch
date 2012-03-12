@@ -1,9 +1,10 @@
 package com.mojang.mojam.level.gamemode;
 
+import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.level.Level;
 
 public interface IVictoryConditions {
 	void updateVictoryConditions(Level level);
 	boolean isVictoryConditionAchieved();
-	int playerVictorious();
+	Team playerVictorious();
 }

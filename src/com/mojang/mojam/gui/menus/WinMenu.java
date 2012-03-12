@@ -1,7 +1,10 @@
 package com.mojang.mojam.gui.menus;
 
+import java.awt.event.KeyEvent;
+
 import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.entity.mob.Team;
+import com.mojang.mojam.gameinput.LocalGameInput;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.components.Button;
@@ -13,13 +16,20 @@ import com.mojang.mojam.screen.Screen;
 public class WinMenu extends GuiMenu {
 	private Team winningPlayer;
 	private GameCharacter character;
+	
+	private Button okayButton;
 
 	public WinMenu(Team winningPlayer, GameCharacter character) {
 		super();
 		this.winningPlayer = winningPlayer;
 		this.character = character;
 
-		addButton(new Button("Ok", (GameView.WIDTH - 128) / 2, 200)); // TODO: TitleMenu.RETURN_TO_TITLESCREEN
+		okayButton = (Button) addButton(new Button("Ok", (GameView.WIDTH - 128) / 2, 200) {
+			@Override
+			public void clicked() {
+				menus.stopPlaying();
+			}
+		});
 	}
 
 	@Override
@@ -34,6 +44,14 @@ public class WinMenu extends GuiMenu {
 		screen.blit(Art.getPlayer(character)[0][6], (screen.w - 128) / 2 - 40, 190 + focusedItem * 40);
 	}
 
+	@Override
+	public void tick(LocalGameInput input) {
+		if (input.getCurrentPhysicalState().wasKeyPressedConsume(KeyEvent.VK_ESCAPE)) {
+			okayButton.postClick();
+		}		
+		super.tick(input);
+	}
+	
 	@Override
 	public void buttonPressed(ClickableComponent button) {
 	}
