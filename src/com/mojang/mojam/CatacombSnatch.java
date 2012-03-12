@@ -9,9 +9,6 @@ import com.mojang.mojam.gamesound.GameSound;
 import com.mojang.mojam.gamesound.SoundPlayer;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gameview.SimpleGameView;
-import com.mojang.mojam.level.LevelInformation;
-import com.mojang.mojam.level.gamemode.GameMode;
-import com.mojang.mojam.level.gamemode.GameModeVanilla;
 import com.mojang.mojam.resources.Texts;
 
 /*
