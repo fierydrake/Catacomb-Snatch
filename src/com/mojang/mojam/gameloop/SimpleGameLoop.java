@@ -8,6 +8,7 @@ package com.mojang.mojam.gameloop;
  */
 public class SimpleGameLoop {
 	private static final double ONE_SECOND_IN_NANOSECONDS = 1000000000;
+	private static final int MAX_LOGIC_RUNS_PER_RENDER = 20;
 	private double nsPerRun;
 	private Runnable renderCallback;
 	private Runnable logicCallback;
@@ -27,14 +28,15 @@ public class SimpleGameLoop {
 			timePassed += now - lastIterationTime;
 			lastIterationTime = now;
 
-			boolean logicRan = false;
-			while (timePassed >= nsPerRun) {
+			int logicRuns = 0;
+			while (timePassed >= nsPerRun && logicRuns <= MAX_LOGIC_RUNS_PER_RENDER) {
 				logicCallback.run();
 				timePassed -= nsPerRun;
-				logicRan = true;
+				logicRuns++;
 			}
 			
-			if (logicRan) renderCallback.run();
+			/* if logic ran, then render */
+			if (logicRuns > 0) renderCallback.run();
 		}
 	}
 }
