@@ -7,10 +7,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import com.mojang.mojam.Options;
 import com.mojang.mojam.gameinput.LogicalInputs.LogicalInput;
@@ -22,24 +18,35 @@ import com.mojang.mojam.gameview.GameView;
  * This class is responsible for converting local AWT input sources
  * into game input. 
  * 
- * It maintains mappings between physical inputs (like keys and mouse 
- * buttons) and logical inputs (like fire and movement); and it
- * receives input events from AWT and bundles them up into discrete
- * per-tick batches of input state.
+ * It receives input events from AWT and bundles them up into discrete
+ * per-tick batches of input state. These bundles come in two types,
+ * LogicalInputs for game inputs (see BaseGameInput) and PhysicalInputs
+ * for every "real" input event.
  * 
- * Each logical input can be mapped against up to 3 physical inputs.
- * This is an arbitrary limit.
+ * LogicalInputs are intended for in-game actions like movement, firing,
+ * using etc. They are abstracted from the underlying input mechanism
+ * (including bindings) via the GameInput interface and should be safe 
+ * to share between clients.
+ * 
+ * PhysicalInputs are intended for game menus, for navigation and 
+ * arbitrary input (like entering text). They are abstracted from the
+ * specifics of the input device, although they retain knowledge of the
+ * device type.
+ * 
+ * LogicalInputs and PhysicalInputs are bound together using an instance
+ * of InputBindings, which is for use both internally by LocalGameInput
+ * in collecting and properly routing input event; and also for use by
+ * menus. Bindings are NOT available through the GameInput interface.
  */
 public class LocalGameInput extends BaseGameInput implements KeyListener, MouseListener, MouseMotionListener {
-	public static final int MAX_PHYSICAL_PER_LOGICAL = 3;
-	private Map<PhysicalInput, String> physicalToLogicalInputMapping = new HashMap<PhysicalInput, String>();
-	private Map<String, List<PhysicalInput>> logicalToPhysicalInputMappings = new HashMap<String, List<PhysicalInput>>();
+	private InputBindings bindings;
 	
 	private PhysicalInputs currentPhysical = new PhysicalInputs();
 	private PhysicalInputs nextPhysical = new PhysicalInputs();
 
 	public LocalGameInput() {
 		super();
+		bindings = new InputBindings();
 		/* 
 		 * Add mappings for all logical inputs.
 		 * These will be loaded from Options, if available,
@@ -76,6 +83,10 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 		localInputComponent.addMouseListener(this);
 		localInputComponent.addMouseMotionListener(this);
 	}
+	
+	public InputBindings getBindings() {
+		return bindings;
+	}
 
 	private void initKey(LogicalInput logicalInput, int defaultKeyCode) {
 		initInput(logicalInput, Key.get(defaultKeyCode));
@@ -90,36 +101,7 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 		PhysicalInput[] physicalInputs = Options.getAsArrayOfPhysicalInputs("binding_" + logicalInput.name, defaultPhysicalInputs);
 		
 		for (PhysicalInput physicalInput : physicalInputs) {
-			mapInput(logicalInput, physicalInput);
-		}
-	}
-
-	private void mapInput(LogicalInput logical, PhysicalInput physical) {
-		/* Remove any existing mappings to this physical input */
-		clearMappingOf(physical);
-		
-		/* Ensure this logical input is keyed in the map */
-		if (!logicalToPhysicalInputMappings.containsKey(logical.name)) {
-			logicalToPhysicalInputMappings.put(logical.name, new ArrayList<PhysicalInput>());
-		}
-		
-		/* Cap the number of bound physical inputs for this logical input */
-		if (logicalToPhysicalInputMappings.get(logical.name).size() == MAX_PHYSICAL_PER_LOGICAL) {
-			logicalToPhysicalInputMappings.remove(0);
-		}
-
-		/* Add the new mapping */
-		logicalToPhysicalInputMappings.get(logical.name).add(physical);
-		physicalToLogicalInputMapping.put(physical, logical.name);
-	}
-	
-	private void clearMappingOf(PhysicalInput physical) {
-		/* If this physical key is mapped to a logical key... */
-		if (physicalToLogicalInputMapping.containsKey(physical)) {
-			/* ...remove the physical key from that mapping*/
-			List<PhysicalInput> physicalInputs = logicalToPhysicalInputMappings.get(physical);
-			physicalInputs.remove(physical);
-			physicalToLogicalInputMapping.remove(physical);
+			bindings.map(logicalInput, physicalInput);
 		}
 	}
 	
@@ -148,8 +130,8 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	@Override
 	public synchronized void keyPressed(KeyEvent e) {
 		PhysicalInput keyPressed = Key.get(e.getKeyCode());
-		if (physicalToLogicalInputMapping.containsKey(keyPressed)) {
-			LogicalInput logicalInput = next.getLogicalInputByName(physicalToLogicalInputMapping.get(keyPressed));
+		if (bindings.maps(keyPressed)) {
+			LogicalInput logicalInput = next.getLogicalInputByName(bindings.getBinding(keyPressed).getLogicalInputName());
 			logicalInput.wasPressed = true;
 			logicalInput.isDown = true;
 		}
@@ -159,8 +141,8 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	@Override
 	public synchronized void keyReleased(KeyEvent e) {
 		PhysicalInput keyReleased = Key.get(e.getKeyCode());
-		if (physicalToLogicalInputMapping.containsKey(keyReleased)) {
-			LogicalInput logicalInput = next.getLogicalInputByName(physicalToLogicalInputMapping.get(keyReleased));
+		if (bindings.maps(keyReleased)) {
+			LogicalInput logicalInput = next.getLogicalInputByName(bindings.getBinding(keyReleased).getLogicalInputName());
 			logicalInput.wasReleased = true;
 			logicalInput.isDown = false;
 		}
@@ -193,8 +175,8 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	@Override
 	public synchronized void mousePressed(MouseEvent e) {
 		PhysicalInput mouseButtonPressed = MouseButton.get(e.getButton());
-		if (physicalToLogicalInputMapping.containsKey(mouseButtonPressed)) {
-			LogicalInput logicalInput = next.getLogicalInputByName(physicalToLogicalInputMapping.get(mouseButtonPressed));
+		if (bindings.maps(mouseButtonPressed)) {
+			LogicalInput logicalInput = next.getLogicalInputByName(bindings.getBinding(mouseButtonPressed).getLogicalInputName());
 			logicalInput.wasPressed = true;
 			logicalInput.isDown = true;
 		}
@@ -204,8 +186,8 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	@Override
 	public synchronized void mouseReleased(MouseEvent e) {
 		PhysicalInput mouseButtonReleased = MouseButton.get(e.getButton());
-		if (physicalToLogicalInputMapping.containsKey(mouseButtonReleased)) {
-			LogicalInput logicalInput = next.getLogicalInputByName(physicalToLogicalInputMapping.get(mouseButtonReleased));
+		if (bindings.maps(mouseButtonReleased)) {
+			LogicalInput logicalInput = next.getLogicalInputByName(bindings.getBinding(mouseButtonReleased).getLogicalInputName());
 			logicalInput.wasReleased = true;
 			logicalInput.isDown = false;
 		}
