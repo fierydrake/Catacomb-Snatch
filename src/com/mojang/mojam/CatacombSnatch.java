@@ -41,7 +41,6 @@ public class CatacombSnatch {
 	}
 
 	public static void start() {
-		sound.startBackgroundMusic();
 		new Thread(menus, "Game thread").start();
 	}
 	

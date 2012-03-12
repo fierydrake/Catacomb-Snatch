@@ -30,6 +30,7 @@ public class GameMenus implements Runnable {
 	private GameView localView;
 	private GameLogic logic;
 	
+	private long nextMusicInterval;
 	private boolean mouseActive = false;
 	private int mouseActiveTime = 0;
 	
@@ -59,6 +60,8 @@ public class GameMenus implements Runnable {
 							localInput,
 							CatacombSnatch.selectedCharacter);
 			clear();
+			CatacombSnatch.sound.startBackgroundMusic();
+			nextMusicInterval = (System.currentTimeMillis() / 1000) + 4 * 60;
 		} catch (IOException e) {
 			e.printStackTrace();
 			push(new GuiError("Could not load game level"));
@@ -68,6 +71,8 @@ public class GameMenus implements Runnable {
 	public void stopPlaying() {
 		logic = new NoGameLogic();
 		clear();
+		CatacombSnatch.sound.stopBackgroundMusic();
+		CatacombSnatch.sound.startTitleMusic();
 		push(new TitleMenu());
 	}
 	
@@ -80,6 +85,7 @@ public class GameMenus implements Runnable {
 		/*
 		 * Initialise menus
 		 */
+		CatacombSnatch.sound.startTitleMusic();
 		push(new TitleMenu());
 		if (!Options.isCharacterIDset()) {
 			push(new CharacterSelectionMenu());
@@ -93,7 +99,6 @@ public class GameMenus implements Runnable {
 			@Override
 			public void run() {
 				localView.renderView(localInput, GameMenus.this, logic);
-
 			}
 		}, new Runnable() {
 			/* Logic callback */
@@ -102,6 +107,15 @@ public class GameMenus implements Runnable {
 				if (isShowing()) tick(localInput);
 				else if (isPlayingGame()) logic.tick(localInput);
 				
+				// Background music
+				if (isPlayingGame()) {
+					if (System.currentTimeMillis() / 1000 > nextMusicInterval) {
+						nextMusicInterval = (System.currentTimeMillis() / 1000) + 4 * 60;
+						CatacombSnatch.sound.startBackgroundMusic();
+					}	
+				}
+				
+				// Input
 				localInput.gatherInput();
 				if (localInput.getCurrentPhysicalState().wasMouseMoved()) {
 					mouseActive = true;
