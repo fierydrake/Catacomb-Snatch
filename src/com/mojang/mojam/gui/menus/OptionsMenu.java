@@ -38,7 +38,7 @@ public class OptionsMenu extends GuiMenu {
 				menus.push(new KeyBindingsMenu());
 			}
 		});
-		if (menus.isPlayingGame()) {
+		if (!menus.isPlayingGame()) {
 			addButton(new Button("options.characterSelect", xOffset, yOffset += offset)).addListener(new ButtonAdapter() {
 				@Override
 				public void buttonPressed(ClickableComponent button) {
