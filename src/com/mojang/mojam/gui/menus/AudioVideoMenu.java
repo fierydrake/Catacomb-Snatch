@@ -1,6 +1,9 @@
 package com.mojang.mojam.gui.menus;
 
+import java.awt.event.KeyEvent;
+
 import com.mojang.mojam.Options;
+import com.mojang.mojam.gameinput.LocalGameInput;
 import com.mojang.mojam.gamesound.GameSound;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.ButtonAdapter;
@@ -109,6 +112,14 @@ public class AudioVideoMenu extends GuiMenu {
 		volume = Options.getAsFloat(Options.VOLUME, "1.0f");
 	}
 
+	@Override
+	public void tick(LocalGameInput input) {
+		if (input.getCurrentPhysicalState().wasKeyPressedConsume(KeyEvent.VK_ESCAPE)) {
+			back.postClick();
+		}
+		super.tick(input);
+	}
+	
 	@Override
 	public void render(Screen screen) {
 		super.render(screen);

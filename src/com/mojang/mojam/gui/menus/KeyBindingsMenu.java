@@ -148,6 +148,9 @@ public class KeyBindingsMenu extends GuiMenu {
 					}
 				}
 			}
+			if (inputs.wasKeyPressedConsume(KeyEvent.VK_ESCAPE)) {
+				back.postClick();
+			}
 		}
 		super.tick(input);
 	}

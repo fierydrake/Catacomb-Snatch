@@ -1,5 +1,8 @@
 package com.mojang.mojam.gui.menus;
 
+import java.awt.event.KeyEvent;
+
+import com.mojang.mojam.gameinput.LocalGameInput;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.components.BackButton;
@@ -17,6 +20,7 @@ public class LocaleMenu extends GuiMenu {
 	private final Button[] LOCALE_BUTTONS = new Button[LOCALES.length]; 
 
 	private int textY;
+	private Button back;
 
 	public LocaleMenu() {
 		super();
@@ -40,7 +44,7 @@ public class LocaleMenu extends GuiMenu {
 			addButton(LOCALE_BUTTONS[i]);
 		}
 		yOffset += offset;
-		addButton(new BackButton(xOffset, (yOffset += offset) + 20));
+		back = (Button) addButton(new BackButton(xOffset, (yOffset += offset) + 20));
 	}
 
 	@Override
@@ -53,6 +57,14 @@ public class LocaleMenu extends GuiMenu {
 		}
 	}
 
+	@Override
+	public void tick(LocalGameInput input) {
+		if (input.getCurrentPhysicalState().wasKeyPressedConsume(KeyEvent.VK_ESCAPE)) {
+			back.postClick();
+		}
+		super.tick(input);
+	}
+	
 	@Override
 	public void render(Screen screen) {
 		super.render(screen);
