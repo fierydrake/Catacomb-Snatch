@@ -2,8 +2,12 @@ package com.mojang.mojam.math;
 
 public class Mth {
 	static public int clamp(int value, int low, int high) {
-		if (value < low)
-			return low;
+		if (value < low) return low;
+		return value > high ? high : value;
+	}
+
+	static public float clamp(float value, float low, float high) {
+		if (value < low) return low;
 		return value > high ? high : value;
 	}
 }

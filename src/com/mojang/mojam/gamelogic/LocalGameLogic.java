@@ -4,32 +4,32 @@ import java.io.IOException;
 
 import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.Keys;
-import com.mojang.mojam.MouseButtons;
-import com.mojang.mojam.SimpleGameElement;
+import com.mojang.mojam.GameInformation;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Team;
-import com.mojang.mojam.gameview.GameInput;
-import com.mojang.mojam.level.DifficultyInformation;
+import com.mojang.mojam.gameinput.GameInput;
+import com.mojang.mojam.gameinput.LogicalInputs;
+import com.mojang.mojam.gamesound.GameSound;
+import com.mojang.mojam.gui.menus.PauseMenu;
 import com.mojang.mojam.level.Level;
-import com.mojang.mojam.level.LevelInformation;
-import com.mojang.mojam.level.gamemode.GameMode;
 import com.mojang.mojam.level.tile.Tile;
 
-public class LocalGameLogic extends SimpleGameElement implements GameLogic {
+public class LocalGameLogic implements GameLogic {
+	protected final GameSound sound = CatacombSnatch.sound;
+	
 	private Level level = null;
-	private DifficultyInformation difficulty;
+	private GameInformation gameInformation;
 
 	private Player[] players;
 	private Player localPlayer;
 	
-	public LocalGameLogic(GameCharacter character, LevelInformation levelInfo, DifficultyInformation difficulty, GameMode gameMode) 
+	public LocalGameLogic(GameInformation gameInformation, GameInput input, GameCharacter character) 
 	throws IOException {
-		this.difficulty = difficulty;
-		level = gameMode.generateLevel(levelInfo);
+		this.gameInformation = gameInformation;
+		level = gameInformation.generateLevel();
 		localPlayer = new Player(level.width * Tile.WIDTH / 2 -16,
 								 (level.height - 5 - 1) * Tile.HEIGHT - 16,
-								 Team.Team1, CatacombSnatch.input, character); // TODO Should get player start position from level
+								 Team.Team1, this, input, character); // TODO Should get player start position from level
 		localPlayer.setFacing(4);
 		level.addEntity(localPlayer);
 		localPlayer.setCanSee(true);
@@ -39,35 +39,29 @@ public class LocalGameLogic extends SimpleGameElement implements GameLogic {
 	
 	@Override public Level getLevel() { return level; }
 	
-	@Override public DifficultyInformation getDifficulty() { return difficulty; }
-	@Override public void setDifficulty(DifficultyInformation difficulty) { this.difficulty = difficulty; }
+	@Override public GameInformation getGameInformation() { return gameInformation; }
 	
 	@Override public Player getLocalPlayer() { return localPlayer; } // FIXME ?
 	@Override public Player[] getPlayers() { return players; }
+	
+	@Override public boolean isMouseActive() { return CatacombSnatch.menus.isMouseActive() ; }
 
 	/*
 	 * Game logic
 	 */
-	private int mouseHideTime = 0;
 	@Override
 	public void tick(GameInput input) {
-		Keys keys = input.getKeys();
-		MouseButtons mouseButtons = input.getMouseButtons();
+		LogicalInputs inputs = input.getCurrentState();
 		
 		level.tick();
 		
 		sound.setListenerPosition((float) localPlayer.pos.x, (float) localPlayer.pos.y);
 
-		if (input.getMouseMoved()) {
-			mouseHideTime = 0;
-			if (mouseButtons.mouseHidden) {
-				mouseButtons.mouseHidden = false;
-			}
-		}
-		if (mouseHideTime < 60) {
-			if (++mouseHideTime == 60) {
-				mouseButtons.mouseHidden = true;
-			}
+		if (inputs.pause.wasPressed) {
+//			keys.release();
+//			mouseButtons.releaseAll();
+//			synchronizer.addCommand(new PauseCommand(true));
+			CatacombSnatch.menus.push(new PauseMenu()); // FIXME
 		}
 //		if (level != null && level.victoryConditions != null) {
 //			if (level.victoryConditions.isVictoryConditionAchieved()) {

@@ -9,7 +9,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+
+import com.mojang.mojam.gameinput.PhysicalInput;
 
 public class Options {
     public static final String DRAW_FPS = "drawFps";
@@ -83,6 +87,27 @@ public class Options {
     
     public static int getAsInteger(String key, Integer defaultValue) {
         return Integer.parseInt(get(key, Integer.toString(defaultValue)));
+    }
+    
+    public static PhysicalInput[] getAsArrayOfPhysicalInputs(String key, PhysicalInput[] defaultValue) {
+    	String bindingsProperty = get(key);
+    	
+    	if (bindingsProperty == null) return defaultValue;
+    	
+    	String[] bindings = bindingsProperty.split(",");
+    	List<PhysicalInput> value = new ArrayList<PhysicalInput>(bindings.length);
+    	for (String binding : bindings) {
+    		try {
+	    		String[] parts = binding.split(":");
+	    		String source = parts[0];
+	    		int code = Integer.parseInt(parts[1]);
+	    		value.add(PhysicalInput.get(source, code));
+    		} catch (Exception e) {
+    			System.err.println("Failed to parse binding (propertyKey='" + key + "', propertyValue='" + bindingsProperty + "', binding='" + binding +"'");
+    			e.printStackTrace();
+    		}
+    	}
+    	return value.toArray(new PhysicalInput[0]);
     }
     
 	public static void set(String key, String value) {

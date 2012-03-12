@@ -1,5 +1,6 @@
 package com.mojang.mojam.entity.mob;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
@@ -12,7 +13,6 @@ import com.mojang.mojam.entity.building.Harvester;
 import com.mojang.mojam.entity.building.SpawnerEntity;
 import com.mojang.mojam.entity.loot.Loot;
 import com.mojang.mojam.entity.weapon.IWeapon;
-import com.mojang.mojam.gameview.GameInput;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.tile.HoleTile;
 import com.mojang.mojam.level.tile.Tile;
@@ -29,7 +29,7 @@ public abstract class Mob extends Entity {
 
 	// private double speed = 0.82;
 	protected double speed = 1.0;
-	public int team;
+	public Team team;
 	protected boolean doShowHealthBar = true;
     protected int healthBarOffset = 10;
 	double dir = 0;
@@ -60,11 +60,11 @@ public abstract class Mob extends Entity {
     public Vec2 aimVector;
     public IWeapon weapon;
     
-	public Mob(double x, double y, int team) {
+	public Mob(double x, double y, Team team) {
 		super();
 		setPos(x, y);
 		this.team = team;
-		DifficultyInformation difficulty = logic().getDifficulty();
+		DifficultyInformation difficulty = CatacombSnatch.menus.getGameInformation().difficulty;
 		this.REGEN_INTERVAL = (difficulty != null && difficulty.difficultyID == 3) ? 15 : 25;
 		this.healingTime = this.REGEN_INTERVAL;
 		aimVector = new Vec2(0, 1);
@@ -86,7 +86,7 @@ public abstract class Mob extends Entity {
 		super.move(v.x, v.y);
 	}
 
-	public int getTeam() {
+	public Team getTeam() {
 		return team;
 	}
 
@@ -102,7 +102,7 @@ public abstract class Mob extends Entity {
 
 	@Override
 	public void tick() {
-		if (logic().getDifficulty().difficultyID >= 1 || this.team != Team.Neutral) {
+		if (logic().getGameInformation().difficulty.difficultyID >= 1 || this.team != Team.Neutral) {
 			this.doRegenTime();
 		}
 		

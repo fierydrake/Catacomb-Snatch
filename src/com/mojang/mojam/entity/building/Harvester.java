@@ -8,6 +8,7 @@ import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.animation.SmokeAnimation;
 import com.mojang.mojam.entity.loot.Loot;
 import com.mojang.mojam.entity.loot.LootCollector;
+import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.network.TurnSynchronizer;
 import com.mojang.mojam.screen.Art;
@@ -42,7 +43,7 @@ public class Harvester extends Building implements LootCollector {
 	 * @param y Initial Y coordinate
 	 * @param team Team number
 	 */
-	public Harvester(double x, double y, int team) {
+	public Harvester(double x, double y, Team team) {
 		super(x, y, team);
 		setStartHealth(10);
 		freezeTime = 10;

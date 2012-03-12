@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.SimpleGameElement;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Mob;
+import com.mojang.mojam.gamelogic.GameLogic;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.Notifications;
 import com.mojang.mojam.level.gamemode.ILevelTickItem;
@@ -26,7 +27,9 @@ import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
 
-public class Level extends SimpleGameElement {
+public class Level {
+	protected GameLogic logic() { return CatacombSnatch.menus.getGameLogic(); }
+
 	public int TARGET_SCORE = 100;
 
 	public final int width, height;
@@ -256,8 +259,8 @@ public class Level extends SimpleGameElement {
 	public void addMob(Mob m, int xTile, int yTile)
 	{
 		updateDensityList();
-		if(monsterDensity[(int)(xTile/densityTileWidth)][(int)(yTile/densityTileHeight)] <allowedDensities[logic().getDifficulty().difficultyID])
-		{
+		int densityLimit = allowedDensities[logic().getGameInformation().difficulty.difficultyID];
+		if (monsterDensity[(int)(xTile/densityTileWidth)][(int)(yTile/densityTileHeight)] < densityLimit) {
 			addEntity(m);
 		}
 	}

@@ -3,13 +3,14 @@ package com.mojang.mojam.entity.building;
 import java.awt.Color;
 import java.util.Set;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.mob.DropTrap;
 import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.entity.mob.RailDroid;
 import com.mojang.mojam.entity.mob.SpikeTrap;
-import com.mojang.mojam.level.DifficultyInformation;
+import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.level.IEditable;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.screen.Art;
@@ -25,7 +26,6 @@ public class Turret extends Building implements IEditable {
 	
 	private int delayTicks = 0;
 	private int delay;
-	public int team;
 	public int radius;
 	public int radiusSqr;
 
@@ -46,9 +46,8 @@ public class Turret extends Building implements IEditable {
 	 * @param y Initial Y coordinate
 	 * @param team Team number
 	 */
-	public Turret(double x, double y, int team) {
+	public Turret(double x, double y, Team team) {
 		super(x, y, team);
-		this.team = team;
 		setStartHealth(10);
 		freezeTime = 10;
 		areaBitmap = Bitmap.rangeBitmap(radius,RADIUS_COLOR);
@@ -56,9 +55,11 @@ public class Turret extends Building implements IEditable {
 
 	@Override
 	public void init() {
-		makeUpgradeableWithCosts(new int[] { DifficultyInformation.calculateCosts(500), 
-				DifficultyInformation.calculateCosts(1000), 
-				DifficultyInformation.calculateCosts(5000)});
+		makeUpgradeableWithCosts(new int[] { 
+				CatacombSnatch.menus.getGameInformation().difficulty.calculateCosts(500), 
+				CatacombSnatch.menus.getGameInformation().difficulty.calculateCosts(1000), 
+				CatacombSnatch.menus.getGameInformation().difficulty.calculateCosts(5000)
+		});
 	}
 
 	@Override
@@ -76,7 +77,7 @@ public class Turret extends Building implements IEditable {
     		Entity closest = null;
     		double closestDist = 99999999.0f;
     		for (Entity e : entities) {
-    			if (!(e instanceof Mob) || (e instanceof RailDroid && e.team == this.team) || e instanceof Bomb || e instanceof SpikeTrap || 
+    			if (!(e instanceof Mob) || (e instanceof RailDroid && ((RailDroid)e).team == this.team) || e instanceof Bomb || e instanceof SpikeTrap || 
     					e instanceof DropTrap)
     				continue;
     			if (!((Mob) e).isNotFriendOf(this))

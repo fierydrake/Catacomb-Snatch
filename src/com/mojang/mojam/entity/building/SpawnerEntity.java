@@ -3,7 +3,6 @@ package com.mojang.mojam.entity.building;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.entity.mob.Team;
-import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.IEditable;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.network.TurnSynchronizer;
@@ -49,7 +48,7 @@ public abstract class SpawnerEntity extends Building implements IEditable {
 
 		if (--spawnTime <= 0) {
 			spawn();
-			spawnTime = DifficultyInformation.calculateSpawntime(SPAWN_INTERVAL);
+			spawnTime = logic().getGameInformation().difficulty.calculateSpawntime(SPAWN_INTERVAL);
 		}
 	}
 

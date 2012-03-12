@@ -59,7 +59,7 @@ public class Art {
 	}
 	
 	public static Bitmap[][] getLocalPlayerArt() {
-		return getPlayer(GameCharacter.LordLard);// FIXME MojamComponent.instance.playerCharacter);
+		return getPlayer(CatacombSnatch.selectedCharacter);
 	}
 	
     public static Bitmap exclamation_mark = load ("/art/effects/exclamation_mark.png");

@@ -3,8 +3,6 @@ package com.mojang.mojam.entity;
 import java.util.Random;
 
 import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.Keys;
-import com.mojang.mojam.MouseButtons;
 import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.animation.SmokePuffAnimation;
 import com.mojang.mojam.entity.building.Building;
@@ -18,7 +16,9 @@ import com.mojang.mojam.entity.mob.RailDroid;
 import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.entity.particle.Sparkle;
 import com.mojang.mojam.entity.weapon.Rifle;
-import com.mojang.mojam.gameview.GameInput;
+import com.mojang.mojam.gameinput.GameInput;
+import com.mojang.mojam.gameinput.LogicalInputs;
+import com.mojang.mojam.gamelogic.GameLogic;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Notifications;
 import com.mojang.mojam.level.tile.RailTile;
@@ -49,6 +49,7 @@ public class Player extends Mob implements LootCollector {
     
     private boolean mouseAiming;
     
+    private GameLogic logic;
     private GameInput input;
    
     public int takeDelay = 0;
@@ -80,14 +81,16 @@ public class Player extends Mob implements LootCollector {
     /**
      * Constructor
      * 
-     * @param keys Key bindings for this player
-     * @param mouseButtons Mouse Button state
      * @param x Initial x coordinate
      * @param y Initial y coordinate
      * @param team Team number
+     * @parem logic Game state
+     * @param input Input bindings for this player
+     * @param character Game character model
      */
-    public Player(int x, int y, int team, GameInput input, GameCharacter character) {
+    public Player(int x, int y, Team team, GameLogic logic, GameInput input, GameCharacter character) {
         super(x, y, team);
+        this.logic = logic;
         this.input = input;
         this.character = character;
 
@@ -168,18 +171,16 @@ public class Player extends Mob implements LootCollector {
     
     @Override
     public void tick() {
-    	Keys keys = input.getKeys();
-    	MouseButtons mouseButtons = input.getMouseButtons();
-
         // If the mouse is used, update player orientation before level tick
-        if (!mouseButtons.mouseHidden) {
+        if (logic.isMouseActive()) {
             // Update player mouse, in world pixels relative to player
-            setAimByMouse(
-                    ((mouseButtons.getX() / GameView.SCALE) - (GameView.WIDTH / 2)),
-                    (((mouseButtons.getY() / GameView.SCALE) + 24) - (GameView.HEIGHT / 2)));
+            setAimByMouse(input.getMousePosition().x - GameView.WIDTH / 2,
+            		      input.getMousePosition().y - GameView.HEIGHT / 2 + 24);
         } else {
             setAimByKeyboard();
         }
+        
+        LogicalInputs inputs = input.getCurrentState();
 
         time++;
 		
@@ -188,7 +189,7 @@ public class Player extends Mob implements LootCollector {
         handleLevelUp();
         flashMiniMapIcon();
         countdownTimers();
-        playStepSound(keys);
+        playStepSound();
 
         double xa = 0;
         double ya = 0;
@@ -197,43 +198,43 @@ public class Player extends Mob implements LootCollector {
 
         // Handle keys
         if (!dead) {
-            if (keys.up.isDown) {
+            if (inputs.up.isDown) {
                 ya--;
             }
-            if (keys.down.isDown) {
+            if (inputs.down.isDown) {
                 ya++;
             }
-            if (keys.left.isDown) {
+            if (inputs.left.isDown) {
                 xa--;
             }
-            if (keys.right.isDown) {
+            if (inputs.right.isDown) {
                 xa++;
             }
-            if (keys.right.isDown) {
+            if (inputs.right.isDown) {
                 xa++;
             }
-            if (keys.fireUp.isDown) {
+            if (inputs.fireUp.isDown) {
                 yaShot--;
             }
-            if (keys.fireDown.isDown) {
+            if (inputs.fireDown.isDown) {
                 yaShot++;
             }
-            if (keys.fireLeft.isDown) {
+            if (inputs.fireLeft.isDown) {
                 xaShot--;
             }
-            if (keys.fireRight.isDown) {
+            if (inputs.fireRight.isDown) {
                 xaShot++;
             }
         }
 
         // Handle mouse aiming
-        if (!mouseAiming && !keys.fire.isDown && !mouseButtons.isDown(mouseFireButton) && xa * xa + ya * ya != 0) {
+        if (!mouseAiming && !inputs.fire.isDown && xa * xa + ya * ya != 0) {
             aimVector.set(xa, ya);
             aimVector.normalizeSelf();
             updateFacing();
         }
         
-        if (!mouseAiming && fireKeyIsDown(keys) && xaShot * xaShot + yaShot * yaShot != 0) {
+        if (!mouseAiming && fireKeyIsDown(inputs) && xaShot * xaShot + yaShot * yaShot != 0) {
             aimVector.set(xaShot, yaShot);
             aimVector.normalizeSelf();
             updateFacing();
@@ -241,7 +242,7 @@ public class Player extends Mob implements LootCollector {
 
         // Move player if it is not standing still
         if (xa != 0 || ya != 0) {
-            handleMovement(keys, xa, ya);
+            handleMovement(xa, ya);
         }
 
         if (freezeTime > 0) {
@@ -257,7 +258,7 @@ public class Player extends Mob implements LootCollector {
         yBump *= 0.8;
         muzzleImage = (muzzleImage + 1) & 3;
 
-        handleWeaponFire(keys, mouseButtons, xa, ya);
+        handleWeaponFire(xa, ya);
 
         int x = (int) pos.x / Tile.WIDTH;
         int y = (int) pos.y / Tile.HEIGHT;
@@ -273,14 +274,14 @@ public class Player extends Mob implements LootCollector {
             revive();
         }
 
-        if (keys.build.isDown && !keys.build.wasDown) {
+        if (inputs.build.wasPressed) { /* TODO Implement rail build/destroy modes */
             handleRailBuilding(x, y);
         }
 
         if (carrying != null) {
-            handleCarrying(keys, mouseButtons);
+            handleCarrying();
         } else {
-            handleEntityInteraction(keys, mouseButtons);
+            handleEntityInteraction();
         }
 
         if (isSeeing) {
@@ -322,8 +323,9 @@ public class Player extends Mob implements LootCollector {
     /**
      * Play step sounds synchronized to player movement and carrying status
      */
-    private void playStepSound(Keys keys) {
-        if (keys.up.isDown || keys.down.isDown || keys.left.isDown || keys.right.isDown) {
+    private void playStepSound() {
+    	LogicalInputs inputs = input.getCurrentState();
+        if (inputs.up.isDown || inputs.down.isDown || inputs.left.isDown || inputs.right.isDown) {
             int stepCount = 25;
             
             if (carrying == null) {
@@ -347,7 +349,7 @@ public class Player extends Mob implements LootCollector {
      * @param xa Position change on the x axis
      * @param ya Position change on the y axis
      */
-    private void handleMovement(Keys keys, double xa, double ya) {
+    private void handleMovement(double xa, double ya) {
         int facing2 = (int) ((Math.atan2(-xa, ya) * 8 / (Math.PI * 2) + 8.5)) & 7;
         int diff = facing - facing2;
         
@@ -385,7 +387,7 @@ public class Player extends Mob implements LootCollector {
         double dd = Math.sqrt(xa * xa + ya * ya);
         double speed = getSpeed() / dd;
 
-        if (keys.sprint.isDown) {
+        if (input.getCurrentState().sprint.isDown) {
             if (timeSprint < maxTimeSprint) {
                 isSprint = true;
                 if (carrying == null) {
@@ -417,12 +419,10 @@ public class Player extends Mob implements LootCollector {
      * @param xa Position change on the x axis
      * @param ya Position change on the y axis
      */
-    private void handleWeaponFire(Keys keys, MouseButtons mouseButtons, double xa, double ya) {
+    private void handleWeaponFire(double xa, double ya) {
         weapon.weapontick();
         
-        if (!dead
-                && (carrying == null && fireKeyIsDown(keys)
-                || carrying == null && mouseButtons.isDown(mouseFireButton))) {
+        if (!dead && (carrying == null && fireKeyIsDown(input.getCurrentState()))) {
             wasShooting = true;
             if (takeDelay > 0) {
                 takeDelay--;
@@ -443,8 +443,8 @@ public class Player extends Mob implements LootCollector {
      * Returns true if one of the keyboard fire buttons is down
      * @return
      */
-    private boolean fireKeyIsDown(Keys keys) {
-        return keys.fire.isDown || keys.fireUp.isDown || keys.fireDown.isDown || keys.fireRight.isDown || keys.fireLeft.isDown;
+    private boolean fireKeyIsDown(LogicalInputs inputs) {
+        return inputs.fire.isDown || inputs.fireUp.isDown || inputs.fireDown.isDown || inputs.fireRight.isDown || inputs.fireLeft.isDown;
     }
 
     /**
@@ -461,7 +461,7 @@ public class Player extends Mob implements LootCollector {
                 lastRailTick = time;
                 level.placeTile(x, y, new RailTile(level.getTile(x, y)), this);
                 payCost(COST_RAIL);
-            } else if (score < COST_RAIL && this.team == logic().getLocalPlayer().team) { // TODO Check this
+            } else if (score < COST_RAIL && this.team == logic.getLocalPlayer().team) { // TODO Check this
             	Notifications.getInstance().add(Texts.current().buildRail(COST_RAIL));
             }            
         } else if (level.getTile(x, y) instanceof RailTile) {
@@ -470,7 +470,7 @@ public class Player extends Mob implements LootCollector {
                     level.addEntity(new RailDroid(pos.x, pos.y, team));
                     payCost(COST_DROID);
                 } else {
-                	if(this.team == logic().getLocalPlayer().team) { // TODO Check this
+                	if(this.team == logic.getLocalPlayer().team) { // TODO Check this
                 		Notifications.getInstance().add(Texts.current().buildDroid(COST_DROID));
                 	}
                 }
@@ -482,7 +482,7 @@ public class Player extends Mob implements LootCollector {
                         payCost(COST_REMOVE_RAIL);
                     }
                 } else if (score < COST_REMOVE_RAIL) {
-                	if(this.team == logic().getLocalPlayer().team) { // TODO Check this
+                	if(this.team == logic.getLocalPlayer().team) { // TODO Check this
                 		Notifications.getInstance().add(Texts.current().removeRail(COST_REMOVE_RAIL));
                 	}
                 }
@@ -494,11 +494,11 @@ public class Player extends Mob implements LootCollector {
     /**
      * Handle object carrying
      */
-    private void handleCarrying(Keys keys, MouseButtons mouseButtons) {
+    private void handleCarrying() {
         carrying.setPos(pos.x, pos.y - 20);
         carrying.tick();
-        if (keys.use.wasPressed() || mouseButtons.isDown(mouseUseButton)) {
-            mouseButtons.setNextState(mouseUseButton, false);
+        if (input.getCurrentState().use.wasPressed) {
+//            mouseButtons.setNextState(mouseUseButton, false); // FIXME What is the intent here?
 
             if (((IUsable) carrying).isAllowedToCancel()) {
                 drop();
@@ -509,7 +509,7 @@ public class Player extends Mob implements LootCollector {
     /**
      * Handle interaction with entities
      */
-    private void handleEntityInteraction(Keys keys, MouseButtons mouseButtons) {
+    private void handleEntityInteraction() {
         // Unhighlight previously selected building
         if (selected != null) {
             selected.setHighlighted(false);
@@ -533,13 +533,13 @@ public class Player extends Mob implements LootCollector {
         if (closest != null) {
             // Perform any allowed interactions if the correct
             // keys have been pressed
-            if (keys.use.wasPressed() || mouseButtons.isDown(mouseUseButton)) {
+            if (input.getCurrentState().use.wasPressed) {
 
                 if (canUseBuilding(closest)) {
                     closest.use(this);
-                    mouseButtons.setNextState(mouseUseButton, false);
+                    // mouseButtons.setNextState(mouseUseButton, false); FIXME?
                 }
-            } else if (keys.upgrade.wasPressed()) {
+            } else if (input.getCurrentState().upgrade.wasPressed) {
                 
                 if (canUpgradeBuilding(closest)) {
                     closest.upgrade(this);
@@ -560,7 +560,7 @@ public class Player extends Mob implements LootCollector {
     // highlighted on their game client - this indicates that
     // they can interact with the building
     private boolean shouldHighlightBuildingOnThisGameClient(Building building) {
-        return building.isHighlightable() && canInteractWithBuilding(building) && this.team == logic().getLocalPlayer().team; // TODO Check this 
+        return building.isHighlightable() && canInteractWithBuilding(building) && this.team == logic.getLocalPlayer().team; // TODO Check this 
     }
     
     // Whether this Player is allowed to use the building in 
@@ -681,7 +681,7 @@ public class Player extends Mob implements LootCollector {
     
     @Override
     protected void renderCarrying(Screen screen, int yOffs) {
-    	if(carrying != null && carrying.team == logic().getLocalPlayer().team) { // TODO Check this
+    	if(carrying != null && carrying.team == logic.getLocalPlayer().team) { // TODO Check this
 			if(carrying instanceof Turret) {
 				Turret turret = (Turret)carrying;
 				turret.drawRadius(screen);	

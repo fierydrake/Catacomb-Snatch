@@ -1,19 +1,21 @@
 package com.mojang.mojam.entity.weapon;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.Options;
-import com.mojang.mojam.SimpleGameElement;
 import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Mob;
+import com.mojang.mojam.gamesound.GameSound;
 import com.mojang.mojam.network.TurnSynchronizer;
 
-public class Rifle extends SimpleGameElement implements IWeapon {
+public class Rifle implements IWeapon {
+	protected final GameSound sound = CatacombSnatch.sound;
 
 	protected Mob owner;
 	protected static float BULLET_DAMAGE;
 	
-	private int upgradeIndex = 1;
+	private int upgradeIndex = 1; 
 	private double accuracy;
 	private int shootDelay = 5;
 	
@@ -34,7 +36,7 @@ public class Rifle extends SimpleGameElement implements IWeapon {
 		if(Options.getAsBoolean(Options.CREATIVE)){
 			BULLET_DAMAGE = 100f;
 			accuracy = 0;
-		}else{
+		} else {
 			BULLET_DAMAGE = .5f;
 			accuracy = 0.15;
 		}

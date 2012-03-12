@@ -1,11 +1,12 @@
 package com.mojang.mojam.entity.building;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
+import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.Notifications;
-import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
@@ -21,7 +22,7 @@ public abstract class ShopItem extends Building {
     private int effectiveCost;
    
 
-    public ShopItem(String name, double x, double y, int team, int cost, int yOffset) {
+    public ShopItem(String name, double x, double y, Team team, int cost, int yOffset) {
         super(x, y, team);
         this.name = name;
         //Set building cost depending if creative mode is on or not
@@ -53,7 +54,7 @@ public abstract class ShopItem extends Building {
 		// Draw iiAtlas' shop item info graphics, thanks whoever re-wrote this!
 		if (highlight) {
 		        Bitmap image = getSprite();
-		        int teamYOffset = (team == 2) ? 90 : 0;
+		        int teamYOffset = (team == Team.Team2) ? 90 : 0;
 		        
 		        String[] tooltip = this.getTooltip();
 		        int width = getLongestWidth(tooltip, Font.FONT_WHITE_SMALL)+4;
@@ -86,7 +87,7 @@ public abstract class ShopItem extends Building {
 
     @Override
     public void init() {
-        effectiveCost = DifficultyInformation.calculateCosts(cost);
+        effectiveCost = CatacombSnatch.menus.getGameInformation().difficulty.calculateCosts(cost);
     }
 
     @Override

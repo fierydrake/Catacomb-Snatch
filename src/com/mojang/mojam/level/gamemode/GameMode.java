@@ -6,11 +6,13 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.building.ShopItemBomb;
 import com.mojang.mojam.entity.building.ShopItemHarvester;
 import com.mojang.mojam.entity.building.ShopItemTurret;
 import com.mojang.mojam.entity.mob.Team;
+import com.mojang.mojam.gamelogic.GameLogic;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.Level;
 import com.mojang.mojam.level.LevelInformation;
@@ -21,12 +23,13 @@ import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.level.tile.UnbreakableRailTile;
 
 public class GameMode {
+	protected GameLogic logic() { return CatacombSnatch.menus.getGameLogic(); }
 
 	public static final int LEVEL_BORDER_SIZE = 16;
 	
 	protected Level newLevel;
 	
-	public Level generateLevel(LevelInformation li)  throws IOException {
+	public Level generateLevel(DifficultyInformation difficulty, LevelInformation li)  throws IOException {
 		//System.out.println("Loading level from file: "+li.getPath());
 		BufferedImage bufferedImage = ImageIO.read(li.getURL());
 		int w = bufferedImage.getWidth() + LEVEL_BORDER_SIZE;
@@ -37,7 +40,7 @@ public class GameMode {
 		processLevelImage(bufferedImage, w, h);
 		darkenMap(w, h);
 		
-		setupPlayerSpawnArea();
+		setupPlayerSpawnArea(difficulty);
 		setTickItems();
 		setVictoryCondition();
 		setTargetScore();
@@ -97,13 +100,9 @@ public class GameMode {
 		}
 
 	}
-	
 
-	
-
-
-	protected void setupPlayerSpawnArea() {
-		newLevel.maxMonsters = 1500 + (int)DifficultyInformation.calculateStrength(500);	
+	protected void setupPlayerSpawnArea(DifficultyInformation difficulty) {
+		newLevel.maxMonsters = 1500 + (int)difficulty.calculateStrength(500);	
 		
 		newLevel.addEntity(new ShopItemTurret(32 * (newLevel.width / 2 - 1.5), 4.5 * 32, Team.Team2));
 		newLevel.addEntity(new ShopItemHarvester(32 * (newLevel.width / 2 - .5), 4.5 * 32, Team.Team2));

@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 import com.mojang.mojam.CatacombSnatch;
 
+
 public class LevelInformation {
 	public static HashMap<String, LevelInformation> fileToInfo = new HashMap<String, LevelInformation>();
 	private static int localIDcounter = 0;

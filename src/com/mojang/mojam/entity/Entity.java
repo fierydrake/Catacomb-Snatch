@@ -2,9 +2,10 @@ package com.mojang.mojam.entity;
 
 import java.util.List;
 
-import com.mojang.mojam.SimpleGameElement;
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.entity.animation.LargeBombExplodeAnimation;
-import com.mojang.mojam.gameview.GameInput;
+import com.mojang.mojam.gamelogic.GameLogic;
+import com.mojang.mojam.gamesound.GameSound;
 import com.mojang.mojam.level.Level;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.math.BB;
@@ -13,7 +14,10 @@ import com.mojang.mojam.math.Vec2;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
-public abstract class Entity extends SimpleGameElement implements BBOwner {
+public abstract class Entity implements BBOwner {
+	protected final GameSound sound = CatacombSnatch.sound;
+	protected GameLogic logic() { return CatacombSnatch.menus.getGameLogic(); } 
+	
 	public Level level;
 	public boolean removed;
 	public Vec2 pos = new Vec2(0, 0);
@@ -27,7 +31,6 @@ public abstract class Entity extends SimpleGameElement implements BBOwner {
 	public double xd, yd;
 	public int minimapIcon = -1;
 	public int minimapColor = -1;
-	public int team;
 
 	public void setPos(double x, double y) {
 		pos.set(x, y);

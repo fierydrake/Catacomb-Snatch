@@ -63,7 +63,7 @@ public class Texts {
 		}
 	}
 
-	public String winCharacter(int team, GameCharacter character) {
+	public String winCharacter(Team team, GameCharacter character) {
 		String winMessage;
 		if (team == Team.Team1) {
 			winMessage = getStatic("gameplay.player1Win");
