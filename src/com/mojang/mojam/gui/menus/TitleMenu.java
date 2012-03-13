@@ -40,7 +40,12 @@ public class TitleMenu extends GuiMenu {
 					menus.push(new OptionsMenu());
 				}
 			});
-			addButton(new Button("titlemenu.levelEditor", x, y+=Button.HEIGHT+BUTTON_SPACING));
+			addButton(new Button("titlemenu.levelEditor", x, y+=Button.HEIGHT+BUTTON_SPACING) {
+				@Override
+				public void clicked() {
+					menus.push(new LevelEditorMenu());
+				}
+			});
 			addButton(new Button("titlemenu.exit", x, y+=Button.HEIGHT+BUTTON_SPACING) {
 				@Override
 				public void clicked() {

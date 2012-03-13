@@ -137,7 +137,7 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 				logicalInput.isDown = true;
 			}
 		}
-		nextPhysical.addPress(keyPressed);
+		nextPhysical.addPress(keyPressed, new Character(e.getKeyChar()));
 	}
 
 	@Override
@@ -148,12 +148,12 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 			logicalInput.wasReleased = true;
 			logicalInput.isDown = false;
 		}
-		nextPhysical.addRelease(keyReleased);
+		nextPhysical.addRelease(keyReleased, new Character(e.getKeyChar()));
 	}
 
 	@Override
-	public void keyTyped(KeyEvent e) {
-		// Nothing, we should be covered by keyPressed and keyReleased
+	public synchronized void keyTyped(KeyEvent e) {
+		nextPhysical.addTyped(Key.get(e.getKeyCode()), new Character(e.getKeyChar()));
 	}
 
 	/* 

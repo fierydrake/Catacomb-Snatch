@@ -7,24 +7,34 @@ import java.util.List;
 
 public class PhysicalInputs {
 	public static class PhysicalInputEvent {
-		enum Type { PRESS, RELEASE };
+		enum Type { PRESS, RELEASE, TYPED };
 		Type type;
 		PhysicalInput physicalInput;
-		public PhysicalInputEvent(Type type, PhysicalInput physicalInput) {
+		Character inputChar; // For key typed
+		public PhysicalInputEvent(Type type, PhysicalInput physicalInput, Character inputChar) {
 			this.type = type;
 			this.physicalInput = physicalInput;
+			this.inputChar = inputChar;
 		}
+		public Character getInputChar() { return inputChar; }
 	}
 	private List<PhysicalInputEvent> events = new ArrayList<PhysicalInputEvent>();
 	private boolean mouseMoved = false;
 	private Point mousePosition = new Point(0, 0);
 	
-	public void addPress(PhysicalInput pressed) {
-		events.add(new PhysicalInputEvent(PhysicalInputEvent.Type.PRESS, pressed));
+	public void addPress(PhysicalInput pressed) { addPress(pressed, null); }
+	public void addPress(PhysicalInput pressed, Character inputChar) {
+		events.add(new PhysicalInputEvent(PhysicalInputEvent.Type.PRESS, pressed, inputChar));
 	}
 
-	public void addRelease(PhysicalInput released) {
-		events.add(new PhysicalInputEvent(PhysicalInputEvent.Type.RELEASE, released));
+	public void addRelease(PhysicalInput released) { addRelease(released, null); }
+	public void addRelease(PhysicalInput released, Character inputChar) {
+		events.add(new PhysicalInputEvent(PhysicalInputEvent.Type.RELEASE, released, inputChar));
+	}
+	
+	public void addTyped(PhysicalInput typed) { addRelease(typed, null); }
+	public void addTyped(PhysicalInput typed, Character inputChar) {
+		events.add(new PhysicalInputEvent(PhysicalInputEvent.Type.TYPED, typed, inputChar));
 	}
 	
 	public void setMouseMoved() { mouseMoved = true; }
@@ -40,15 +50,22 @@ public class PhysicalInputs {
 		return false;
 	}
 	
+	public PhysicalInputEvent consumeKeyTypedEvent() { return consumeEvent(PhysicalInput.Key.class, PhysicalInputEvent.Type.TYPED); }
+	public PhysicalInputEvent consumeKeyPressEvent() { return consumeEvent(PhysicalInput.Key.class, PhysicalInputEvent.Type.PRESS); }
+	public PhysicalInputEvent consumeKeyReleaseEvent() { return consumeEvent(PhysicalInput.Key.class, PhysicalInputEvent.Type.RELEASE); }
 	public PhysicalInput consumePress() { return consume(PhysicalInputEvent.Type.PRESS); }
 	public PhysicalInput consumeRelease() { return consume(PhysicalInputEvent.Type.RELEASE); }
 	public PhysicalInput consume(PhysicalInputEvent.Type wantedType) {
+		PhysicalInputEvent event = consumeEvent(PhysicalInput.class, wantedType);
+		return event != null ? event.physicalInput : null;
+	}
+	private PhysicalInputEvent consumeEvent(Class<? extends PhysicalInput> inputClass, PhysicalInputEvent.Type wantedType) {
 		Iterator<PhysicalInputEvent> i = events.iterator();
 		while (i.hasNext()) {
 			PhysicalInputEvent event = i.next();
-			if (event.type == wantedType) {
+			if (inputClass.isInstance(event.physicalInput) && event.type == wantedType) {
 				i.remove();
-				return event.physicalInput;
+				return event;
 			}
 		}
 		return null;

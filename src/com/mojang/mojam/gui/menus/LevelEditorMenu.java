@@ -25,7 +25,10 @@ import com.mojang.mojam.entity.mob.Pharao;
 import com.mojang.mojam.entity.mob.Scarab;
 import com.mojang.mojam.entity.mob.Snake;
 import com.mojang.mojam.entity.mob.SpikeTrap;
+import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.gameinput.LocalGameInput;
+import com.mojang.mojam.gameinput.PhysicalInputs;
+import com.mojang.mojam.gameinput.PhysicalInputs.PhysicalInputEvent;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.components.BackButton;
@@ -45,6 +48,7 @@ import com.mojang.mojam.level.tile.SandTile;
 import com.mojang.mojam.level.tile.UnbreakableRailTile;
 import com.mojang.mojam.level.tile.UnpassableSandTile;
 import com.mojang.mojam.level.tile.WallTile;
+import com.mojang.mojam.math.Mth;
 import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
@@ -82,7 +86,7 @@ public class LevelEditorMenu extends GuiMenu {
         new DestroyableWallTile(),
         new TreasurePile(0, 0),
         new UnbreakableRailTile(new FloorTile()),
-        new Turret(0, 0, 0),
+        new Turret(0, 0, Team.Neutral),
         new TurretTeamOne(0, 0),
         new TurretTeamTwo(0, 0),
         new SpikeTrap(0, 0),
@@ -123,7 +127,7 @@ public class LevelEditorMenu extends GuiMenu {
     private List<LevelInformation> levels;
     private int selectedLevel;
     
-    private String saveLevelName = "";
+    private StringBuilder saveLevelName = new StringBuilder();
     private Random random = new Random();
     
     public LevelEditorMenu() {
@@ -159,6 +163,70 @@ public class LevelEditorMenu extends GuiMenu {
     
     @Override
     public void tick(LocalGameInput input) {
+    	int selectTileButtonIdAfterUpdate = 0;
+
+    	PhysicalInputs inputs = input.getCurrentPhysicalState();
+    	
+    	if (saveMenuVisible) {
+    		// Deal with save menu
+    		if (inputs.wasKeyPressedConsume(KeyEvent.VK_ENTER)) {
+    			confirmeSaveButton.postClick();
+    		} else if (inputs.wasKeyPressedConsume(KeyEvent.VK_ESCAPE)) {
+    			cancelSaveButton.postClick();
+    		} else if (inputs.wasKeyPressedConsume(KeyEvent.VK_BACK_SPACE)) {
+    			saveLevelName.setLength(Math.max(0, saveLevelName.length() - 1));
+    		} else {
+    			PhysicalInputEvent e = inputs.consumeKeyTypedEvent();
+    			if (e != null) {
+    				saveLevelName.append(e.getInputChar());
+    			}
+    		}
+    	} else {
+    		// Exit
+    		if (inputs.wasKeyPressedConsume(KeyEvent.VK_ESCAPE)) {
+    			cancelButton.postClick();
+    		}
+
+    		// Start/stop/toggle drawing
+    		if (inputs.wasKeyPressedConsume(KeyEvent.VK_SPACE)) {
+    			drawing = true;
+    		}
+    		if (inputs.wasKeyReleasedConsume(KeyEvent.VK_SPACE)) {
+    			drawing = false;
+    		}
+    		if (inputs.wasKeyPressedConsume(KeyEvent.VK_SHIFT)) {
+    			drawing = !drawing;
+    		}
+
+    		// Move level with keys
+    		if (inputs.wasKeyPressedConsume(KeyEvent.VK_LEFT, KeyEvent.VK_A)) {
+    			mapX += 32;
+    		}
+    		if (inputs.wasKeyPressedConsume(KeyEvent.VK_RIGHT, KeyEvent.VK_D)) {
+    			mapX -= 32;
+    		}
+    		if (inputs.wasKeyPressedConsume(KeyEvent.VK_UP, KeyEvent.VK_W)) {
+    			mapY += 32;
+    		}
+    		if (inputs.wasKeyPressedConsume(KeyEvent.VK_DOWN, KeyEvent.VK_S)) {
+    			mapY -= 32;
+    		}
+
+    		// Tab to scroll through tiles
+    		int shiftTileSelection = 0;
+    		if (inputs.wasKeyPressedConsume(KeyEvent.VK_PAGE_DOWN)) shiftTileSelection = 1;
+    		if (inputs.wasKeyPressedConsume(KeyEvent.VK_PAGE_UP))   shiftTileSelection = -1;
+    		if (shiftTileSelection != 0) {
+    			int shiftToButtonId = Mth.clamp(selectedButton.getId() + shiftTileSelection, 0, editableTiles.length - 1);
+    			if (selectedButton.getId() / buttonsPerPage != shiftToButtonId / buttonsPerPage) {
+    				setCurrentPage(shiftToButtonId / buttonsPerPage);
+    				selectTileButtonIdAfterUpdate = shiftToButtonId % buttonsPerPage;
+    			} else {
+    				tileButtons[shiftToButtonId % buttonsPerPage].postClick();
+    			}
+    		}
+    	}
+
         super.tick(input);
         
         // show/hide save menu buttons
@@ -170,6 +238,7 @@ public class LevelEditorMenu extends GuiMenu {
         // update tile buttons
         if (updateTileButtons){
             updateTileButtons();
+            tileButtons[selectTileButtonIdAfterUpdate].postClick();
             updateTileButtons = false;
         }
         
@@ -477,7 +546,7 @@ public class LevelEditorMenu extends GuiMenu {
         confirmeSaveButton = new Button("leveleditor.save", 195, 190) {
         	@Override 
         	public void clicked() {
-        		if (saveLevel(saveLevelName)) {
+        		if (saveLevel(saveLevelName.toString())) {
         			removeText(levelName);
         			levelName = new Text(1, "+ " + saveLevelName, 120, 5);
         			addText(levelName);
@@ -486,7 +555,7 @@ public class LevelEditorMenu extends GuiMenu {
 
                     saveMenuVisible = false;
                     updateButtons = true;
-                    saveLevelName = "";
+                    saveLevelName = new StringBuilder();
         		}
         	}
         };
@@ -495,7 +564,7 @@ public class LevelEditorMenu extends GuiMenu {
         	public void clicked() {
         		saveMenuVisible = false;
         		updateButtons = true;
-        		saveLevelName = "";
+        		saveLevelName = new StringBuilder();
         	}
         };
 
@@ -551,87 +620,6 @@ public class LevelEditorMenu extends GuiMenu {
             if (selectedButton != null && selectedButton != lb) {
                 selectedButton.setActive(false);
                 selectedButton = lb;
-            }
-        }
-    }
-    
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        
-        // cancel/goback
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            if (saveMenuVisible) {
-                cancelSaveButton.postClick();
-            } else {
-                cancelButton.postClick();
-            }
-            return;
-        }
-
-        // confirme
-        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            if (saveMenuVisible) {
-                confirmeSaveButton.postClick();
-            }
-            return;
-        }
-        
-        // disable keys if save menu is visible
-        if (saveMenuVisible) {
-            return;
-        }
-
-        // start/toggle drawing
-        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            drawing = true;
-        } else if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
-            drawing = !drawing;
-        }
-
-        // move level with keys
-        if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
-            mapX += 32;
-        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
-            mapX -= 32;
-        } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_W) {
-            mapY += 32;
-        } else if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
-            mapY -= 32;
-        }
-        
-        //tab to scroll through tiles
-        if (e.getKeyCode() == KeyEvent.VK_TAB) {
-            int id = (selectedButton.getId() - (buttonsPerPage * currentPage));
-            
-            if (selectedButton.getId() + 1 == editableTiles.length) {
-                setCurrentPage(0);
-            } else if (id == buttonsPerPage - 1 && hasNextPage()) {
-                setCurrentPage(currentPage + 1);
-            } else if (selectedButton.getId() + 1 < editableTiles.length) {
-                tileButtons[id + 1].postClick();
-            }
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        // stop drawing
-        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            drawing = false;
-        }
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-        // read input for new level name
-        if (saveMenuVisible) {
-            if (e.getKeyChar() == KeyEvent.VK_BACK_SPACE && saveLevelName.length() > 0) {
-                saveLevelName = saveLevelName.substring(0, saveLevelName.length() - 1);
-            } else {
-                if (e.getKeyChar() == KeyEvent.VK_ENTER) return;
-                
-                saveLevelName += e.getKeyChar();
             }
         }
     }
