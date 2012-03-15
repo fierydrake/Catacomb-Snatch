@@ -1,7 +1,10 @@
 package com.mojang.mojam.entity;
 
+import static com.mojang.mojam.CatacombSnatch.sound;
+
 import com.mojang.mojam.entity.building.Building;
 import com.mojang.mojam.entity.mob.Mob;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
@@ -16,7 +19,7 @@ public class BulletPoison extends Bullet {
 	}
 
 	@Override
-	public void render(Screen screen) {
+	public void render(Screen screen, GameView view) {
 		screen.blit(Art.bulletpoison[facing][0], pos.x - 8, pos.y - 10);
 	}
 	
@@ -30,7 +33,7 @@ public class BulletPoison extends Bullet {
 			}
 		}
 		if (hit) {
-			sound.playSound("/sound/Shot 2.wav", (float) pos.x, (float) pos.y);
+			sound().playSound("/sound/Shot 2.wav", (float) pos.x, (float) pos.y);
 		}
 	}
 	

@@ -1,15 +1,19 @@
 package com.mojang.mojam.entity.mob;
 
 
-import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.Options;
+import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.building.TreasurePile;
 import com.mojang.mojam.entity.building.Turret;
-import com.mojang.mojam.level.tile.*;
+import com.mojang.mojam.gameview.GameView;
+import com.mojang.mojam.level.tile.RailTile;
+import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.math.Vec2;
 import com.mojang.mojam.network.TurnSynchronizer;
-import com.mojang.mojam.screen.*;
+import com.mojang.mojam.screen.Art;
+import com.mojang.mojam.screen.Bitmap;
+import com.mojang.mojam.screen.Screen;
 
 public class RailDroid extends Mob {
 	private enum Direction {
@@ -59,6 +63,7 @@ public class RailDroid extends Mob {
 			isImmortal = true;
 	}
 
+    @Override
     public void tick() {
         xBump = yBump = 0;
         super.tick();
@@ -300,6 +305,7 @@ public class RailDroid extends Mob {
 		return Art.raildroid[0][0];
 	}
 
+    @Override
 	public void handleCollision(Entity entity, double xa, double ya) {
 		super.handleCollision(entity, xa, ya);
 		if (entity instanceof RailDroid) {
@@ -341,8 +347,9 @@ public class RailDroid extends Mob {
 		return super.shouldBlock(e);
 	}
 
-	public void render(Screen screen) {
-		super.render(screen);
+    @Override
+	public void render(Screen screen, GameView view) {
+		super.render(screen, view);
 		if (carrying) {
 			screen.blit(Art.bullets[0][0], pos.x - 8, pos.y - 20 - yOffs);
 		} else {

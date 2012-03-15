@@ -1,7 +1,10 @@
 package com.mojang.mojam.gui.menus;
 
+import static com.mojang.mojam.CatacombSnatch.game;
+
 import java.awt.event.KeyEvent;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameInformation;
 import com.mojang.mojam.gameinput.LocalGameInput;
 import com.mojang.mojam.gameinput.PhysicalInputs;
@@ -41,7 +44,8 @@ public class DifficultySelect extends GuiMenu {
 		startGameButton.addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
-				menus.startPlaying(hosting);
+				game().type = GameInformation.Type.SINGLE_PLAYER;
+				CatacombSnatch.startGame();
 			}
 		});
 		cancelButton = new BackButton("cancel", GameView.WIDTH - 128 - 20, GameView.HEIGHT - 24 - 25);
@@ -60,7 +64,7 @@ public class DifficultySelect extends GuiMenu {
             difficultyCheckboxes[i] = new Checkbox(difficulty.difficultyName, xStart + x * xSpacing, yStart + ySpacing * y);
             addButton(difficultyCheckboxes[i]);
             
-            if (difficulty == menus.getGameInformation().difficulty) {
+            if (difficulty == game().difficulty) {
                 difficultyCheckboxes[i].checked = true;
             }
         
@@ -82,7 +86,7 @@ public class DifficultySelect extends GuiMenu {
 			Checkbox cb = (Checkbox) button;
 			for (int i=0; i<difficultyCheckboxes.length; i++) {
 				if (cb == difficultyCheckboxes[i]) {
-					menus.getGameInformation().difficulty = GameInformation.DIFFICULTIES.get(i);
+					game().difficulty = GameInformation.DIFFICULTIES.get(i);
 					difficultyCheckboxes[i].checked = true;
 				} else {
 					difficultyCheckboxes[i].checked = false;

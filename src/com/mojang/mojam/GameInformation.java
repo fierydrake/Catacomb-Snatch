@@ -17,6 +17,8 @@ import com.mojang.mojam.level.gamemode.GameModeVanilla;
  * a game either about to start, or in progress
  */
 public class GameInformation {
+	public static enum Type { SINGLE_PLAYER, SYNCHED_NETWORK };
+	
 	@SuppressWarnings("serial")
 	public static final List<DifficultyInformation> DIFFICULTIES = Collections.unmodifiableList(new ArrayList<DifficultyInformation>() {{
 		add(new DifficultyInformation("diffselect.easy", .5f, .5f, 1.5f, .5f, 0));
@@ -35,6 +37,7 @@ public class GameInformation {
 	
 	public DifficultyInformation difficulty = DEFAULT_DIFFICULTY;
 	public GameMode mode = DEFAULT_GAME_MODE;
+	public Type type;
 	public LevelInformation level;
 	
 	public List<PlayerInformation> players = new ArrayList<PlayerInformation>();

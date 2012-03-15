@@ -12,6 +12,7 @@ public class ShopItemBomb extends ShopItem {
         setSprite(Art.bomb);
     }
 
+    @Override
     public void useAction(Player player) {
         Building item = new Bomb(pos.x, pos.y);
         level.addEntity(item);

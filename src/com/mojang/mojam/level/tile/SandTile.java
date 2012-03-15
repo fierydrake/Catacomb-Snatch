@@ -13,14 +13,18 @@ public class SandTile extends Tile {
 		img = 5;
 		minimapColor = Art.floorTileColors[img & 7][img / 8];
 	}
-	public void init(Level level, int x, int y) {
+
+    @Override
+    public void init(Level level, int x, int y) {
 		super.init(level, x, y);
 	}
 
+    @Override
 	public void render(Screen screen) {
 		super.render(screen);
 	}
 	
+    @Override
 	public void neighbourChanged(Tile tile) {
         final Tile w = level.getTile(x - 1, y);
         final Tile n = level.getTile(x, y - 1);
@@ -45,10 +49,12 @@ public class SandTile extends Tile {
         }
 	}
 
+    @Override
 	public int getColor() {
 		return SandTile.COLOR;
 	}
 
+    @Override
 	public String getName() {
 		return NAME;
 	}
@@ -58,6 +64,7 @@ public class SandTile extends Tile {
 		return true;
 	}
 	
+    @Override
 	public Bitmap getBitMapForEditor() {
 		return Art.floorTiles[5][0];
 	}

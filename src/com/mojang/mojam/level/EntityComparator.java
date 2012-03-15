@@ -5,6 +5,8 @@ import java.util.Comparator;
 import com.mojang.mojam.entity.Entity;
 
 public class EntityComparator implements Comparator<Entity> {
+	
+    @Override
 	public int compare(Entity e0, Entity e1) {
 		if (e0.pos.y < e1.pos.y)
 			return -1;

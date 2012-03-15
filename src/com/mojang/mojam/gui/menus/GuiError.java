@@ -25,6 +25,7 @@ public class GuiError extends GuiMenu {
 		Font.defaultFont().draw(screen, message, 20, 40, 300);
 	}
 	
+    @Override
 	public void buttonPressed(ClickableComponent button) {
 	}
 

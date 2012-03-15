@@ -1,16 +1,15 @@
 package com.mojang.mojam.entity.weapon;
 
-import com.mojang.mojam.CatacombSnatch;
+import static com.mojang.mojam.CatacombSnatch.sound;
+
 import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Mob;
-import com.mojang.mojam.gamesound.GameSound;
 import com.mojang.mojam.network.TurnSynchronizer;
 
 public class Rifle implements IWeapon {
-	protected final GameSound sound = CatacombSnatch.sound;
 
 	protected Mob owner;
 	protected static float BULLET_DAMAGE;
@@ -72,11 +71,12 @@ public class Rifle implements IWeapon {
 			
 			currentShootDelay = shootDelay;
 			readyToShoot= false;
-			sound.playSound("/sound/Shot 1.wav",
+			sound().playSound("/sound/Shot 1.wav",
 					(float) owner.getPosition().x, (float) owner.getPosition().y);
 		}		
 	}
 
+    @Override
 	public Bullet getAmmo(double xDir, double yDir) {
 		Bullet bullet = new Bullet(owner, xDir, yDir, BULLET_DAMAGE);
 		return bullet;

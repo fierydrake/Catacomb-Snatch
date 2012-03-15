@@ -1,5 +1,6 @@
 package com.mojang.mojam.entity.animation;
 
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.network.TurnSynchronizer;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
@@ -10,7 +11,8 @@ public class BombExplodeAnimation extends Animation {
 		super(x, y, TurnSynchronizer.synchedRandom.nextInt(10) + 20); // @random
 	}
 
-	public void render(Screen screen) {
+	@Override
+	public void render(Screen screen, GameView view) {
 		Bitmap[][] bmps = Art.fxBombSplosion;
 		int anim = bmps.length - life * bmps.length / duration - 1;
 		screen.blit(bmps[anim][0], pos.x - bmps[0][0].w / 2, pos.y

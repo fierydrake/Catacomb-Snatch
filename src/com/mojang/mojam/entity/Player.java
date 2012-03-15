@@ -1,5 +1,7 @@
 package com.mojang.mojam.entity;
 
+import static com.mojang.mojam.CatacombSnatch.sound;
+
 import java.util.Random;
 
 import com.mojang.mojam.GameCharacter;
@@ -18,7 +20,6 @@ import com.mojang.mojam.entity.particle.Sparkle;
 import com.mojang.mojam.entity.weapon.Rifle;
 import com.mojang.mojam.gameinput.GameInput;
 import com.mojang.mojam.gameinput.LogicalInputs;
-import com.mojang.mojam.gamelogic.GameLogic;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Notifications;
 import com.mojang.mojam.level.tile.RailTile;
@@ -49,7 +50,6 @@ public class Player extends Mob implements LootCollector {
     
     private boolean mouseAiming;
     
-    private GameLogic logic;
     private GameInput input;
    
     public int takeDelay = 0;
@@ -88,11 +88,11 @@ public class Player extends Mob implements LootCollector {
      * @param input Input bindings for this player
      * @param character Game character model
      */
-    public Player(int x, int y, Team team, GameLogic logic, GameInput input, GameCharacter character) {
+    public Player(int x, int y, Team team, GameCharacter character, int facing, GameInput input) {
         super(x, y, team);
-        this.logic = logic;
         this.input = input;
         this.character = character;
+        this.facing = facing;
 
         startX = x;
         startY = y;
@@ -108,6 +108,8 @@ public class Player extends Mob implements LootCollector {
         weapon = new Rifle(this);
         setRailPricesAndImmortality();
     }
+    
+    public GameInput getInput() { return input; }
     
     /**
      * Handle creative mode
@@ -136,7 +138,7 @@ public class Player extends Mob implements LootCollector {
             psprint += 0.1;
             maxTimeSprint += 20;
 
-            sound.playSound("/sound/levelUp.wav", (float) pos.x, (float) pos.y, true);
+            sound().playSound("/sound/levelUp.wav", (float) pos.x, (float) pos.y, true);
         }
     }
 
@@ -172,7 +174,7 @@ public class Player extends Mob implements LootCollector {
     @Override
     public void tick() {
         // If the mouse is used, update player orientation before level tick
-        if (logic.isMouseActive()) {
+        if (input.isMouseActive()) {
             // Update player mouse, in world pixels relative to player
             setAimByMouse(input.getMousePosition().x - GameView.WIDTH / 2,
             		      input.getMousePosition().y - GameView.HEIGHT / 2 + 24);
@@ -337,7 +339,7 @@ public class Player extends Mob implements LootCollector {
             }
             
             if (steps % stepCount == 0) {
-                sound.playSound("/sound/Step " + (TurnSynchronizer.synchedRandom.nextInt(2) + 1) + ".wav", (float) pos.x, (float) pos.y, true);
+                sound().playSound("/sound/Step " + (TurnSynchronizer.synchedRandom.nextInt(2) + 1) + ".wav", (float) pos.x, (float) pos.y, true);
             }
             steps++;
         }
@@ -461,8 +463,8 @@ public class Player extends Mob implements LootCollector {
                 lastRailTick = time;
                 level.placeTile(x, y, new RailTile(level.getTile(x, y)), this);
                 payCost(COST_RAIL);
-            } else if (score < COST_RAIL && this.team == logic.getLocalPlayer().team) { // TODO Check this
-            	Notifications.getInstance().add(Texts.current().buildRail(COST_RAIL));
+            } else if (score < COST_RAIL) {
+            	Notifications.getInstance().add(Texts.current().buildRail(COST_RAIL), this.character, this.team, Notifications.For.CHARACTER);
             }            
         } else if (level.getTile(x, y) instanceof RailTile) {
             if ((y < 8 && team == Team.Team2) || (y > level.height - 9 && team == Team.Team1)) {
@@ -470,9 +472,7 @@ public class Player extends Mob implements LootCollector {
                     level.addEntity(new RailDroid(pos.x, pos.y, team));
                     payCost(COST_DROID);
                 } else {
-                	if(this.team == logic.getLocalPlayer().team) { // TODO Check this
-                		Notifications.getInstance().add(Texts.current().buildDroid(COST_DROID));
-                	}
+            		Notifications.getInstance().add(Texts.current().buildDroid(COST_DROID), this.character, this.team, Notifications.For.CHARACTER);
                 }
             } else {
 
@@ -482,11 +482,9 @@ public class Player extends Mob implements LootCollector {
                         payCost(COST_REMOVE_RAIL);
                     }
                 } else if (score < COST_REMOVE_RAIL) {
-                	if(this.team == logic.getLocalPlayer().team) { // TODO Check this
-                		Notifications.getInstance().add(Texts.current().removeRail(COST_REMOVE_RAIL));
-                	}
+            		Notifications.getInstance().add(Texts.current().removeRail(COST_REMOVE_RAIL), this.character, this.team, Notifications.For.CHARACTER);
                 }
-                sound.playSound("/sound/Track Place.wav", (float) pos.x, (float) pos.y);
+                sound().playSound("/sound/Track Place.wav", (float) pos.x, (float) pos.y);
             }
         }
     }
@@ -512,7 +510,7 @@ public class Player extends Mob implements LootCollector {
     private void handleEntityInteraction() {
         // Unhighlight previously selected building
         if (selected != null) {
-            selected.setHighlighted(false);
+            selected.setHighlighted(false, this);
             selected = null;
         }
 
@@ -546,21 +544,14 @@ public class Player extends Mob implements LootCollector {
                 }
             }
             
-            // If it is a building we should highlight on this game
-            // client, then highlight the building (also, remember the
-            // highlighted building, so we can unhighlight it again later)
-            if (shouldHighlightBuildingOnThisGameClient(closest)) {
+            // If it is a building we should highlight, then highlight the 
+            // building (also, remember the highlighted building (in selected),
+            // so we can unhighlight it again later)
+            if (closest.isHighlightable() && canInteractWithBuilding(closest)) {
                 selected = closest;
-                selected.setHighlighted(true);
+                selected.setHighlighted(true, this);
             }
         }
-    }
-    
-    // Whether this Player should see the building in question
-    // highlighted on their game client - this indicates that
-    // they can interact with the building
-    private boolean shouldHighlightBuildingOnThisGameClient(Building building) {
-        return building.isHighlightable() && canInteractWithBuilding(building) && this.team == logic.getLocalPlayer().team; // TODO Check this 
     }
     
     // Whether this Player is allowed to use the building in 
@@ -628,7 +619,7 @@ public class Player extends Mob implements LootCollector {
     }
 
     @Override
-    public void render(Screen screen) {
+    public void render(Screen screen, GameView view) {
 		Bitmap[][] sheet = Art.getPlayer(getCharacter());
     	
 		if(sheet == null){
@@ -674,14 +665,14 @@ public class Player extends Mob implements LootCollector {
     }
 
 	@Override
-	public void renderTop(Screen screen) {
+	public void renderTop(Screen screen, GameView view) {
 		int frame = (walkTime / 4 % 6 + 6) % 6;
-		renderCarrying(screen, (frame == 0 || frame == 3) ? -1 : 0);
+		renderCarrying(screen, view, (frame == 0 || frame == 3) ? -1 : 0);
 	}
     
     @Override
-    protected void renderCarrying(Screen screen, int yOffs) {
-    	if(carrying != null && carrying.team == logic.getLocalPlayer().team) { // TODO Check this
+    protected void renderCarrying(Screen screen, GameView view, int yOffs) {
+    	if(carrying != null && carrying.team == view.getPlayer().getTeam()) {
 			if(carrying instanceof Turret) {
 				Turret turret = (Turret)carrying;
 				turret.drawRadius(screen);	
@@ -691,7 +682,7 @@ public class Player extends Mob implements LootCollector {
 			}//TODO make an interface to clean this up
        	}
 		
-    	super.renderCarrying(screen, yOffs);
+    	super.renderCarrying(screen, view, yOffs);
     }
 
     @Override
@@ -797,7 +788,7 @@ public class Player extends Mob implements LootCollector {
                 xBump = (pos.x - source.pos.x) / dist * 10;
                 yBump = (pos.y - source.pos.y) / dist * 10;
 
-                sound.playSound("/sound/hit2.wav", (float) pos.x, (float) pos.y, true);
+                sound().playSound("/sound/hit2.wav", (float) pos.x, (float) pos.y, true);
             }
         }
     }
@@ -806,7 +797,9 @@ public class Player extends Mob implements LootCollector {
      * Revive the player. Carried items are lost, as is all the money.
      */
     private void revive() {
-        Notifications.getInstance().add(Texts.current().hasDiedCharacter(getCharacter()));
+        Notifications.getInstance().add(
+        		Texts.current().hasDiedCharacter(getCharacter()), 
+        		this.character, this.team, Notifications.For.ALL);
         carrying = null;
         dropAllMoney();
         pos.set(startX, startY);

@@ -1,11 +1,17 @@
 package com.mojang.mojam.entity.building;
 
+import static com.mojang.mojam.CatacombSnatch.sound;
+
+import java.util.HashSet;
+import java.util.Set;
+
 import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.IUsable;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.entity.mob.Team;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Notifications;
 import com.mojang.mojam.math.BB;
 import com.mojang.mojam.network.TurnSynchronizer;
@@ -28,7 +34,7 @@ public abstract class Building extends Mob implements IUsable {
 	
 
 	public int spawnTime = 0;
-	public boolean highlight = false;
+	public Set<Player> highlightedBy = new HashSet<Player>();
 	public Mob carriedBy = null;
 
 	protected int upgradeLevel = 0;
@@ -54,9 +60,9 @@ public abstract class Building extends Mob implements IUsable {
 	}
 
 	@Override
-	public void render(Screen screen) {
-		super.render(screen);
-		renderMarker(screen);
+	public void render(Screen screen, GameView view) {
+		super.render(screen, view);
+		renderMarker(screen, view);
 	}
 
 	/**
@@ -65,8 +71,8 @@ public abstract class Building extends Mob implements IUsable {
 	 * @param screen
 	 *            Screen
 	 */
-	protected void renderMarker(Screen screen) {
-		if (highlight && !isCarried()) {
+	protected void renderMarker(Screen screen, GameView view) {
+		if (highlightedBy.contains(view.getPlayer()) && !isCarried()) {
 			BB bb = getBB();
 			bb = bb.grow((getSprite().w - (bb.x1 - bb.x0))
 					/ (3 + Math.sin(System.currentTimeMillis() * .01)));
@@ -97,6 +103,7 @@ public abstract class Building extends Mob implements IUsable {
 		yd = 0.0;
 	}
 	
+	@Override
 	public void doRegenTime() {
 		if (freezeTime <= 0) {
 			super.doRegenTime();
@@ -155,37 +162,34 @@ public abstract class Building extends Mob implements IUsable {
 	@Override
 	public boolean upgrade(Player p) {
 		if (upgradeLevel >= maxUpgradeLevel) {
-			sound.playSound("/sound/Fail.wav",
-					(float) pos.x, (float) pos.y, true);
-			if (this.team == logic().getLocalPlayer().team) { // TODO Check this
-				Notifications.getInstance().add(
-						Texts.current().getStatic("upgrade.full"));
-			}
+			sound().playSound("/sound/Fail.wav", (float) pos.x, (float) pos.y, true);
+			Notifications.getInstance().add(
+					Texts.current().getStatic("upgrade.full"),
+					p.getCharacter(), p.team,
+					Notifications.For.CHARACTER);
 			return false;
 		}
 
 		final int cost = upgradeCosts[upgradeLevel];
 		if (cost > p.getScore() && !Options.getAsBoolean(Options.CREATIVE)) {
-			sound.playSound("/sound/Fail.wav",
-					(float) pos.x, (float) pos.y, true);
-			if (this.team == logic().getLocalPlayer().team) { // TODO Check this
-				Notifications.getInstance().add(
-						Texts.current().upgradeNotEnoughMoney(cost));
-			}
+			sound().playSound("/sound/Fail.wav", (float) pos.x, (float) pos.y, true);
+			Notifications.getInstance().add(
+					Texts.current().upgradeNotEnoughMoney(cost),
+					p.getCharacter(), p.team,
+					Notifications.For.CHARACTER);
 			return false;
 		}
 
-		sound.playSound("/sound/Upgrade.wav",
-				(float) pos.x, (float) pos.y, true);
+		sound().playSound("/sound/Upgrade.wav", (float) pos.x, (float) pos.y, true);
 
 		++upgradeLevel;
 		p.useMoney(cost);
 		upgradeComplete();
 
-		if (this.team == logic().getLocalPlayer().team) { // TODO Check this
-			Notifications.getInstance().add(
-					Texts.current().upgradeTo(upgradeLevel + 1));
-		}
+		Notifications.getInstance().add(
+				Texts.current().upgradeTo(upgradeLevel + 1),
+				p.getCharacter(), p.team,
+				Notifications.For.CHARACTER);
 		return true;
 	}
 
@@ -218,8 +222,12 @@ public abstract class Building extends Mob implements IUsable {
 	}
 
 	@Override
-	public void setHighlighted(boolean hl) {
-		highlight = hl;
+	public void setHighlighted(boolean hl, Player by) {
+		if (hl) {
+			highlightedBy.add(by);
+		} else {
+			highlightedBy.remove(by);
+		}
 		justDroppedTicks = 80;
 	}
 

@@ -1,5 +1,6 @@
 package com.mojang.mojam.entity.animation;
 
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.tile.HoleTile;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.screen.Bitmap;
@@ -14,8 +15,8 @@ public class ItemFallAnimation extends Animation {
         this.fallingImage = fallingImage;
     }
 
-    public void render(Screen screen) {
-   
+    @Override
+    public void render(Screen screen, GameView view) {
         int anim;
         anim = life * 12 / duration;
         double posY = pos.y;

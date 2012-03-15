@@ -1,5 +1,8 @@
 package com.mojang.mojam.gui.menus;
 
+import static com.mojang.mojam.CatacombSnatch.game;
+import static com.mojang.mojam.CatacombSnatch.menus;
+
 import java.awt.event.KeyEvent;
 import java.util.List;
 
@@ -45,13 +48,13 @@ public class LevelSelect extends GuiMenu {
 		// Get all levels
 		LevelList.resetLevels();
 		levels = LevelList.getLevels();
-		menus.getGameInformation().level = levels.get(0);
+		game().level = levels.get(0);
 
 		// Add main buttons
 		startGameButton = (Button) addButton(new Button("levelselect.start", GameView.WIDTH - 256 - 30, GameView.HEIGHT - 24 - 25) {
 			@Override
 			public void clicked() {
-				menus.push(new DifficultySelect(hosting));
+				menus().push(new DifficultySelect(hosting));
 			}
 		});
 		cancelButton = (Button) addButton(new BackButton("cancel", GameView.WIDTH - 128 - 20, GameView.HEIGHT - 24 - 25) {
@@ -199,7 +202,7 @@ public class LevelSelect extends GuiMenu {
     	if (button instanceof LevelButton) {
     		
     		LevelButton lb = (LevelButton) button;
-    		menus.getGameInformation().level = levels.get(lb.getId());
+    		game().level = levels.get(lb.getId());
     		
     		if (activeButton != null && activeButton != lb) {
     			activeButton.setActive(false);

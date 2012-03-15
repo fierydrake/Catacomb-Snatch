@@ -2,6 +2,7 @@ package com.mojang.mojam.gui.menus;
 
 import java.awt.event.KeyEvent;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.gameinput.LocalGameInput;
@@ -27,7 +28,7 @@ public class WinMenu extends GuiMenu {
 		okayButton = (Button) addButton(new Button("Ok", (GameView.WIDTH - 128) / 2, 200) {
 			@Override
 			public void clicked() {
-				menus.stopPlaying();
+				CatacombSnatch.stopGame();
 			}
 		});
 	}

@@ -10,14 +10,15 @@ import java.awt.Toolkit;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 
-import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.screen.Screen;
 
 public class CatacombSnatchCanvas extends Canvas implements ScreenRenderer {
 	private static final long serialVersionUID = 1L;
 	
-	public CatacombSnatchCanvas(int width, int height) {
-		Dimension size = new Dimension(width, height);
+	private int scale;
+	
+	public CatacombSnatchCanvas(Dimension size, int scale) {
+		this.scale = scale;
 		setPreferredSize(size);
 		setMinimumSize(size);
 		setMaximumSize(size);
@@ -25,11 +26,13 @@ public class CatacombSnatchCanvas extends Canvas implements ScreenRenderer {
 		setCursor(emptyCursor);
 		requestFocusInWindow();
 	}
+	
+	public int getScale() { return scale; }
 
 	/*
 	 * ScreenRenderer
 	 */
-	public void render(GameView gameView, Screen screen, int scaledWidth, int scaledHeight) {
+	public void render(Screen screen) {
 		// Render
 		BufferStrategy bs = getBufferStrategy();
 		if (bs == null) {
@@ -37,6 +40,9 @@ public class CatacombSnatchCanvas extends Canvas implements ScreenRenderer {
 			bs = getBufferStrategy();
 		}
 		Graphics g = bs.getDrawGraphics();
+		
+		int scaledWidth = screen.w * scale;
+		int scaledHeight = screen.h * scale;
 		
 		// Clear the graphics context
 		g.setColor(Color.BLACK);

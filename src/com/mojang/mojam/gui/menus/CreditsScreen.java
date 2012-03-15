@@ -30,6 +30,7 @@ public class CreditsScreen extends GuiMenu {
 		back = (Button)addButton(new BackButton((GameView.WIDTH - 128) / 2, GameView.HEIGHT - 50 - 10));
 	}
 
+    @Override
 	public void render(Screen screen) {
 		screen.blit(Art.emptyBackground, 0, 0);
 		super.render(screen);

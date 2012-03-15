@@ -24,6 +24,7 @@ public class RailTile extends Tile {
 		minimapColor = Art.floorTileColors[4][1];
 	}
 
+    @Override
 	public void init(Level level, int x, int y) {
 		parent.init(level, x, y);
 		super.init(level, x, y);
@@ -31,15 +32,18 @@ public class RailTile extends Tile {
 		parent.neighbourChanged(null);
 	}
 
+    @Override
 	public void render(Screen screen) {
 		parent.render(screen);
 		screen.blit(Art.rails[img][0], x * Tile.WIDTH, y * Tile.HEIGHT - 6);
 	}
 
+    @Override
 	public boolean isBuildable() {
 		return false;
 	}
 
+    @Override
 	public void neighbourChanged(Tile tile) {
 		// We check for <null> since we use it from the constructor (instead of
 		// redirecting)
@@ -73,6 +77,7 @@ public class RailTile extends Tile {
 		return connections[facing];
 	}
 
+    @Override
 	public int getCost() {
 		return 50;
 	}
@@ -104,10 +109,12 @@ public class RailTile extends Tile {
 		return true;
 	}
 
+    @Override
 	public int getColor() {
 		return RailTile.COLOR;
 	}
 
+    @Override
 	public String getName() {
 		return RailTile.NAME;
 	}

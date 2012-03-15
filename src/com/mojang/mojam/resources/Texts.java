@@ -13,17 +13,21 @@ import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.mob.Team;
 
 public class Texts {
-	protected final Properties texts;
-	protected final Properties fallbackTexts;
+	/*
+	 * Static members
+	 */
 	
 	private static Texts current = new Texts(new Locale(Options.get(Options.LOCALE, "en")));
+	private static List<LocaleChangeListener> listeners = new ArrayList<LocaleChangeListener>();
+	
 	public static Texts current() { return current; }
+	
 	public static void setLocale(String localeName) { setLocale(new Locale(localeName)); }
 	public static void setLocale(Locale locale) {
 		current = new Texts(locale); 
 		fireLocaleChanged();
 	}
-	private static List<LocaleChangeListener> listeners = new ArrayList<LocaleChangeListener>();
+	
 	public static void addLocaleListener(LocaleChangeListener listener) { listeners.add(listener); }
 	public static void removeLocaleListener(LocaleChangeListener listener) { listeners.remove(listener); }
 	private static void fireLocaleChanged() {
@@ -31,6 +35,13 @@ public class Texts {
 			listener.localeChanged();
 		}
 	}
+
+	/*
+	 * Instance members
+	 */
+	
+	protected final Properties texts;
+	protected final Properties fallbackTexts;
 
 	public Texts(Locale locale) {
 		InputStream stream;

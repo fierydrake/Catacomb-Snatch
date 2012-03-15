@@ -1,17 +1,19 @@
 package com.mojang.mojam.level;
 
+import static com.mojang.mojam.CatacombSnatch.game;
+import static com.mojang.mojam.CatacombSnatch.logic;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Mob;
-import com.mojang.mojam.gamelogic.GameLogic;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.Notifications;
 import com.mojang.mojam.level.gamemode.ILevelTickItem;
@@ -28,7 +30,6 @@ import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
 
 public class Level {
-	protected GameLogic logic() { return CatacombSnatch.menus.getGameLogic(); }
 
 	public int TARGET_SCORE = 100;
 
@@ -259,7 +260,7 @@ public class Level {
 	public void addMob(Mob m, int xTile, int yTile)
 	{
 		updateDensityList();
-		int densityLimit = allowedDensities[logic().getGameInformation().difficulty.difficultyID];
+		int densityLimit = allowedDensities[game().difficulty.difficultyID];
 		if (monsterDensity[(int)(xTile/densityTileWidth)][(int)(yTile/densityTileHeight)] < densityLimit) {
 			addEntity(m);
 		}
@@ -314,28 +315,30 @@ public class Level {
 				|| getSeen()[(x + 1) + (y + 1) * (width + 1)];
 	}
 
-	public void render(Screen screen, int xScroll, int yScroll) {
-		int x0 = xScroll / Tile.WIDTH;
-		int y0 = yScroll / Tile.HEIGHT;
-		int x1 = (xScroll + screen.w) / Tile.WIDTH;
-		int y1 = (yScroll + screen.h) / Tile.HEIGHT;
-		if (xScroll < 0)
-			x0--;
-		if (yScroll < 0)
-			y0--;
+	public void render(Screen screen, GameView view) {
+		int x0 = view.getViewportBoundsX() / Tile.WIDTH;
+		int y0 = view.getViewportBoundsY() / Tile.HEIGHT;
+		int x1 = view.getViewportBoundsMX() / Tile.WIDTH;
+		int y1 = view.getViewportBoundsMY() / Tile.HEIGHT;
+		
+		// TODO: Work out what this is for...
+		if (view.getViewportBoundsX() < 0) x0--;
+		if (view.getViewportBoundsY() < 0) y0--;
 
-		Set<Entity> visibleEntities = getEntities(xScroll - Tile.WIDTH, yScroll
-				- Tile.HEIGHT, xScroll + screen.w + Tile.WIDTH, yScroll
-				+ screen.h + Tile.HEIGHT);
+		Set<Entity> visibleEntities = getEntities(
+				view.getViewportBoundsX() - Tile.WIDTH, 
+				view.getViewportBoundsY() - Tile.HEIGHT, 
+				view.getViewportBoundsMX() + Tile.WIDTH, 
+				view.getViewportBoundsMY() + Tile.HEIGHT);
 
-		screen.setOffset(-xScroll, -yScroll);
+		screen.setOffset(-view.getViewportBoundsX(), -view.getViewportBoundsY());
 
 		renderTilesAndBases(screen, x0, y0, x1, y1);
 
 		for (Entity e : visibleEntities) {
-			e.render(screen);
+			e.render(screen, view);
 			// this renders players carrying something
-	        e.renderTop(screen);
+	        e.renderTop(screen, view);
 		}
 
 		renderTopOfWalls(screen, x0, y0, x1, y1);
@@ -347,7 +350,7 @@ public class Level {
 		renderPanelAndMinimap(screen, x0, y0);
 		renderPlayerScores(screen);
 		
-		Notifications.getInstance().render(screen);
+		Notifications.getInstance().render(screen, view);
 	}
 
 	private void renderTilesAndBases(Screen screen, int x0, int y0, int x1, int y1){
@@ -395,10 +398,10 @@ public class Level {
 	}
 
 	private GameCharacter getPlayerCharacter(int playerID){
-		if (playerID < logic().getPlayers().length) {
-			return logic().getPlayers()[playerID].getCharacter();
+		if (playerID < logic().getPlayers().size()) {
+			return logic().getPlayers().get(playerID).getCharacter();
 		}
-		return GameCharacter.None;
+		return null;
 	}
 	
 	private boolean isNotBaseRailTile(int xt){
@@ -627,7 +630,7 @@ public class Level {
         Font.defaultFont().draw(screen, player1score, 280-player1score.length()*10, screen.h - 20); //adjust so it fits in the box
         screen.blit(Art.getPlayer(getPlayerCharacter(0))[0][2], 262, screen.h-42);
 
-        if (logic().getPlayers().length > 1 && getPlayerCharacter(1) != GameCharacter.None) {
+        if (logic().getPlayers().size() > 1 && getPlayerCharacter(1) != null) {
             Font.defaultFont().draw(screen, Texts.current().scoreCharacter(getPlayerCharacter(1), player2Score * 100 / TARGET_SCORE), 56, screen.h - 36);
             screen.blit(Art.getPlayer(getPlayerCharacter(1))[0][6], 19, screen.h-42);
         }

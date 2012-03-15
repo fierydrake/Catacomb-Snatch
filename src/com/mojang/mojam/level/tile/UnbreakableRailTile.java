@@ -10,14 +10,17 @@ public class UnbreakableRailTile extends RailTile {
 		super(parent);
 	}
 
+    @Override
 	public boolean remove() {
 		return false;
 	}
 	
+    @Override
 	public int getColor() {
 		return UnbreakableRailTile.COLOR;
 	}
 
+    @Override
 	public String getName() {
 		return RailTile.NAME;
 	}

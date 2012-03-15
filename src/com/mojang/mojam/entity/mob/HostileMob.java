@@ -1,8 +1,9 @@
 package com.mojang.mojam.entity.mob;
 
+import static com.mojang.mojam.CatacombSnatch.game;
+
 import java.util.Set;
 
-import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.level.IEditable;
 import com.mojang.mojam.level.tile.Tile;
@@ -22,7 +23,7 @@ public abstract class HostileMob extends Mob  implements IEditable {
 
 	@Override
 	public void setStartHealth(float newHealth) {
-		super.setStartHealth(CatacombSnatch.menus.getGameInformation().difficulty.calculateHealth(newHealth));
+		super.setStartHealth(game().difficulty.calculateHealth(newHealth));
 	}
 	
 	public int faceEntity(double x, double y, double radius, Class<? extends Entity> c, int facing){
@@ -103,8 +104,7 @@ public abstract class HostileMob extends Mob  implements IEditable {
         	return null;
 	}
 	
-	
-	
+	@Override
 	public void tick() {	
 		super.tick();
 		Tile thisTile = level.getTile((int)pos.x/Tile.WIDTH, (int)pos.y/Tile.HEIGHT);
@@ -113,11 +113,12 @@ public abstract class HostileMob extends Mob  implements IEditable {
 		}
 	}
 	
+	@Override
 	public void collide(Entity entity, double xa, double ya) {
 		if (entity instanceof Mob) {
 			Mob mob = (Mob) entity;
 			if (isNotFriendOf(mob)) {
-				mob.hurt(this, logic().getGameInformation().difficulty.calculateStrength(strength));
+				mob.hurt(this, game().difficulty.calculateStrength(strength));
 			}
 		}
 	}

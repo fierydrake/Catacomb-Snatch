@@ -1,32 +1,44 @@
 package com.mojang.mojam.gameview;
 
-import java.awt.Point;
+import static com.mojang.mojam.CatacombSnatch.logic;
 
-import com.mojang.mojam.GameMenus;
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.Options;
-import com.mojang.mojam.ScreenRenderer;
 import com.mojang.mojam.entity.Player;
-import com.mojang.mojam.gameinput.LocalGameInput;
-import com.mojang.mojam.gamelogic.GameLogic;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
-import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
 
 public class SimpleGameView implements GameView {
-	private Screen screen = new Screen(GameView.WIDTH, GameView.HEIGHT);
-	private ScreenRenderer renderer;
+	
+	private Player player;
+	
+	/* Extent of the viewport in level coordinates */
+	private int viewportBoundsX, viewportBoundsY;
+	private int viewportBoundsMX, viewportBoundsMY;
+	private int viewportWidth, viewportHeight;
 	
 	private long lastFPSupdate = 0;
 	private int frames = 0;
 	private int fps = 0;
 	
-	public SimpleGameView(ScreenRenderer renderer) {
-		this.renderer = renderer;
+	public SimpleGameView() {
+		viewportWidth = GameView.WIDTH; /* TODO? Make configurable by passing these in */
+		viewportHeight = GameView.HEIGHT; /* TODO? Make configurable by passing these in */
 	}
+
+	@Override public void setPlayer(Player player) { this.player = player; }
+	@Override public Player getPlayer() { return player; }
 	
-	public void renderView(LocalGameInput input, GameMenus menus, GameLogic logic) {
+	@Override public int getViewportBoundsX() { return viewportBoundsX; }
+	@Override public int getViewportBoundsY() { return viewportBoundsY; }
+	@Override public int getViewportBoundsMX() { return viewportBoundsMX; }
+	@Override public int getViewportBoundsMY() { return viewportBoundsMY; }
+	@Override public int getViewportWidth() { return viewportWidth; }
+	@Override public int getViewportHeight() { return viewportHeight; }
+
+	public void renderView(Screen screen) {
 		frames++;
 		if (System.currentTimeMillis() - lastFPSupdate >= 1000) {
 			lastFPSupdate = System.currentTimeMillis();
@@ -34,68 +46,43 @@ public class SimpleGameView implements GameView {
 			frames = 0;
 		}
 		
-		render(input, menus, logic);
-
-		// Render mouse
-		// TODO
-//		renderMouse(screen, mouseButtons);
-
-//		long renderTime = System.nanoTime();
-//		int timePassed = (int) (renderTime - lastRenderTime);
-//		if (timePassed < min) {
-//			min = timePassed;
-//		}
-//		if (timePassed > max) {
-//			max = timePassed;
-//		}
-//		lastRenderTime = renderTime;
-		
-		renderer.render(this, screen, GameView.WIDTH * GameView.SCALE, GameView.HEIGHT * GameView.SCALE);
+		render(screen);
 	}
 	
-	public void render(LocalGameInput input, GameMenus menus, GameLogic logic) {
-		if (menus.isPlayingGame()) {
-			Player player = logic.getLocalPlayer();
-			int xScroll = (int) (player.pos.x - screen.w / 2);
-			int yScroll = (int) (player.pos.y - (screen.h - 24) / 2);
+	private void render(Screen screen) {
+		if (!CatacombSnatch.isPlayingGame() || player == null) return;
+		
+		/* Update viewport bounds */
+		viewportBoundsX = (int) (player.pos.x - screen.w / 2);;
+		viewportBoundsY = (int) (player.pos.y - (screen.h - 24) / 2);
+		viewportBoundsMX = viewportBoundsX + viewportWidth;
+		viewportBoundsMY = viewportBoundsY + viewportHeight;
+		
+		logic().getLevel().render(screen, this);
 			
-			logic.getLevel().render(screen, xScroll, yScroll);
-			
-			renderHealthBars(logic);
-			renderXpBar(logic);
-			renderScore(logic);
-			
-				
+		// TODO? Most of the rest of the HUD is rendered in Level.render()
+		//       maybe these should too (or visa versa)
+		renderHealthBars(screen);
+		renderXpBar(screen);
+		renderScore(screen);
+		
 //				if (gameLogic.isNetworkGame()) {
 //					Font font = Font.defaultFont();
 //					font.draw(screen, texts.latency(latencyCache.latencyCacheReady() ? "" + latencyCache.avgLatency() : "-"), 10, 20);
 //					
 //					chat.render(screen);
 //				}
-		}
-		if (menus.isShowing()) {
-			if (menus.isPlayingGame()) {
-				screen.alphaFill(0, 0, screen.w, screen.h, 0xff000000, 0xC0);
-			} else {
-				screen.blit(Art.background, 0, 0);
-			}
-			menus.getCurrent().render(screen);
-		}
-		
-		// Render mouse pointer
-		if (menus.isMouseActive()) {
-			renderMouse(input.getCurrentPhysicalState().getMousePosition());
-		}
 		
 		// Render FPS
 		if (Options.getAsBoolean(Options.DRAW_FPS, Options.VALUE_FALSE)) {
 			Font.defaultFont().draw(screen, Texts.current().FPS(fps), 10, 10);
 		}
 		
-		// Render movement key debug
-		String debug = (input.getCurrentState().up.isDown ? "UP " : "up ") + (input.getCurrentState().down.isDown ? "DOWN " : "down ") +
-				(input.getCurrentState().left.isDown ? "LEFT " : "left ") + (input.getCurrentState().right.isDown ? "RIGHT" : "right");
-		Font.defaultFont().draw(screen, debug, 10, 20);
+		// DEBUG: Render movement key
+//		GameInput input = player.getInput();
+//		String debug = (input.getCurrentState().up.isDown ? "UP " : "up ") + (input.getCurrentState().down.isDown ? "DOWN " : "down ") +
+//				(input.getCurrentState().left.isDown ? "LEFT " : "left ") + (input.getCurrentState().right.isDown ? "RIGHT" : "right");
+//		Font.defaultFont().draw(screen, debug, 10, 20);
 
 		// TODO
 //		if(console.isOpen() && menuStack.isEmpty()) {
@@ -105,8 +92,7 @@ public class SimpleGameView implements GameView {
 	
 	}
 
-	private void renderHealthBars(GameLogic logic) {
-		Player player = logic.getLocalPlayer();
+	private void renderHealthBars(Screen screen) {
 		int maxIndex = Art.panel_healthBar[0].length - 1;
 		int index = maxIndex - Math.round(player.health * maxIndex / player.maxHealth);
 		if (index < 0)
@@ -120,8 +106,7 @@ public class SimpleGameView implements GameView {
 		font.draw(screen, Texts.current().health(player.health, player.maxHealth), 335, screen.h - 21);	
 	}
 	
-	private void renderXpBar(GameLogic logic) {
-		Player player = logic.getLocalPlayer();
+	private void renderXpBar(Screen screen) {
 		int xpSinceLastLevelUp = (int) (player.xpSinceLastLevelUp());
 		int xpNeededForNextLevel = (int) (player.nettoXpNeededForLevel(player.plevel + 1));
 		
@@ -138,29 +123,10 @@ public class SimpleGameView implements GameView {
 		font.draw(screen, Texts.current().playerLevel(player.plevel + 1), 335, screen.h - 36);
 	}
 	
-	private void renderScore(GameLogic logic) {
-		Player player = logic.getLocalPlayer();
+	private void renderScore(Screen screen) {
 		screen.blit(Art.panel_coin, 314, screen.h - 55);
 		Font font = Font.defaultFont();
 		font.draw(screen, Texts.current().money(player.score), 335, screen.h - 52);
-	}
-	
-	private void renderMouse(Point pos) {
-		int crosshairSize = 15;
-		int crosshairSizeHalf = crosshairSize / 2;
-
-		Bitmap marker = new Bitmap(crosshairSize, crosshairSize);
-
-		// horizontal line
-		for (int i = 0; i < crosshairSize; i++) {
-			if (i >= crosshairSizeHalf - 1 && i <= crosshairSizeHalf + 1)
-				continue;
-
-			marker.pixels[crosshairSizeHalf + i * crosshairSize] = 0xffffffff;
-			marker.pixels[i + crosshairSizeHalf * crosshairSize] = 0xffffffff;
-		}
-
-		screen.blit(marker, pos.x - crosshairSizeHalf - 2, pos.y - crosshairSizeHalf - 2);
 	}
 }
 

@@ -9,6 +9,7 @@ import com.mojang.mojam.entity.animation.SmokeAnimation;
 import com.mojang.mojam.entity.loot.Loot;
 import com.mojang.mojam.entity.loot.LootCollector;
 import com.mojang.mojam.entity.mob.Team;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.network.TurnSynchronizer;
 import com.mojang.mojam.screen.Art;
@@ -132,29 +133,30 @@ public class Harvester extends Building implements LootCollector {
 	}
 
 	/**
-	 * Check if this collector still hascapacity for additional coins
+	 * Check if this collector still has capacity for additional coins
 	 * 
 	 * @return True if remaining capacity is more than zero, false if not
 	 */
+	@Override
 	public boolean canTake() {
 		return money < capacity;
 	}
 
 	@Override
-	public void render(Screen screen) {
+	public void render(Screen screen, GameView view) {
 		
-		if((justDroppedTicks-- > 0 || highlight) && logic().getLocalPlayer().team == team) { // TODO Check this
+		if (justDroppedTicks-- > 0 || highlightedBy.contains(view.getPlayer())) {
 			drawRadius(screen);
 		}
 		
-		super.render(screen);
+		super.render(screen, view);
 
 		Bitmap image = getSprite();
 		if (capacity - money < 500) {
 			screen.colorBlit(image, pos.x - image.w / 2, pos.y - image.h / 2 - yOffs, 0x77ff7200);
 		}
 		
-		if(team == logic().getLocalPlayer().team && !isCarried()) { // TODO Check this
+		if (team == view.getPlayer().team) {
 			addMoneyBar(screen);
 		}
 		

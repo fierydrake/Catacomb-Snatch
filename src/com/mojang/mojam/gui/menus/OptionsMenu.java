@@ -1,7 +1,10 @@
 package com.mojang.mojam.gui.menus;
 
+import static com.mojang.mojam.CatacombSnatch.menus;
+
 import java.awt.event.KeyEvent;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.Options;
 import com.mojang.mojam.gameinput.LocalGameInput;
 import com.mojang.mojam.gameview.GameView;
@@ -35,27 +38,27 @@ public class OptionsMenu extends GuiMenu {
 		addButton(new Button("options.keyBindings", xOffset, yOffset)).addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
-				menus.push(new KeyBindingsMenu());
+				menus().push(new KeyBindingsMenu());
 			}
 		});
-		if (!menus.isPlayingGame()) {
+		if (!CatacombSnatch.isPlayingGame()) {
 			addButton(new Button("options.characterSelect", xOffset, yOffset += offset)).addListener(new ButtonAdapter() {
 				@Override
 				public void buttonPressed(ClickableComponent button) {
-					menus.push(new CharacterSelectionMenu());
+					menus().push(new CharacterSelectionMenu());
 				}				
 			});
 		}
 		addButton(new Button("options.sound_and_video", xOffset, yOffset += offset)).addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
-				menus.push(new AudioVideoMenu());
+				menus().push(new AudioVideoMenu());
 			}
 		});
 		addButton(new Button("options.locale_selection", xOffset, yOffset += offset)).addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
-				menus.push(new LocaleMenu());
+				menus().push(new LocaleMenu());
 			}
 		});
 		addButton(new Checkbox("options.creative", xOffset, yOffset += offset, Options.getAsBoolean(Options.CREATIVE, Options.VALUE_FALSE))).addListener(new ButtonAdapter() {
@@ -68,7 +71,7 @@ public class OptionsMenu extends GuiMenu {
 		addButton(new Button("options.credits", xOffset, yOffset += offset)).addListener(new ButtonAdapter() {
 			@Override
 			public void buttonPressed(ClickableComponent button) {
-				menus.push(new CreditsScreen());
+				menus().push(new CreditsScreen());
 			}
 		});
 		back = (Button)addButton(new BackButton(xOffset, (yOffset += offset) + 20));

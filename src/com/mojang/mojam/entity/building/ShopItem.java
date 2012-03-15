@@ -1,10 +1,12 @@
 package com.mojang.mojam.entity.building;
 
-import com.mojang.mojam.CatacombSnatch;
+import static com.mojang.mojam.CatacombSnatch.game;
+
 import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Team;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.Notifications;
 import com.mojang.mojam.resources.Texts;
@@ -34,14 +36,14 @@ public abstract class ShopItem extends Building {
 
 
     @Override
-    public void render(Screen screen) {
-        super.render(screen);
-        if(team == logic().getLocalPlayer().team) { // TODO Check this
+    public void render(Screen screen, GameView view) {
+        super.render(screen, view);
+        if (team == view.getPlayer().team){ 
         	//Render the Cost text
             Font.defaultFont().draw(screen, Texts.current().cost(effectiveCost),
             		(int) (pos.x), (int) (pos.y + 10), Font.Align.CENTERED);
         }
-        renderInfo(screen);
+        renderInfo(screen, view);
     }
     
 	/**
@@ -50,9 +52,9 @@ public abstract class ShopItem extends Building {
 	 * @param screen
 	 *            Screen
 	 */
-	protected void renderInfo(Screen screen) {
+	protected void renderInfo(Screen screen, GameView view) {
 		// Draw iiAtlas' shop item info graphics, thanks whoever re-wrote this!
-		if (highlight) {
+		if (highlightedBy.contains(view.getPlayer())) {
 		        Bitmap image = getSprite();
 		        int teamYOffset = (team == Team.Team2) ? 90 : 0;
 		        
@@ -87,7 +89,7 @@ public abstract class ShopItem extends Building {
 
     @Override
     public void init() {
-        effectiveCost = CatacombSnatch.menus.getGameInformation().difficulty.calculateCosts(cost);
+        effectiveCost = game().difficulty.calculateCosts(cost);
     }
 
     @Override
@@ -115,12 +117,12 @@ public abstract class ShopItem extends Building {
             if (!player.isCarrying() && player.getScore() >= effectiveCost) {
             	player.payCost(effectiveCost);
             	useAction(player);
-            }
-            else if (player.getScore() < effectiveCost) {
-            	if(this.team == logic().getLocalPlayer().team) { // TODO Check this
-            		 Notifications.getInstance().add(Texts.current().upgradeNotEnoughMoney(effectiveCost));
-            	}
-               
+            	
+            } else if (player.getScore() < effectiveCost) {
+        		 Notifications.getInstance().add(
+        				 Texts.current().upgradeNotEnoughMoney(effectiveCost),
+        				 player.getCharacter(), player.team,
+        				 Notifications.For.CHARACTER);
             }
         }
     }
@@ -134,10 +136,10 @@ public abstract class ShopItem extends Building {
     
     @Override
     public boolean upgrade(Player p) {
-        if (this.team == logic().getLocalPlayer().team) { // TODO Check this
-            Notifications.getInstance().add(
-            		Texts.current().getStatic("upgrade.shopItem"));
-        }
+    	Notifications.getInstance().add(
+    			Texts.current().getStatic("upgrade.shopItem"),
+    			p.getCharacter(), p.team,
+    			Notifications.For.CHARACTER);
         return false;
     }   
 

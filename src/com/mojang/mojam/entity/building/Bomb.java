@@ -1,5 +1,7 @@
 package com.mojang.mojam.entity.building;
 
+import static com.mojang.mojam.CatacombSnatch.sound;
+
 import java.util.Set;
 
 import com.mojang.mojam.entity.Entity;
@@ -38,7 +40,7 @@ public class Bomb extends Building {
 	@Override
 	public void die() {
 		level.addEntity(new LargeBombExplodeAnimation(pos.x, pos.y));
-		sound.playSound("/sound/Explosion 2.wav",
+		sound().playSound("/sound/Explosion 2.wav",
 				(float) pos.x, (float) pos.y);
 
 		Set<Entity> entities = level.getEntities(pos.x - BOMB_DISTANCE, pos.y
@@ -69,6 +71,7 @@ public class Bomb extends Building {
 	    yOffs = 2;
 	}
 
+	@Override
 	public void tick() {
 	    if (hit) {
 	        if (freezeTime <= 0) {
@@ -94,6 +97,7 @@ public class Bomb extends Building {
 
 	}
 
+	@Override
 	public Bitmap getSprite() {
 		return Art.bomb;
 	}

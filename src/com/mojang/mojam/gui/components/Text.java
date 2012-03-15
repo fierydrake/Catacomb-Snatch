@@ -14,6 +14,7 @@ public class Text extends VisibleComponent {
 		this.label = label;
 	}
 
+    @Override
 	public void render(Screen screen) {
 		if (label.indexOf("\n") != -1) {
 			String[] strings = label.split("\n");

@@ -1,6 +1,7 @@
 package com.mojang.mojam.entity.particle;
 
 import com.mojang.mojam.entity.Entity;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.network.TurnSynchronizer;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
@@ -23,6 +24,7 @@ public class Particle extends Entity {
 		life = TurnSynchronizer.synchedRandom.nextInt(20) + 50;
 	}
 
+    @Override
 	public void tick() {
 		move(xa, ya);
 		z += za;
@@ -40,7 +42,8 @@ public class Particle extends Entity {
 			remove();
 	}
 
-	public void render(Screen screen) {
+    @Override
+	public void render(Screen screen, GameView view) {
 		screen.blit(Art.bullets[1][0], pos.x - 8, pos.y - 8 - z);
 	}
 }

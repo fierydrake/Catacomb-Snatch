@@ -1,8 +1,11 @@
 package com.mojang.mojam.entity.building;
 
+import static com.mojang.mojam.CatacombSnatch.game;
+
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.entity.mob.Team;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.IEditable;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.network.TurnSynchronizer;
@@ -48,7 +51,7 @@ public abstract class SpawnerEntity extends Building implements IEditable {
 
 		if (--spawnTime <= 0) {
 			spawn();
-			spawnTime = logic().getGameInformation().difficulty.calculateSpawntime(SPAWN_INTERVAL);
+			spawnTime = game().difficulty.calculateSpawntime(SPAWN_INTERVAL);
 		}
 	}
 
@@ -107,8 +110,8 @@ public abstract class SpawnerEntity extends Building implements IEditable {
 	}
 
 	@Override
-    public void render(Screen screen) {
-	    super.render(screen);
+    public void render(Screen screen, GameView view) {
+	    super.render(screen, view);
 	    screen.blit(Art.mobSpawnerShadow, pos.x - Art.mobSpawnerShadow.w / 2 - 1, pos.y - Art.mobSpawnerShadow.h / 2 + 7);
     }
 	

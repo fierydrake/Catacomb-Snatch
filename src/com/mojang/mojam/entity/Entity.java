@@ -2,10 +2,8 @@ package com.mojang.mojam.entity;
 
 import java.util.List;
 
-import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.entity.animation.LargeBombExplodeAnimation;
-import com.mojang.mojam.gamelogic.GameLogic;
-import com.mojang.mojam.gamesound.GameSound;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.Level;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.math.BB;
@@ -15,8 +13,6 @@ import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
 
 public abstract class Entity implements BBOwner {
-	protected final GameSound sound = CatacombSnatch.sound;
-	protected GameLogic logic() { return CatacombSnatch.menus.getGameLogic(); } 
 	
 	public Level level;
 	public boolean removed;
@@ -64,11 +60,11 @@ public abstract class Entity implements BBOwner {
 		return new BB(this, pos.x - radius.x, pos.y - radius.y, pos.x + radius.x, pos.y + radius.y);
 	}
 
-	public void render(Screen screen) {
+	public void render(Screen screen, GameView view) {
 		screen.blit(Art.floorTiles[3][0], pos.x - Tile.WIDTH / 2, pos.y - Tile.HEIGHT / 2 - 8);
 	}
 	
-	public void renderTop(Screen screen) {
+	public void renderTop(Screen screen, GameView view) {
 	}
 	
 	protected boolean move(double xa, double ya) {

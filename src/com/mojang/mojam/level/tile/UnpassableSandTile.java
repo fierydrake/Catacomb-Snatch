@@ -15,23 +15,28 @@ public class UnpassableSandTile extends Tile {
 		minimapColor = Art.floorTileColors[img & 7][img / 8];
 	}
 	
+    @Override
 	public void init(Level level, int x, int y) {
 		super.init(level, x, y);
 
 	}
 
+    @Override
 	public void render(Screen screen) {
 		super.render(screen);
 	}
 
+    @Override
 	public boolean canPass(Entity e) {
 		return false;
 	}
 
+    @Override
 	public int getColor() {
 		return UnpassableSandTile.COLOR;
 	}
 
+    @Override
 	public String getName() {
 		return UnpassableSandTile.NAME;
 	}

@@ -16,6 +16,7 @@ public class Scarab extends HostileMob {
 		facing = TurnSynchronizer.synchedRandom.nextInt(4);
 	}
 
+    @Override
 	public void tick() {
 		super.tick();
 		if (freezeTime > 0)
@@ -23,10 +24,12 @@ public class Scarab extends HostileMob {
 		walk();
 	}
 
+    @Override
 	public void die() {
 		super.die();
 	}
 
+    @Override
 	public Bitmap getSprite() {
 		return Art.scarab[((stepTime / 6) & 3)][(facing + 1) & 3];
 	}

@@ -1,5 +1,7 @@
 package com.mojang.mojam.gui.menus;
 
+import static com.mojang.mojam.CatacombSnatch.sound;
+
 import java.awt.event.KeyEvent;
 
 import com.mojang.mojam.Options;
@@ -74,7 +76,7 @@ public class AudioVideoMenu extends GuiMenu {
 				volume = slider.value;
 
 				Options.set(Options.VOLUME, volume + "");
-				sound.setMasterVolume(slider.value);
+				sound().setMasterVolume(slider.value);
 			}
 		});
 		musicVol.addListener(new ButtonAdapter() {
@@ -84,7 +86,7 @@ public class AudioVideoMenu extends GuiMenu {
 				musicVolume = slider.value;
 
 				Options.set(Options.MUSIC, musicVolume + "");
-				sound.setVolume(GameSound.BACKGROUND_TRACK, slider.value);
+				sound().setVolume(GameSound.BACKGROUND_TRACK, slider.value);
 			}
 		});
 		soundsVol.addListener(new ButtonAdapter() {

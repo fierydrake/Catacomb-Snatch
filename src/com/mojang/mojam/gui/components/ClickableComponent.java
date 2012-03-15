@@ -25,7 +25,7 @@ public abstract class ClickableComponent extends VisibleComponent {
 	public void tick(LocalGameInput input) {
 		if (contains(input.getCurrentPhysicalState().getMousePosition())) {
 			if (enabled) {
-				if (isPressed || menus.isMouseActive()) {
+				if (isPressed || input.isMouseActive()) {
 					for (ButtonListener listener : listeners) {
 						listener.buttonHovered(this);
 					}

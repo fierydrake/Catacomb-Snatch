@@ -26,7 +26,7 @@ public class Options {
     public static final String VALUE_FALSE = "false";
     
     public static final String CREATIVE = "creative";
-    public static final String CHARACTER_ID = "character";
+    public static final String CHARACTER_NAME = "character.name";
     
     public static final String MP_PORT = "mpPort";
 
@@ -38,23 +38,24 @@ public class Options {
 		loadProperties();
 	}
 
-	public static int getCharacterID() {
-		String value = properties.getProperty(CHARACTER_ID);
-		if (value == null) {
-			return GameCharacter.LordLard.ordinal();
-		}
-		int id = GameCharacter.LordLard.ordinal();
+	public static GameCharacter getCharacter() {
+		String characterName = get(CHARACTER_NAME, GameCharacter.LordLard.name());
+		GameCharacter character;
 		try {
-			id = Integer.parseInt(value);
-		} catch (NumberFormatException e) {}
-		if (id < 0 || id >= GameCharacter.values().length-1) {
-			return GameCharacter.LordLard.ordinal();
+			character = GameCharacter.valueOf(characterName);
+		} catch (IllegalArgumentException e) {
+			/* invalid character name */
+			character = GameCharacter.LordLard;
 		}
-		return id;
+		return character;
 	}
-
+	
+	public static void setCharacter(GameCharacter character) {
+		set(CHARACTER_NAME, character.name());
+	}
+	
 	public static boolean isCharacterIDset() {
-		return properties.get(CHARACTER_ID) != null;
+		return properties.get(CHARACTER_NAME) != null;
 	}
 	
     public static String get(String key) {

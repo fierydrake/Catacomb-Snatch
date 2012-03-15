@@ -30,6 +30,7 @@ public class InputBindings {
 		public String getLogicalInputName() { return logicalInputName; }
 		public List<PhysicalInput> getPhysicalInputs() { return physicalInputs; }
 		
+	    @Override
 		public String toString() {
 			if (physicalInputs.size() == 0) return "NONE"; // TODO Translate
 			StringBuilder s = new StringBuilder();

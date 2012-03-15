@@ -1,6 +1,8 @@
 package com.mojang.mojam.entity.mob;
 
-import com.mojang.mojam.CatacombSnatch;
+import static com.mojang.mojam.CatacombSnatch.game;
+import static com.mojang.mojam.CatacombSnatch.sound;
+
 import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
@@ -13,6 +15,7 @@ import com.mojang.mojam.entity.building.Harvester;
 import com.mojang.mojam.entity.building.SpawnerEntity;
 import com.mojang.mojam.entity.loot.Loot;
 import com.mojang.mojam.entity.weapon.IWeapon;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.tile.HoleTile;
 import com.mojang.mojam.level.tile.Tile;
@@ -64,12 +67,13 @@ public abstract class Mob extends Entity {
 		super();
 		setPos(x, y);
 		this.team = team;
-		DifficultyInformation difficulty = CatacombSnatch.menus.getGameInformation().difficulty;
+		DifficultyInformation difficulty = game().difficulty;
 		this.REGEN_INTERVAL = (difficulty != null && difficulty.difficultyID == 3) ? 15 : 25;
 		this.healingTime = this.REGEN_INTERVAL;
 		aimVector = new Vec2(0, 1);
 	}
 
+	@Override
 	public void init() {
 		super.init();
 	}
@@ -102,7 +106,7 @@ public abstract class Mob extends Entity {
 
 	@Override
 	public void tick() {
-		if (logic().getGameInformation().difficulty.difficultyID >= 1 || this.team != Team.Neutral) {
+		if (game().difficulty.difficultyID >= 1 || this.team != Team.Neutral) {
 			this.doRegenTime();
 		}
 		
@@ -180,7 +184,7 @@ public abstract class Mob extends Entity {
 
 		level.addEntity(new EnemyDieAnimation(pos.x, pos.y));
 
-		sound.playSound(getDeathSound(), (float) pos.x, (float) pos.y);
+		sound().playSound(getDeathSound(), (float) pos.x, (float) pos.y);
 	}
 
 	public String getDeathSound() {
@@ -197,7 +201,8 @@ public abstract class Mob extends Entity {
 		return re;
 	}
 
-	public void render(Screen screen) {
+	@Override
+	public void render(Screen screen, GameView view) {
 		Bitmap image = getSprite();
 		if (hurtTime > 0) {
 			if (hurtTime > 40 - 6 && hurtTime / 2 % 2 == 0) {
@@ -216,11 +221,11 @@ public abstract class Mob extends Entity {
 		}
 
 		if (doShowHealthBar && health < maxHealth) {
-            addHealthBar(screen);
+            addHealthBar(screen, view);
         }
 	}
 
-	protected void addHealthBar(Screen screen) {
+	protected void addHealthBar(Screen screen, GameView view) {
         
         int start = (int) (health * 21 / maxHealth);
         
@@ -246,12 +251,12 @@ public abstract class Mob extends Entity {
 		screen.blit(Art.healthBar_Outline[0][0], pos.x - 16, pos.y + healthBarOffset);
     }
 
-	protected void renderCarrying(Screen screen, int yOffs) {
+	protected void renderCarrying(Screen screen, GameView view, int yOffs) {
 		if (carrying == null)
 			return;
 
 		carrying.yOffs -= yOffs;
-		carrying.render(screen);
+		carrying.render(screen, view);
 		carrying.yOffs += yOffs;
 	}
 
@@ -420,9 +425,9 @@ public abstract class Mob extends Entity {
                 }
                 // TODO add a sex attribute to Characters
                 if (character.ordinal() < 2)
-                    sound.playSound("/sound/falling_male.wav", (float) pos.x, (float) pos.y);
+                    sound().playSound("/sound/falling_male.wav", (float) pos.x, (float) pos.y);
                 else
-                    sound.playSound("/sound/falling_female.wav", (float) pos.x, (float) pos.y);
+                    sound().playSound("/sound/falling_female.wav", (float) pos.x, (float) pos.y);
             }
             return true;
         }

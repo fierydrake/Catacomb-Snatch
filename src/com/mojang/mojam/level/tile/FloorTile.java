@@ -25,6 +25,7 @@ public class FloorTile extends Tile {
 		img = TurnSynchronizer.synchedRandom.nextInt(4);
 		minimapColor = Art.floorTileColors[img & 7][img / 8];
 	}
+	
 	@Override
 	public void init(Level level, int x, int y) {
 		super.init(level, x, y);
@@ -88,19 +89,16 @@ public class FloorTile extends Tile {
 	public boolean isBuildable() {
 		return true;
 	}
-	
 
 	@Override
 	public int getColor() {
 		return FloorTile.COLOR;
 	}
 
-
 	@Override
 	public String getName() {
 		return FloorTile.NAME;
 	}
-
 
 	@Override
 	public Bitmap getBitMapForEditor() {

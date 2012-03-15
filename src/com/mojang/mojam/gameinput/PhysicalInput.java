@@ -44,6 +44,7 @@ public abstract class PhysicalInput {
 			super("key", keyCode);
 		}
 		
+	    @Override
 		public String getDisplayName() {
 			return KeyEvent.getKeyText(code);
 		}
@@ -65,6 +66,7 @@ public abstract class PhysicalInput {
 			super("mouse", buttonCode);
 		}
 		
+	    @Override
 		public String getDisplayName() {
 			switch (code) {
 			case MouseEvent.BUTTON1: return Texts.current().getStatic("mouse.button1");

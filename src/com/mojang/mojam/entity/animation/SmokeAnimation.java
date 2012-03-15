@@ -1,5 +1,6 @@
 package com.mojang.mojam.entity.animation;
 
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.math.Mth;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
@@ -22,7 +23,8 @@ public class SmokeAnimation extends Animation {
 		super.tick();
 	}
 
-	public void render(Screen screen) {
+	@Override
+	public void render(Screen screen, GameView view) {
 		int frame = Mth.clamp(numFrames - life * numFrames / duration - 1, 0,
 				numFrames);
 		screen.blit(bitmap[frame % width][frame / width], pos.x, pos.y);

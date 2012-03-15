@@ -6,13 +6,11 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
-import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.building.ShopItemBomb;
 import com.mojang.mojam.entity.building.ShopItemHarvester;
 import com.mojang.mojam.entity.building.ShopItemTurret;
 import com.mojang.mojam.entity.mob.Team;
-import com.mojang.mojam.gamelogic.GameLogic;
 import com.mojang.mojam.level.DifficultyInformation;
 import com.mojang.mojam.level.Level;
 import com.mojang.mojam.level.LevelInformation;
@@ -23,7 +21,6 @@ import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.level.tile.UnbreakableRailTile;
 
 public class GameMode {
-	protected GameLogic logic() { return CatacombSnatch.menus.getGameLogic(); }
 
 	public static final int LEVEL_BORDER_SIZE = 16;
 	

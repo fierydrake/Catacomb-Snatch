@@ -1,5 +1,8 @@
 package com.mojang.mojam.gui.menus;
 
+import static com.mojang.mojam.CatacombSnatch.menus;
+
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.components.Button;
@@ -18,38 +21,38 @@ public class TitleMenu extends GuiMenu {
 			addButton(new Button("titlemenu.start", x, y+=Button.HEIGHT+BUTTON_SPACING) {
 				@Override
 				public void clicked() {
-					menus.push(new LevelSelect(false));
+					menus().push(new LevelSelect(false));
 				}
 			});
 			addButton(new Button("titlemenu.host", x, y+=Button.HEIGHT+BUTTON_SPACING) {
 				@Override
 				public void clicked() {
-					menus.push(new LevelSelect(true));
+					menus().push(new LevelSelect(true));
 				}
 			});
 			addButton(new Button("titlemenu.join", x, y+=Button.HEIGHT+BUTTON_SPACING));
 			addButton(new Button("titlemenu.help", x, y+=Button.HEIGHT+BUTTON_SPACING) {
 				@Override
 				public void clicked() {
-					menus.push(new HowToPlayMenu());
+					menus().push(new HowToPlayMenu());
 				}
 			});
 			addButton(new Button("titlemenu.options", x, y+=Button.HEIGHT+BUTTON_SPACING) {
 				@Override
 				public void clicked() {
-					menus.push(new OptionsMenu());
+					menus().push(new OptionsMenu());
 				}
 			});
 			addButton(new Button("titlemenu.levelEditor", x, y+=Button.HEIGHT+BUTTON_SPACING) {
 				@Override
 				public void clicked() {
-					menus.push(new LevelEditorMenu());
+					menus().push(new LevelEditorMenu());
 				}
 			});
 			addButton(new Button("titlemenu.exit", x, y+=Button.HEIGHT+BUTTON_SPACING) {
 				@Override
 				public void clicked() {
-					menus.exitGame();
+					CatacombSnatch.exit();
 				}
 			});
 		} catch (Exception e) {

@@ -1,8 +1,11 @@
 package com.mojang.mojam.entity.loot;
 
+import static com.mojang.mojam.CatacombSnatch.sound;
+
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.building.Harvester;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.tile.HoleTile;
 import com.mojang.mojam.network.TurnSynchronizer;
 import com.mojang.mojam.screen.Art;
@@ -73,6 +76,7 @@ public class Loot extends Entity {
 		life = 100 - TurnSynchronizer.synchedRandom.nextInt(40);
 	}
 
+	@Override
 	public void tick() {
 		animationTime++;
 		if(coinHasFallenInHole()) {
@@ -161,20 +165,21 @@ public class Loot extends Entity {
 		taker.take(this);
 
 		if (value > 8) {
-			sound.playSound("/sound/Big Gem.wav",
+			sound().playSound("/sound/Big Gem.wav",
 					(float) pos.x, (float) pos.y);
 		} else if (value > 6) {
-			sound.playSound("/sound/Gem.wav",
+			sound().playSound("/sound/Gem.wav",
 					(float) pos.x, (float) pos.y);
 		} else if (value > 4) {
-			sound.playSound("/sound/Big Coin.wav",
+			sound().playSound("/sound/Big Coin.wav",
 					(float) pos.x, (float) pos.y);
 		} else {
-			sound.playSound("/sound/Small Coin.wav",
+			sound().playSound("/sound/Small Coin.wav",
 					(float) pos.x, (float) pos.y);
 		}
 	}
 
+	@Override
 	protected boolean shouldBlock(Entity e) {
 		return false;
 	}
@@ -186,7 +191,8 @@ public class Loot extends Entity {
 		}
 	}
 
-	public void render(Screen screen) {
+	@Override
+	public void render(Screen screen, GameView view) {
 		Bitmap[][] lootAnimation = animationArt[value];
 		if (life > 60 * 3 || life / 2 % 2 == 0) {
 			int frame = animationTime / 3 % lootAnimation.length;

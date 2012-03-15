@@ -26,6 +26,7 @@ public class Node implements Comparable<Node> {
 		return n1.__priority < n2.__priority ? -1 : 1;
 	}
 
+    @Override
 	public int compareTo(Node o) {
 		return compare(this, o);
 	}

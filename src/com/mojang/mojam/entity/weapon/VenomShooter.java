@@ -11,6 +11,7 @@ public class VenomShooter extends Rifle {
 		super(owner);
 	}
 
+    @Override
 	public Bullet getAmmo(double xDir, double yDir) {
 		Bullet bullet = new BulletPoison(owner, xDir, yDir, BULLET_DAMAGE);
 		bullet.pos.y = bullet.pos.y-19; //this will make the bullet look like its coming out of the snakes mouth

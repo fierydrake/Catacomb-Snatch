@@ -1,8 +1,11 @@
 package com.mojang.mojam.entity.mob;
 
+import static com.mojang.mojam.CatacombSnatch.game;
+
 import java.util.Set;
 
 import com.mojang.mojam.entity.Entity;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.IEditable;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.screen.Art;
@@ -39,7 +42,7 @@ public class SpikeTrap extends Mob implements IEditable {
 			Set<Entity> entities = level.getEntities(pos.x - 2, pos.y - 2, pos.x + Tile.WIDTH, pos.y + Tile.HEIGHT);
 			for (Entity e : entities) {
 				if (e instanceof Mob && !(e instanceof Bat)) {
-					((Mob) e).hurt(this, logic().getGameInformation().difficulty.calculateStrength(1));
+					((Mob) e).hurt(this, game().difficulty.calculateStrength(1));
 				}
 			}
 		}
@@ -52,7 +55,7 @@ public class SpikeTrap extends Mob implements IEditable {
 	}
     
 	@Override
-	public void render(Screen screen) {
+	public void render(Screen screen, GameView view) {
 		screen.blit(Art.spikes[spike][0], pos.x, pos.y);
 	}
     
@@ -74,14 +77,6 @@ public class SpikeTrap extends Mob implements IEditable {
 	 */
 	public int getSpikePhase() {
 		return spike;
-	}
-
-	public boolean isBuildable() {
-		return false;
-	}
-
-	public boolean isHighlightable() {
-		return false;
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.mojang.mojam.entity.particle;
 
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.network.TurnSynchronizer;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
@@ -12,7 +13,8 @@ public class Sparkle extends Particle {
 		duration = (life = TurnSynchronizer.synchedRandom.nextInt(10) + 20) + 1;
 	}
 
-	public void render(Screen screen) {
+    @Override
+	public void render(Screen screen, GameView view) {
 		int anim = Art.shineBig.length - life * Art.shineBig.length / duration
 				- 1;
 		screen.blit(Art.shineBig[anim][0], pos.x - 8, pos.y - 8 - 4 - z);

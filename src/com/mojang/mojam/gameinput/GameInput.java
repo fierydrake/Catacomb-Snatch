@@ -12,5 +12,6 @@ public interface GameInput {
 	public void gatherInput();
 
 	public LogicalInputs getCurrentState();
+	public boolean isMouseActive();
 	public Point getMousePosition();
 }

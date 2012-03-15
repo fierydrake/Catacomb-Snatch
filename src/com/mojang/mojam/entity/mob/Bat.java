@@ -1,5 +1,6 @@
 package com.mojang.mojam.entity.mob;
 
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.network.TurnSynchronizer;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
@@ -17,6 +18,7 @@ public class Bat extends HostileMob  {
 		yOffs = 5;
 	}
 
+	@Override
 	public void tick() {
 		super.tick();
 		if (freezeTime > 0)
@@ -42,18 +44,20 @@ public class Bat extends HostileMob  {
 		yd *= 0.2;
 	}
 
+	@Override
 	public void die() {
 		super.die();
 	}
 
+	@Override
 	public Bitmap getSprite() {
 		return Art.bat[(tick / 3) & 3][0];
 	}
 
 	@Override
-	public void render(Screen screen) {
+	public void render(Screen screen, GameView view) {
 		screen.alphaBlit(Art.batShadow, (int)(pos.x - Art.batShadow.w / 2), (int)(pos.y - Art.batShadow.h / 2 - yOffs + 16), 0x45);
-		super.render(screen);
+		super.render(screen, view);
 	}
 
 	@Override

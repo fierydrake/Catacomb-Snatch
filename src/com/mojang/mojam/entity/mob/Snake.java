@@ -22,6 +22,7 @@ public class Snake extends HostileMob {
 		weapon = new VenomShooter(this);
 	}
 
+    @Override
 	public void tick() {
         super.tick();
         if (freezeTime > 0) {
@@ -40,10 +41,12 @@ public class Snake extends HostileMob {
         walk();
 	}
 
+    @Override
 	public void die() {
 		super.die();
 	}
 
+    @Override
 	public Bitmap getSprite() {
 		return Art.snake[((stepTime / 6) & 3)][(facing + 1) & 3];
 	}

@@ -1,15 +1,16 @@
 package com.mojang.mojam.entity.mob;
 
+import java.util.Set;
+
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.Player;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.IEditable;
-//import com.mojang.mojam.level.tile.EmptySpace;
 import com.mojang.mojam.level.tile.HoleTile;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Bitmap;
 import com.mojang.mojam.screen.Screen;
-import java.util.Set;
 
 public class DropTrap extends Mob implements IEditable {
     public static final int COLOR = 0xff0000cc;
@@ -28,6 +29,7 @@ public class DropTrap extends Mob implements IEditable {
 		this.yOffs = 0;
 	}
 	
+	@Override
 	public void tick() {
 		super.tick();
 		if (freezeTime > 0) {
@@ -71,7 +73,7 @@ public class DropTrap extends Mob implements IEditable {
 	}
 	
 	@Override
-	public void render(Screen screen) {
+	public void render(Screen screen, GameView view) {
 		if (level.getTile((int)(pos.x/32), (int)(pos.y/32)-1) instanceof HoleTile) {
 			screen.blit(Art.dropFloor[crumble][0], pos.x, pos.y);
 		} else {
@@ -82,14 +84,6 @@ public class DropTrap extends Mob implements IEditable {
 	@Override
 	public Bitmap getSprite() {
 		return Art.floorTiles[4][2];
-	}
-
-	public boolean isBuildable() {
-		return false;
-	}
-
-	public boolean isHighlightable() {
-		return false;
 	}
 
 	@Override

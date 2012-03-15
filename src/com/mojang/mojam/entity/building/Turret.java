@@ -1,9 +1,10 @@
 package com.mojang.mojam.entity.building;
 
+import static com.mojang.mojam.CatacombSnatch.game;
+
 import java.awt.Color;
 import java.util.Set;
 
-import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.entity.Bullet;
 import com.mojang.mojam.entity.Entity;
 import com.mojang.mojam.entity.mob.DropTrap;
@@ -11,6 +12,7 @@ import com.mojang.mojam.entity.mob.Mob;
 import com.mojang.mojam.entity.mob.RailDroid;
 import com.mojang.mojam.entity.mob.SpikeTrap;
 import com.mojang.mojam.entity.mob.Team;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.IEditable;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.screen.Art;
@@ -56,9 +58,9 @@ public class Turret extends Building implements IEditable {
 	@Override
 	public void init() {
 		makeUpgradeableWithCosts(new int[] { 
-				CatacombSnatch.menus.getGameInformation().difficulty.calculateCosts(500), 
-				CatacombSnatch.menus.getGameInformation().difficulty.calculateCosts(1000), 
-				CatacombSnatch.menus.getGameInformation().difficulty.calculateCosts(5000)
+				game().difficulty.calculateCosts(500), 
+				game().difficulty.calculateCosts(1000), 
+				game().difficulty.calculateCosts(5000)
 		});
 	}
 
@@ -115,13 +117,13 @@ public class Turret extends Building implements IEditable {
 	}
 
 	@Override
-	public void render(Screen screen) {
+	public void render(Screen screen, GameView view) {
 		
-		if((justDroppedTicks-- > 0 || highlight) && team == logic().getLocalPlayer().team) { // Check this
+		if (justDroppedTicks-- > 0 || highlightedBy.contains(view.getPlayer())) { // Check this
 				drawRadius(screen);
 		}
 		
-		super.render(screen);
+		super.render(screen, view);
 	}
 
 	@Override

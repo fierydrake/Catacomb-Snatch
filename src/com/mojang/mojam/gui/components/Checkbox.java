@@ -19,10 +19,12 @@ public class Checkbox extends LabelledClickableComponent {
 		this.checked = checked;
 	}
 
+    @Override
 	protected void clicked() {
 		checked = !checked;
 	}
 
+    @Override
 	public void render(Screen screen) {
 		if (isPressed()) {
 			if (checked)

@@ -4,6 +4,5 @@ public enum GameCharacter {
 	LordLard,
 	HerrVonSpeck,
 	DuchessDonut,
-	CountessCruller,
-	None
+	CountessCruller
 }

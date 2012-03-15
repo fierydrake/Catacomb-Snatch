@@ -12,7 +12,6 @@ import com.mojang.mojam.Options;
 import com.mojang.mojam.gameinput.LogicalInputs.LogicalInput;
 import com.mojang.mojam.gameinput.PhysicalInput.Key;
 import com.mojang.mojam.gameinput.PhysicalInput.MouseButton;
-import com.mojang.mojam.gameview.GameView;
 
 /*
  * This class is responsible for converting local AWT input sources
@@ -44,7 +43,18 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	private PhysicalInputs currentPhysical = new PhysicalInputs();
 	private PhysicalInputs nextPhysical = new PhysicalInputs();
 
-	public LocalGameInput() {
+	/*
+	 * This is used for scaling the mouse position to match the
+	 * pixels of the underlying Screen that the AWT Component renders
+	 * (since the component also renders using the same scale)
+	 */
+	private int scale;
+	
+	private static int MOUSE_ACTIVE_DELAY = 60;
+	private boolean mouseActive = false;
+	private int mouseActiveTime;
+	
+	protected LocalGameInput() {
 		super();
 		bindings = new InputBindings();
 		/* 
@@ -77,8 +87,9 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 		initKey(next.console, KeyEvent.VK_TAB);
 	}
 	
-	public LocalGameInput(Component localInputComponent) {
+	public LocalGameInput(Component localInputComponent, int scale) {
 		this();
+		this.scale = scale;
 		localInputComponent.addKeyListener(this);
 		localInputComponent.addMouseListener(this);
 		localInputComponent.addMouseMotionListener(this);
@@ -112,12 +123,23 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 		nextPhysical.copyInto(currentPhysical);
 		/* Reset any per tick flags */
 		nextPhysical.reset();
+		/* Keep track of mouse activity */
+		if (currentPhysical.wasMouseMoved()) {
+			mouseActive = true;
+			mouseActiveTime = MOUSE_ACTIVE_DELAY;
+		} else if (--mouseActiveTime <= 0) {
+			mouseActive = false;
+		} 
 	}
+	
+    @Override
+	public boolean isMouseActive() { return mouseActive; }
 
 	public PhysicalInputs getCurrentPhysicalState() {
 		return currentPhysical;
 	}
 	
+    @Override
 	public Point getMousePosition() {
 		return currentPhysical.getMousePosition();
 	}
@@ -208,7 +230,7 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	@Override
 	public synchronized void mouseMoved(MouseEvent e) {
 		nextPhysical.setMouseMoved();
-		nextPhysical.setMousePosition(e.getX() / GameView.SCALE, e.getY() / GameView.SCALE);
+		nextPhysical.setMousePosition(e.getX() / scale, e.getY() / scale);
 	}
 }
 

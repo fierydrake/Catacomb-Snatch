@@ -1,19 +1,21 @@
 package com.mojang.mojam.gamelogic;
 
+import java.util.List;
+
 import com.mojang.mojam.GameInformation;
 import com.mojang.mojam.entity.Player;
-import com.mojang.mojam.gameinput.GameInput;
 import com.mojang.mojam.level.Level;
+import com.mojang.mojam.screen.Screen;
 
 public interface GameLogic {
-	public GameInformation getGameInformation();
+	public boolean isPlaying();
+	
+	public GameInformation getGame();
 
 	public Level getLevel();
 
-	public Player[] getPlayers();
-	public Player getLocalPlayer();
+	public List<Player> getPlayers();
 	
-	public boolean isMouseActive();
-	
-	public void tick(GameInput input);
+	public void tick();
+	public void renderViews(Screen screen);
 }

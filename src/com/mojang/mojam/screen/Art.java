@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 
 import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameCharacter;
+import com.mojang.mojam.Options;
 
 /**
  * Art management class
@@ -42,9 +43,8 @@ public class Art {
 	private static Bitmap[][] countessCruller = cut("/art/player/countess_cruller_sheet.png", 32, 32);
 	
 	public static Bitmap[][] getPlayer(GameCharacter character) {
+		if (character == null) return null;
 		switch (character) {
-		case None:
-			return null;
 		case LordLard:
 			return lordLard;
 		case HerrVonSpeck:
@@ -54,12 +54,12 @@ public class Art {
 		case CountessCruller:
 			return countessCruller;
 		default:
-			return lordLard;
+			return null;
 		}
 	}
 	
 	public static Bitmap[][] getLocalPlayerArt() {
-		return getPlayer(CatacombSnatch.selectedCharacter);
+		return getPlayer(Options.getCharacter());
 	}
 	
     public static Bitmap exclamation_mark = load ("/art/effects/exclamation_mark.png");
@@ -72,9 +72,8 @@ public class Art {
 	private static Bitmap[][] startNoOpponent = cut("/art/player/start_no_opponent.png", 32, 32);
 	
 	public static Bitmap[][] getPlayerBase(GameCharacter character) {
+		if (character == null) return startNoOpponent;
 		switch (character) {
-		case None:
-			return startNoOpponent;
 		case LordLard:
 			return startLordLard;
 		case HerrVonSpeck:
@@ -84,7 +83,7 @@ public class Art {
 		case CountessCruller:
 			return startCountessCruller;
 		default:
-			return startLordLard;
+			return startNoOpponent;
 		}
 	}
 	

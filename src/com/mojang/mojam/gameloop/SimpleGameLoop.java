@@ -6,7 +6,7 @@ package com.mojang.mojam.gameloop;
  * of a GameLoop that will attempt to call each passed
  * Runnable at a constant rate
  */
-public class SimpleGameLoop {
+public class SimpleGameLoop implements Runnable {
 	private static final double ONE_SECOND_IN_NANOSECONDS = 1000000000;
 	private static final int MAX_LOGIC_RUNS_PER_RENDER = 20;
 	private double nsPerRun;
@@ -19,7 +19,7 @@ public class SimpleGameLoop {
 		this.nsPerRun = ONE_SECOND_IN_NANOSECONDS / runsPerSecond;
 	}
 	
-	public void start() {
+	public void run() {
 		long timePassed = 0;
 		long lastIterationTime = System.nanoTime();
 

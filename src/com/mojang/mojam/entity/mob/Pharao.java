@@ -22,6 +22,7 @@ public class Pharao extends HostileMob {
         REGEN_INTERVAL = 15;
     }
 
+    @Override
     public void tick() {
         super.tick();
         if (freezeTime > 0) {
@@ -35,10 +36,12 @@ public class Pharao extends HostileMob {
         walk();
     }
 
+    @Override
     public void die() {
         super.die();
     }
 
+    @Override
     public Bitmap getSprite() {
         return Art.pharao[((stepTime / 6) & 3)][(facing + 1) & 3];
     }

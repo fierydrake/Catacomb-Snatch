@@ -1,5 +1,7 @@
 package com.mojang.mojam.gui.menus;
 
+import static com.mojang.mojam.CatacombSnatch.menus;
+
 import java.awt.event.KeyEvent;
 import java.util.List;
 
@@ -61,7 +63,7 @@ public class KeyBindingsMenu extends GuiMenu {
 			// FIXME? Need this next line because when a new input is mapped 
 			//        the InputBinding object in this button is not updated
 			//        (see comment in InputBindings)
-			this.binding = menus.getLocalInput().getBindings().get(binding.getLogicalInputName());
+			this.binding = menus().getLocalInput().getBindings().get(binding.getLogicalInputName());
 			updateLabel();
 		}
 	}
@@ -79,7 +81,7 @@ public class KeyBindingsMenu extends GuiMenu {
 	public KeyBindingsMenu() {
 		super();
 
-		List<InputBinding> bindings = menus.getLocalInput().getBindings().getAll();
+		List<InputBinding> bindings = menus().getLocalInput().getBindings().getAll();
 
 		textWidth = (GameView.WIDTH - 3 * BORDER - 2 * Button.WIDTH) / 2;
 		numRows = bindings.size() / 2;

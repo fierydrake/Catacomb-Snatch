@@ -1,7 +1,10 @@
 package com.mojang.mojam.gui.menus;
 
+import static com.mojang.mojam.CatacombSnatch.menus;
+
 import java.awt.event.KeyEvent;
 
+import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.gameinput.LocalGameInput;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.components.BackButton;
@@ -20,30 +23,31 @@ public class PauseMenu extends GuiMenu {
 		addButton(new Button("pausemenu.help", (GameView.WIDTH - 128) / 2, 170) {
 			@Override
 			public void clicked() {
-				menus.push(new HowToPlayMenu());
+				menus().push(new HowToPlayMenu());
 			}
 		});
 		addButton(new Button("titlemenu.options", (GameView.WIDTH - 128) / 2, 200) {
 			@Override
 			public void clicked() {
-				menus.push(new OptionsMenu());
+				menus().push(new OptionsMenu());
 			}
 		});
 		addButton(new Button("pausemenu.backtomain", (GameView.WIDTH - 128) / 2, 230) {
 			@Override
 			public void clicked() {
-				menus.stopPlaying();
+				CatacombSnatch.stopGame();
 			}
 		});
 		addButton(new Button("pausemenu.exit", (GameView.WIDTH - 128) / 2, 260) {
 			@Override
 			public void clicked() {
-				menus.exitGame();
+				CatacombSnatch.exit();
 			}
 		});
 
 	}
 
+    @Override
 	public void render(Screen screen) {
 		super.render(screen);
 		screen.blit(Art.pauseScreen, 0, 0);

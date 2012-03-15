@@ -1,6 +1,7 @@
 package com.mojang.mojam.entity.animation;
 
 import com.mojang.mojam.entity.Entity;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.level.tile.FloorTile;
 import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.network.TurnSynchronizer;
@@ -50,6 +51,7 @@ public class LargeBombExplodeAnimation extends Animation {
 		}
 	}
 
-	public void render(Screen screen) {
+	@Override
+	public void render(Screen screen, GameView view) {
 	}
 }

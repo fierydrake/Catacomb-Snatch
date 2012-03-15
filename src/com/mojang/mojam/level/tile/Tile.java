@@ -44,12 +44,9 @@ public abstract class Tile implements BBOwner, IEditable {
 	}
 
 	public void render(Screen screen) {
-	    
 	    Bitmap floorTile = (Art.floorTiles[img & 7][img / 8]).copy();
 	    addShadows(floorTile);
 	    screen.blit(floorTile, x * Tile.WIDTH, y * Tile.HEIGHT);
-	    
-	    
 	}
 	
 	private void addShadows(Bitmap tile){
@@ -80,6 +77,7 @@ public abstract class Tile implements BBOwner, IEditable {
 				* Tile.WIDTH, (y + 1) * Tile.HEIGHT));
 	}
 
+    @Override
 	public void handleCollision(Entity entity, double xa, double ya) {
 	}
 

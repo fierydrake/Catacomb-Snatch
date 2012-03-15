@@ -6,7 +6,7 @@ public interface IUsable {
 
 	public boolean upgrade(Player player);
 
-	public void setHighlighted(boolean hl);
+	public void setHighlighted(boolean hl, Player by);
 
 	public boolean isHighlightable();
 

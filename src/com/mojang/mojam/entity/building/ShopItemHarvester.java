@@ -14,6 +14,7 @@ public class ShopItemHarvester extends ShopItem {
         setSprite(Art.harvester[facing][0]);
     }
 
+    @Override
     public void useAction(Player player) {
         Building item = new Harvester(pos.x, pos.y, team);
         level.addEntity(item);
