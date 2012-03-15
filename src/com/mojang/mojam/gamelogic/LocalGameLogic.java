@@ -19,7 +19,6 @@ import com.mojang.mojam.gui.menus.PauseMenu;
 import com.mojang.mojam.gui.menus.WinMenu;
 import com.mojang.mojam.level.Level;
 import com.mojang.mojam.level.tile.Tile;
-import com.mojang.mojam.math.Facing;
 import com.mojang.mojam.screen.Screen;
 
 public class LocalGameLogic implements GameLogic {
