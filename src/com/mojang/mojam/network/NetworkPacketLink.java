@@ -87,7 +87,7 @@ public class NetworkPacketLink implements PacketLink {
 		while (!incoming.isEmpty() && max-- >= 0) {
 			Packet packet = incoming.remove(0);
 			if (packetListener != null) {
-				packet.handle(packetListener);
+				packetListener.handle(packet);
 			}
 		}
 	}

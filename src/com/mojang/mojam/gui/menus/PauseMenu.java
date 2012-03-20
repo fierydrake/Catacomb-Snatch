@@ -1,11 +1,13 @@
 package com.mojang.mojam.gui.menus;
 
+import static com.mojang.mojam.CatacombSnatch.logic;
 import static com.mojang.mojam.CatacombSnatch.menus;
 
 import java.awt.event.KeyEvent;
 
 import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.gameinput.LocalGameInput;
+import com.mojang.mojam.gamelogic.SyncServerGameLogic;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.components.BackButton;
 import com.mojang.mojam.gui.components.Button;
@@ -19,7 +21,15 @@ public class PauseMenu extends GuiMenu {
 	public PauseMenu() {
 		super();
 
-		resumeButton = (Button) addButton(new BackButton("pausemenu.resume", (GameView.WIDTH - 128) / 2, 140));
+		resumeButton = (Button) addButton(new BackButton("pausemenu.resume", (GameView.WIDTH - 128) / 2, 140) {
+			@Override
+			public void clicked() {
+				if (logic() instanceof SyncServerGameLogic) {
+					((SyncServerGameLogic)logic()).unpause();
+				}
+				super.clicked();
+			}
+		});
 		addButton(new Button("pausemenu.help", (GameView.WIDTH - 128) / 2, 170) {
 			@Override
 			public void clicked() {

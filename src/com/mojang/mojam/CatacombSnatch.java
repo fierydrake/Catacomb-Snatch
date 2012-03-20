@@ -5,17 +5,16 @@ import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 
-import com.mojang.mojam.entity.mob.Team;
-import com.mojang.mojam.gameinput.GameInput;
 import com.mojang.mojam.gameinput.LocalGameInput;
 import com.mojang.mojam.gamelogic.GameLogic;
 import com.mojang.mojam.gamelogic.LocalGameLogic;
 import com.mojang.mojam.gamelogic.NoGameLogic;
+import com.mojang.mojam.gamelogic.SyncClientGameLogic;
+import com.mojang.mojam.gamelogic.SyncServerGameLogic;
 import com.mojang.mojam.gameloop.SimpleGameLoop;
 import com.mojang.mojam.gamesound.GameSound;
 import com.mojang.mojam.gamesound.SoundPlayer;
 import com.mojang.mojam.gameview.GameView;
-import com.mojang.mojam.gameview.SimpleGameView;
 import com.mojang.mojam.gui.menus.CharacterSelectionMenu;
 import com.mojang.mojam.gui.menus.GuiError;
 import com.mojang.mojam.gui.menus.TitleMenu;
@@ -26,6 +25,7 @@ import com.mojang.mojam.screen.Screen;
  * This is the orchestrating class for Catacomb Snatch
  */
 public class CatacombSnatch {
+	public static final int DEFAULT_PORT = 3000;
 	private static final String EXTERNALS_DIRNAME = ".catacomb_snatch" + File.separator;
 	private static final int RENDERER_SCALE = 2;
 	private static final Dimension RENDERER_SIZE = new Dimension(GameView.WIDTH * RENDERER_SCALE, GameView.HEIGHT * RENDERER_SCALE);
@@ -46,6 +46,7 @@ public class CatacombSnatch {
 	public static GameMenus menus() { return menus; }
 	public static GameLogic logic() { return logic; }
 	public static GameInformation game() { return isPlayingGame() ? logic.getGame() : nextGame; }
+	public static LocalGameInput getLocalInput() { return localInput; }
 	public static boolean isPlayingGame() { return logic.isPlaying(); }
 	public static boolean isGamePaused() { return menus.isShowing(); }
 	
@@ -112,7 +113,7 @@ public class CatacombSnatch {
 			public void run() {
 				/* Tick menus or tick game */
 				if (menus.isShowing()) menus.tick();
-				else if (isPlayingGame()) logic.tick();
+				if (isPlayingGame()) logic.tick();
 				
 				/* Background music */
 				if (isPlayingGame()) {
@@ -121,28 +122,37 @@ public class CatacombSnatch {
 						CatacombSnatch.sound.startBackgroundMusic();
 					}	
 				}
-
-				/* Gather input for next tick */
-				localInput.gatherInput();
 			}
 		});
 		new Thread(gameLoop, "Game thread").start();
 	}
 	
 	public static void startGame() {
-		if (nextGame.type == GameInformation.Type.SINGLE_PLAYER) {
-			try {
-				nextGame.players.add(new PlayerInformation(Team.Team1, Options.getCharacter(), (GameInput)localInput, new SimpleGameView()));
-				logic = new LocalGameLogic(nextGame);
-				/* Close all menus; game logic should start ticking */
-				menus.clear();
-				/* Start game music */
-				CatacombSnatch.sound.startBackgroundMusic();
-				nextMusicInterval = (System.currentTimeMillis() / 1000) + 4 * 60;
-			} catch (IOException e) {
-				e.printStackTrace();
-				menus.push(new GuiError("Failed to start game: could not load game level"));
+		try {
+			switch (nextGame.type) {
+			case SINGLE_PLAYER: 
+				logic = new LocalGameLogic(nextGame); 
+				break;
+			case SYNCHED_NETWORK:
+				if (nextGame.networkInformation.isHost())
+					logic = new SyncServerGameLogic(nextGame);
+				else
+					logic = new SyncClientGameLogic(nextGame);
+				break;
+			default:
+				throw new UnsupportedOperationException();
 			}
+			/* Close all menus; game logic should start ticking */
+			menus.clear();
+			/* Start game music */
+			CatacombSnatch.sound.startBackgroundMusic();
+			nextMusicInterval = (System.currentTimeMillis() / 1000) + 4 * 60;
+		} catch (IOException e) {
+			e.printStackTrace();
+			menus.push(new GuiError("Failed to start game: could not load game level"));
+		} catch (UnsupportedOperationException e) {
+			e.printStackTrace();
+			menus.push(new GuiError("Failed to start game: game type not supported (" + nextGame.type + ")"));
 		}
 	}
 	

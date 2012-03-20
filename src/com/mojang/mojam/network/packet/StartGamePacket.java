@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import com.mojang.mojam.GameCharacter;
 import com.mojang.mojam.network.Packet;
 
 public class StartGamePacket extends Packet {
@@ -11,15 +12,15 @@ public class StartGamePacket extends Packet {
 	private long gameSeed;
 	private String levelFile;
 	private int difficulty;
-	private int opponentCharacterID;
+	private GameCharacter opponentCharacter;
 
 	public StartGamePacket() {}
 
-	public StartGamePacket(long gameSeed, String levelFile, int difficulty, int opponentCharacterID) {
+	public StartGamePacket(long gameSeed, String levelFile, int difficulty, GameCharacter opponentCharacter) {
 		this.gameSeed = gameSeed;
 		this.levelFile = levelFile;
 		this.difficulty = difficulty;
-		this.opponentCharacterID = opponentCharacterID;
+		this.opponentCharacter = opponentCharacter;
 	}
 
 	@Override
@@ -27,7 +28,7 @@ public class StartGamePacket extends Packet {
 		gameSeed = dis.readLong();
 		levelFile = dis.readUTF();
 		difficulty = dis.readInt();
-		opponentCharacterID = dis.readInt();
+		opponentCharacter = GameCharacter.valueOf(dis.readUTF());
 	}
 
 	@Override
@@ -35,7 +36,7 @@ public class StartGamePacket extends Packet {
 		dos.writeLong(gameSeed);
 		dos.writeUTF(levelFile);
 		dos.writeInt(difficulty);
-		dos.writeInt(opponentCharacterID);
+		dos.writeUTF(opponentCharacter.name());
 	}
 
 	public long getGameSeed() {
@@ -50,7 +51,7 @@ public class StartGamePacket extends Packet {
 		return difficulty;
 	}
 
-	public int getOpponentCharacterID() {
-		return opponentCharacterID;
+	public GameCharacter getOpponentCharacter() {
+		return opponentCharacter;
 	}
 }

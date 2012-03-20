@@ -9,7 +9,7 @@ public interface GameInput {
 	 * new input event are captured awaiting the
 	 * next advance.
 	 */
-	public void gatherInput();
+	public void tick();
 
 	public LogicalInputs getCurrentState();
 	public boolean isMouseActive();

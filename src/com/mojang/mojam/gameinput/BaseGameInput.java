@@ -5,7 +5,7 @@ public abstract class BaseGameInput implements GameInput {
 	LogicalInputs next = new LogicalInputs();
 	
 	@Override
-	public synchronized void gatherInput() {
+	public void tick() {
 		/* Advance current state */
 		next.copyInto(current);
 		/* Reset any per tick flags */

@@ -26,6 +26,7 @@ public class GameMenus {
 	
 	public void tick() {
 		getCurrent().tick(localInput);
+		localInput.tick();
 	}
 	
 	public void render(Screen screen) {

@@ -1,7 +1,7 @@
 package com.mojang.mojam.gui.menus;
 
 import com.mojang.mojam.gui.Font;
-import com.mojang.mojam.gui.components.Button;
+import com.mojang.mojam.gui.components.BackButton;
 import com.mojang.mojam.gui.components.ClickableComponent;
 import com.mojang.mojam.screen.Art;
 import com.mojang.mojam.screen.Screen;
@@ -14,7 +14,7 @@ public class GuiError extends GuiMenu {
 		super();
 		
 		this.message = message;
-		addButton(new Button("error.mainmenu", 125, 300));
+		addButton(new BackButton(125, 300));
 	}
 	
 	@Override

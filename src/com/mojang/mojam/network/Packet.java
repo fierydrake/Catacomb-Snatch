@@ -7,14 +7,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.mojang.mojam.network.packet.ChangeKeyCommand;
-import com.mojang.mojam.network.packet.ChangeMouseButtonCommand;
+import com.mojang.mojam.network.packet.ChangeLogicalInputCommand;
 import com.mojang.mojam.network.packet.ChangeMouseCoordinateCommand;
 import com.mojang.mojam.network.packet.CharacterCommand;
 import com.mojang.mojam.network.packet.ChatCommand;
 import com.mojang.mojam.network.packet.PingPacket;
 import com.mojang.mojam.network.packet.StartGamePacket;
 import com.mojang.mojam.network.packet.TurnPacket;
+import com.mojang.mojam.network.packet.UnpausePacket;
 
 public abstract class Packet {
 
@@ -35,13 +35,15 @@ public abstract class Packet {
 		map(10, StartGamePacket.class);
 		map(11, TurnPacket.class);
 		map(12, PingPacket.class);
+		map(13, UnpausePacket.class);
 
-		map(100, ChangeKeyCommand.class);
-		map(101, PauseCommand.class);
-		map(104, ChangeMouseButtonCommand.class);
+//		map(100, ChangeKeyCommand.class);
+//		map(101, PauseCommand.class);
+//		map(104, ChangeMouseButtonCommand.class);
 		map(105, ChangeMouseCoordinateCommand.class);
 		map(106, ChatCommand.class);
 		map(107, CharacterCommand.class);
+		map(108, ChangeLogicalInputCommand.class);
 	}
 
 	public final int getId() {
@@ -96,7 +98,7 @@ public abstract class Packet {
 			return null;
 		}
 	}
-
+	
 	public void handle(PacketListener packetListener) {
 		packetListener.handle(this);
 	}

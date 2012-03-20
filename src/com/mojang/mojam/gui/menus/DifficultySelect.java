@@ -1,6 +1,7 @@
 package com.mojang.mojam.gui.menus;
 
 import static com.mojang.mojam.CatacombSnatch.game;
+import static com.mojang.mojam.CatacombSnatch.menus;
 
 import java.awt.event.KeyEvent;
 
@@ -9,7 +10,6 @@ import com.mojang.mojam.GameInformation;
 import com.mojang.mojam.gameinput.LocalGameInput;
 import com.mojang.mojam.gameinput.PhysicalInputs;
 import com.mojang.mojam.gameview.GameView;
-import com.mojang.mojam.gui.ButtonAdapter;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.components.BackButton;
 import com.mojang.mojam.gui.components.Button;
@@ -39,15 +39,16 @@ public class DifficultySelect extends GuiMenu {
 		difficultyCheckboxes = new Checkbox[GameInformation.DIFFICULTIES.size()];
 		setupDifficultyButtons();
 		
-		startGameButton = new Button("diffselect.start", (GameView.WIDTH - 256 - 30), 
-				GameView.HEIGHT - 24 - 25);
-		startGameButton.addListener(new ButtonAdapter() {
+		startGameButton = new Button("diffselect.start", (GameView.WIDTH - 256 - 30), GameView.HEIGHT - 24 - 25) {
 			@Override
-			public void buttonPressed(ClickableComponent button) {
-				game().type = GameInformation.Type.SINGLE_PLAYER;
-				CatacombSnatch.startGame();
+			public void clicked() {
+				if (hosting) {
+					menus().push(new HostingWaitMenu());
+				} else {
+					CatacombSnatch.startGame();
+				}
 			}
-		});
+		};
 		cancelButton = new BackButton("cancel", GameView.WIDTH - 128 - 20, GameView.HEIGHT - 24 - 25);
 		
 		addButton(startGameButton);

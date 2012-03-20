@@ -117,8 +117,8 @@ public class LocalGameInput extends BaseGameInput implements KeyListener, MouseL
 	}
 	
 	@Override
-	public synchronized void gatherInput() {
-		super.gatherInput();
+	public synchronized void tick() {
+		super.tick();
 		/* Advance current state */
 		nextPhysical.copyInto(currentPhysical);
 		/* Reset any per tick flags */

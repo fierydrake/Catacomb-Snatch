@@ -3,9 +3,12 @@ package com.mojang.mojam.gamelogic;
 import static com.mojang.mojam.CatacombSnatch.menus;
 import static com.mojang.mojam.CatacombSnatch.sound;
 
+import java.awt.Point;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.mojang.mojam.CatacombSnatch;
 import com.mojang.mojam.GameCharacter;
@@ -13,6 +16,7 @@ import com.mojang.mojam.GameInformation;
 import com.mojang.mojam.PlayerInformation;
 import com.mojang.mojam.entity.Player;
 import com.mojang.mojam.entity.mob.Team;
+import com.mojang.mojam.gameinput.GameInput;
 import com.mojang.mojam.gameinput.LogicalInputs;
 import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gui.menus.PauseMenu;
@@ -22,32 +26,78 @@ import com.mojang.mojam.level.tile.Tile;
 import com.mojang.mojam.screen.Screen;
 
 public class LocalGameLogic implements GameLogic {
-	private Level level;
-	private GameInformation game;
+	public static final int MAX_PLAYERS = 2;
+	
+	protected Level level;
+	protected GameInformation game;
 
-	private List<Player> players = new ArrayList<Player>();
-	private List<GameView> views = new ArrayList<GameView>();
+	protected List<Player> players = new ArrayList<Player>();
+	protected List<GameView> views = new ArrayList<GameView>();
+	
+	protected LocalGameLogic() {}
 	
 	public LocalGameLogic(GameInformation game) 
 	throws IOException {
 		this.game = game;
+
 		level = game.generateLevel();
 		
-		// For now we should only expect 1 local player; although split-screen multiplayer may be in the offing.
-		//
 		// With the current set-up we are limited to one view per player (at game start -- we could always add
 		// code to add extra views of a player for observer mode or spying device etc, and it is probably better
 		// and more useful to do this on-the-fly (ie after game start)).
 		for (PlayerInformation playerInfo : game.players) {
-			Player player = new Player(level.width * Tile.WIDTH / 2 -16, 
-		                               (level.height - 5 - 1) * Tile.HEIGHT - 16,
-		                               playerInfo.team, playerInfo.character, players.size() == 0 ? 4 /* NORTH */: 0 /* SOUTH */,
-		                               playerInfo.input);
-			player.setCanSee(true); // FIXME: Looks like we have a per-logic fog of war, rather than per-player :( Local players share fog of war
-			players.add(player);
+			addPlayerInNextSlot(playerInfo);
+		}
+	}
+
+	protected void addPlayerInNextSlot(PlayerInformation playerInfo) {
+		int playerId = players.size();
+		addOrUpdatePlayer(playerId, playerInfo);
+	}
+
+	protected void addOrUpdatePlayer(int playerId, PlayerInformation playerInfo) {
+		if (playerId < players.size() && players.get(playerId) != null) {
+			/* Player slot is valid, update the player */
+			Player player = players.get(playerId);
+			player.setCharacter(playerInfo.character);
+		} else {
+			while (playerId >= players.size()) {
+				players.add(null);
+			}
+			Point start = getStartPosition(playerId);
+			int facing = getPlayerFacing(playerId);
+			System.err.println("Adding player");
+			System.err.println("- X: " + start.x);
+			System.err.println("- Y: " + start.y);
+			System.err.println("- T: " + playerInfo.team);
+			System.err.println("- C: " + playerInfo.character);
+			System.err.println("- F: " + facing);
+			System.err.println("- I: " + playerInfo.input.getClass().getSimpleName());
+			Player player = new Player(start.x, start.y, playerInfo.team, playerInfo.character, 
+					facing, playerInfo.input);
+			player.setCanSee(true); // FIXME: Looks like we have a per-logic fog of war, rather than per-player :( players share fog of war
+			players.set(playerId, player);
 			playerInfo.view.setPlayer(player);
 			views.add(playerInfo.view);
 			level.addEntity(player);
+		}
+	}
+	
+	protected Point getStartPosition(int playerId) {
+		switch (playerId) {
+		case 0: return new Point(level.width * Tile.WIDTH / 2 -16, (level.height - 5 - 1) * Tile.HEIGHT - 16);
+		case 1: return new Point(level.width * Tile.WIDTH / 2 -16, 7 * Tile.HEIGHT - 16);
+		default: 
+			return new Point(level.width * Tile.WIDTH / 2 -16, (level.height - 5 - 1) * Tile.HEIGHT - 16);
+		}
+	}
+	
+	protected int getPlayerFacing(int playerId) {
+		switch (playerId) {
+		case 0: return 4; /* NORTH */
+		case 1: return 0; /* SOUTH */
+		default:
+			return 0;
 		}
 	}
 	
@@ -68,68 +118,45 @@ public class LocalGameLogic implements GameLogic {
 	 */
 	@Override
 	public void tick() {
-		level.tick();
-
-		// FIXME Don't know how to set more than one listener position to hear sounds for all players (this is a local game after all)
-		//       Maybe we need a GameSound for each player? And no-op GameSounds for remote players in network games...?
-		sound().setListenerPosition((float) players.get(0).pos.x, (float) players.get(0).pos.y); 
-		for (Player player : players) {
-			LogicalInputs inputs = player.getInput().getCurrentState();
+		if (!CatacombSnatch.isGamePaused()) {
+			level.tick();
+	
+			// FIXME Don't know how to set more than one listener position to hear sounds for all players (this is a local game after all)
+			//       Maybe we need a GameSound for each player? And no-op GameSounds for remote players in network games...?
+			sound().setListenerPosition((float) players.get(0).pos.x, (float) players.get(0).pos.y);
+			Set<GameInput> uniqueGameInputs = new HashSet<GameInput>();
+			for (Player player : players) {
+				if (player == null) continue;
+				GameInput gameInput = player.getInput();
+				uniqueGameInputs.add(gameInput);
+				
+				LogicalInputs inputs = gameInput.getCurrentState();
+				
+				if (!CatacombSnatch.isGamePaused() && inputs.pause.wasPressed) {
+				// FIXME? Does this even need fixing? The pause key should be sent to remote clients (and besides, this is the local game logic)
+	//			keys.release();
+	//			mouseButtons.releaseAll();
+	//			synchronizer.addCommand(new PauseCommand(true));
+					menus().push(new PauseMenu());
+				}
+				
+			}
+	
+			if (level.victoryConditions != null) {
+				if (level.victoryConditions.isVictoryConditionAchieved()) {
+					Team winner = level.victoryConditions.playerVictorious();
+					GameCharacter winningCharacter = winner == players.get(0).getTeam() ? players.get(0).getCharacter()
+							: players.get(1).getCharacter(); /* FIXME needs to be less hacky */
+					sound().startEndMusic();
+					menus().push(new WinMenu(winner, winningCharacter));
+	                return;
+	            }
+	        }
 			
-			if (!CatacombSnatch.isGamePaused() && inputs.pause.wasPressed) {
-			// FIXME? Does this even need fixing? The pause key should be sent to remote clients (and besides, this is the local game logic)
-//			keys.release();
-//			mouseButtons.releaseAll();
-//			synchronizer.addCommand(new PauseCommand(true));
-				menus().push(new PauseMenu()); 
+			/* Gather input for next tick */
+			for (GameInput gameInput : uniqueGameInputs) {
+				gameInput.tick();
 			}
 		}
-
-
-		if (level.victoryConditions != null) {
-			if (level.victoryConditions.isVictoryConditionAchieved()) {
-				Team winner = level.victoryConditions.playerVictorious();
-				GameCharacter winningCharacter = winner == players.get(0).getTeam() ? players.get(0).getCharacter()
-						: players.get(1).getCharacter(); /* FIXME needs to be less hacky */
-				sound().startEndMusic();
-				menus().push(new WinMenu(winner, winningCharacter));
-                return;
-            }
-        }
-// TOOD A bunch of code to be checked off the list (much of this is not for local game logic)
-//		
-//		if (packetLink != null) {
-//			packetLink.tick();
-//		}
-//
-//		if (!paused) {
-//			for (int index = 0; index < keys.getAll().size(); index++) {
-//				Keys.Key key = keys.getAll().get(index);
-//				boolean nextState = key.nextState;
-//				if (key.isDown != nextState) {
-//					synchronizer.addCommand(new ChangeKeyCommand(index, nextState));
-//				}
-//			}
-//
-//			keys.tick();
-//			for (Keys skeys : synchedKeys) {
-//				skeys.tick();
-//			}
-//
-//			if (keys.pause.wasPressed()) {
-//				keys.release();
-//				mouseButtons.releaseAll();
-//				synchronizer.addCommand(new PauseCommand(true));
-//			}
-//
-//			level.tick();
-//			if (isMultiplayer) {
-//				tickChat();
-//			}
-//		}
-//
-//		if (keys.screenShot.isDown) {
-//			takeScreenShot();
-//		}
 	}
 }

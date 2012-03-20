@@ -1,9 +1,16 @@
 package com.mojang.mojam.gui.menus;
 
+import static com.mojang.mojam.CatacombSnatch.game;
 import static com.mojang.mojam.CatacombSnatch.menus;
 
 import com.mojang.mojam.CatacombSnatch;
+import com.mojang.mojam.GameInformation;
+import com.mojang.mojam.Options;
+import com.mojang.mojam.PlayerInformation;
+import com.mojang.mojam.entity.mob.Team;
+import com.mojang.mojam.gameinput.GameInput;
 import com.mojang.mojam.gameview.GameView;
+import com.mojang.mojam.gameview.SimpleGameView;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.gui.components.Button;
 import com.mojang.mojam.gui.components.ClickableComponent;
@@ -21,16 +28,30 @@ public class TitleMenu extends GuiMenu {
 			addButton(new Button("titlemenu.start", x, y+=Button.HEIGHT+BUTTON_SPACING) {
 				@Override
 				public void clicked() {
+					game().type = GameInformation.Type.SINGLE_PLAYER;
+					game().players.clear();
+					game().players.add(new PlayerInformation(Team.Team1, Options.getCharacter(), (GameInput)CatacombSnatch.getLocalInput(), new SimpleGameView()));
 					menus().push(new LevelSelect(false));
 				}
 			});
 			addButton(new Button("titlemenu.host", x, y+=Button.HEIGHT+BUTTON_SPACING) {
 				@Override
 				public void clicked() {
+					game().type = GameInformation.Type.SYNCHED_NETWORK;
+					game().players.clear();
+					game().players.add(new PlayerInformation(Team.Team1, Options.getCharacter(), (GameInput)CatacombSnatch.getLocalInput(), new SimpleGameView()));
 					menus().push(new LevelSelect(true));
 				}
 			});
-			addButton(new Button("titlemenu.join", x, y+=Button.HEIGHT+BUTTON_SPACING));
+			addButton(new Button("titlemenu.join", x, y+=Button.HEIGHT+BUTTON_SPACING) {
+				@Override
+				public void clicked() {
+					game().type = GameInformation.Type.SYNCHED_NETWORK;
+					game().players.clear();
+					game().players.add(new PlayerInformation(Team.Team2, Options.getCharacter(), (GameInput)CatacombSnatch.getLocalInput(), new SimpleGameView()));
+					menus().push(new JoinGameMenu());
+				}
+			});
 			addButton(new Button("titlemenu.help", x, y+=Button.HEIGHT+BUTTON_SPACING) {
 				@Override
 				public void clicked() {

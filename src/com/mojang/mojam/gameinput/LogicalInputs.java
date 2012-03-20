@@ -1,5 +1,6 @@
 package com.mojang.mojam.gameinput;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,6 +55,10 @@ public class LogicalInputs {
 	
 	public LogicalInput getLogicalInputByName(String name) {
 		return all.get(name);
+	}
+	
+	public Collection<LogicalInput> getAll() {
+		return all.values();
 	}
 	
 	void copyInto(LogicalInputs other) {

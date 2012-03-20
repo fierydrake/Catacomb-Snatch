@@ -11,6 +11,7 @@ import com.mojang.mojam.level.LevelInformation;
 import com.mojang.mojam.level.gamemode.GameMode;
 import com.mojang.mojam.level.gamemode.GameModeGoldRush;
 import com.mojang.mojam.level.gamemode.GameModeVanilla;
+import com.mojang.mojam.network.NetworkInformation;
 
 /*
  * This class represents the metadata about
@@ -39,6 +40,7 @@ public class GameInformation {
 	public GameMode mode = DEFAULT_GAME_MODE;
 	public Type type;
 	public LevelInformation level;
+	public NetworkInformation networkInformation;
 	
 	public List<PlayerInformation> players = new ArrayList<PlayerInformation>();
 	

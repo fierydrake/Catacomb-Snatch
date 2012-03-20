@@ -15,8 +15,7 @@ public class TurnPacket extends Packet {
 
 	}
 
-	public TurnPacket(int localId, int turnNumber,
-			List<NetworkCommand> localCommandList) {
+	public TurnPacket(int localId, int turnNumber, List<NetworkCommand> localCommandList) {
 		this.playerId = localId;
 		this.turnNumber = turnNumber;
 		if (localCommandList != null) {
@@ -67,10 +66,5 @@ public class TurnPacket extends Packet {
 		} else {
 			dos.writeInt(0);
 		}
-	}
-
-	@Override
-	public void handle(PacketListener packetListener) {
-		packetListener.handle(this);
 	}
 }

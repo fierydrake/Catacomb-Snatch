@@ -34,6 +34,10 @@ public class LevelInformation {
 					   : new File(CatacombSnatch.getExternalsDir(), levelFile).toURI().toURL();
 	}
 	
+	public String getPath() {
+		return levelFile;
+	}
+	
 	public static String sanitizePath(String s){
 		return s.substring(s.indexOf("levels"));
 	}

@@ -1,10 +1,14 @@
 package com.mojang.mojam.gameview;
 
+import static com.mojang.mojam.CatacombSnatch.game;
 import static com.mojang.mojam.CatacombSnatch.logic;
 
 import com.mojang.mojam.CatacombSnatch;
+import com.mojang.mojam.GameInformation.Type;
+import com.mojang.mojam.LatencyCache;
 import com.mojang.mojam.Options;
 import com.mojang.mojam.entity.Player;
+import com.mojang.mojam.gamelogic.SyncServerGameLogic;
 import com.mojang.mojam.gui.Font;
 import com.mojang.mojam.resources.Texts;
 import com.mojang.mojam.screen.Art;
@@ -67,8 +71,6 @@ public class SimpleGameView implements GameView {
 		renderScore(screen);
 		
 //				if (gameLogic.isNetworkGame()) {
-//					Font font = Font.defaultFont();
-//					font.draw(screen, texts.latency(latencyCache.latencyCacheReady() ? "" + latencyCache.avgLatency() : "-"), 10, 20);
 //					
 //					chat.render(screen);
 //				}
@@ -76,6 +78,12 @@ public class SimpleGameView implements GameView {
 		// Render FPS
 		if (Options.getAsBoolean(Options.DRAW_FPS, Options.VALUE_FALSE)) {
 			Font.defaultFont().draw(screen, Texts.current().FPS(fps), 10, 10);
+		}
+		
+		if (game().type == Type.SYNCHED_NETWORK) {
+			LatencyCache latencyCache = ((SyncServerGameLogic)logic()).latencyCache;
+			Font font = Font.defaultFont();
+			font.draw(screen, Texts.current().latency(latencyCache.latencyCacheReady() ? "" + latencyCache.avgLatency() : "-"), 10, 20);
 		}
 		
 		// DEBUG: Render movement key
