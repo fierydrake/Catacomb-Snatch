@@ -28,6 +28,7 @@ import com.mojang.mojam.network.packet.ChangeMouseCoordinateCommand;
 import com.mojang.mojam.network.packet.CharacterCommand;
 import com.mojang.mojam.network.packet.PingPacket;
 import com.mojang.mojam.network.packet.StartGamePacket;
+import com.mojang.mojam.network.packet.SyncCheckPacket;
 import com.mojang.mojam.network.packet.TurnPacket;
 import com.mojang.mojam.network.packet.UnpausePacket;
 
@@ -112,6 +113,10 @@ public class SyncServerGameLogic extends LocalGameLogic implements CommandListen
 			if (pp.getType() == PingPacket.TYPE_ACK) {
 				latencyCache.addToLatencyCache(pp.getLatency());
 			}
+		}
+		if (packet instanceof SyncCheckPacket) {
+			SyncCheckPacket scp = (SyncCheckPacket)packet;
+			synchronizer.onSyncCheckPacket(scp);
 		}
 	}
 	

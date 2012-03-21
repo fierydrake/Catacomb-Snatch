@@ -1,12 +1,22 @@
 package com.mojang.mojam.network;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
-import com.mojang.mojam.network.packet.*;
+import com.mojang.mojam.network.debug.DebugSynchedRandom;
+import com.mojang.mojam.network.packet.PingPacket;
+import com.mojang.mojam.network.packet.StartGamePacket;
+import com.mojang.mojam.network.packet.SyncCheckPacket;
+import com.mojang.mojam.network.packet.TurnPacket;
 
 public class TurnSynchronizer {
-
-	public static Random synchedRandom = new Random();
+	public static final boolean SYNC_CHECK_ENABLED = false;
+	public static final boolean TURN_CHECK_ENABLED = true; // TODO!
+	
+	public static Random synchedRandom;
 	public static long synchedSeed;
 
 	public static final int TURN_QUEUE_LENGTH = 3;
@@ -44,6 +54,7 @@ public class TurnSynchronizer {
 		turnInfo[0].isDone = true;
 		turnInfo[1].isDone = true;
 
+		synchedRandom =  (SYNC_CHECK_ENABLED && numPlayers > 1) ? new DebugSynchedRandom() : new Random();
 		synchedSeed = synchedRandom.nextLong();
 		synchedRandom.setSeed(synchedSeed);
 
@@ -101,6 +112,11 @@ public class TurnSynchronizer {
 			sendLocalTurn(turnInfo[commandSequence % turnInfo.length]);
 			commandSequence++;
 			nextTurnCommands = null;
+
+			if (synchedRandom instanceof DebugSynchedRandom) {
+				((DebugSynchedRandom)synchedRandom).postTurn(turnSequence);
+				if (turnSequence%20 == 0) sendSyncCheckPacket();
+			}
 		}
 		if (turnSequence%50 == 0) sendPingPacket();
 	}
@@ -128,6 +144,35 @@ public class TurnSynchronizer {
 	    }
 	}
 
+	private Map<Integer, Integer> syncCheckCache = new HashMap<Integer, Integer>();
+	private void sendSyncCheckPacket() {
+		if (packetLink != null && synchedRandom instanceof DebugSynchedRandom) {
+			DebugSynchedRandom debugSynchedRandom = (DebugSynchedRandom)synchedRandom;
+
+			if (syncCheckCache.size() < 100) {
+				System.err.println("INFO : Sync check cache size="+syncCheckCache.size()+" (about to add 1 entry)");
+				syncCheckCache.put(turnSequence, debugSynchedRandom.count);
+				System.err.println("DEBUG : Sending synccheck "+turnSequence);
+				packetLink.sendPacket(new SyncCheckPacket(turnSequence, debugSynchedRandom.count));
+				if (packetCache.size()>0) {
+					for (SyncCheckPacket cached : packetCache) {
+						if (cached.getTurn() == turnSequence) {
+							System.err.println("INFO : Resolved out-of-sequence sync packet for turn " + turnSequence);
+							System.err.println("DEBUG : Packet cache size="+packetCache.size()+" (about to remove 1 entry)");
+							debugSynchedRandom.performSyncCheck(turnSequence, debugSynchedRandom.count, cached.getCount());
+							packetCache.remove(cached);
+							syncCheckCache.remove(turnSequence);
+							debugSynchedRandom.cleanupStacksCache(turnSequence);
+							break;
+						}
+					}
+				}
+			} else {
+				System.err.println("WARNING: Sync check hash full, skipping sync check packet for turn " + turnSequence);
+			}
+		}
+	}
+	
 	public void setStarted(boolean isStarted) {
 		this.isStarted = isStarted;
 	}
@@ -149,6 +194,36 @@ public class TurnSynchronizer {
 	    }
 	}
 	
+	private List<SyncCheckPacket> packetCache = new ArrayList<SyncCheckPacket>();
+	public synchronized void onSyncCheckPacket(SyncCheckPacket packet) {
+		if (synchedRandom instanceof DebugSynchedRandom) {
+			DebugSynchedRandom debugSynchedRandom = (DebugSynchedRandom)synchedRandom;
+
+			Integer localCount = syncCheckCache.get(packet.getTurn());
+			int remoteCount = packet.getCount();
+			boolean deferCleanup = false;
+			if (localCount != null) {
+				syncCheckCache.remove(packet.getTurn());
+				debugSynchedRandom.performSyncCheck(packet.getTurn(), localCount, remoteCount);
+			} else {
+				System.err.println("WARNING: Receive sync check packet for a turn that was not cached (turn " + packet.getTurn() + ")");
+				if (packetCache.size() < 100) {
+					deferCleanup = true;
+					packetCache.add(packet);
+				} else {
+					System.err.println("WARNING: Packet cache overflow");
+				}
+			}
+
+			// remove old stuff from stack cache
+			if (!deferCleanup) {
+				debugSynchedRandom.cleanupStacksCache(packet.getTurn());
+			} else {
+				System.err.println("DEBUG : Defer cleanup of stacks cache");
+			}
+		}
+	}
+
 	private class TurnInfo {
 
 		public boolean isCommandsPopped;

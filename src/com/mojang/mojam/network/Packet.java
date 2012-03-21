@@ -13,6 +13,7 @@ import com.mojang.mojam.network.packet.CharacterCommand;
 import com.mojang.mojam.network.packet.ChatCommand;
 import com.mojang.mojam.network.packet.PingPacket;
 import com.mojang.mojam.network.packet.StartGamePacket;
+import com.mojang.mojam.network.packet.SyncCheckPacket;
 import com.mojang.mojam.network.packet.TurnPacket;
 import com.mojang.mojam.network.packet.UnpausePacket;
 
@@ -44,6 +45,8 @@ public abstract class Packet {
 		map(106, ChatCommand.class);
 		map(107, CharacterCommand.class);
 		map(108, ChangeLogicalInputCommand.class);
+		
+		map(201, SyncCheckPacket.class);
 	}
 
 	public final int getId() {
