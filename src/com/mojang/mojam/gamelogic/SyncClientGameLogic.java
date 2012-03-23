@@ -8,7 +8,6 @@ import com.mojang.mojam.PlayerInformation;
 import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.gameinput.NetworkGameInput;
 import com.mojang.mojam.gameview.NetworkGameView;
-import com.mojang.mojam.gameview.SimpleGameView;
 import com.mojang.mojam.level.LevelList;
 import com.mojang.mojam.network.Packet;
 import com.mojang.mojam.network.SyncNetworkInformation;
@@ -48,8 +47,6 @@ public class SyncClientGameLogic extends SyncServerGameLogic {
 			}
 			/* Add hosting player at index 0 */
 			addOrUpdatePlayer(0, new PlayerInformation(Team.Team1, sgPacket.getOpponentCharacter(), new NetworkGameInput(), new NetworkGameView()));
-			/* Add local player at index 1 */
-			addOrUpdatePlayer(PLAYER_ID, new PlayerInformation(Team.Team2, Options.getCharacter(), new NetworkGameInput(), new SimpleGameView()));
 			synchronizer.addCommand(new CharacterCommand(PLAYER_ID, Options.getCharacter()));
 		} else {
 			super.handle(packet);

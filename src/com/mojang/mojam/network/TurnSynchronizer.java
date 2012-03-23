@@ -14,7 +14,7 @@ import com.mojang.mojam.network.packet.TurnPacket;
 
 public class TurnSynchronizer {
 	public static final boolean SYNC_CHECK_ENABLED = false;
-	public static final boolean TURN_CHECK_ENABLED = true; // TODO!
+	public static final boolean SYNC_CHECK_QUIET = true;
 	
 	public static Random synchedRandom;
 	public static long synchedSeed;
@@ -150,16 +150,16 @@ public class TurnSynchronizer {
 			DebugSynchedRandom debugSynchedRandom = (DebugSynchedRandom)synchedRandom;
 
 			if (syncCheckCache.size() < 100) {
-				System.err.println("INFO : Sync check cache size="+syncCheckCache.size()+" (about to add 1 entry)");
-				syncCheckCache.put(turnSequence, debugSynchedRandom.count);
-				System.err.println("DEBUG : Sending synccheck "+turnSequence);
-				packetLink.sendPacket(new SyncCheckPacket(turnSequence, debugSynchedRandom.count));
+				if (!SYNC_CHECK_QUIET) System.err.println("INFO : Sync check cache size="+syncCheckCache.size()+" (about to add 1 entry)");
+				syncCheckCache.put(turnSequence, debugSynchedRandom.getCount());
+				if (!SYNC_CHECK_QUIET) System.err.println("DEBUG : Sending synccheck "+turnSequence);
+				packetLink.sendPacket(new SyncCheckPacket(turnSequence, debugSynchedRandom.getCount()));
 				if (packetCache.size()>0) {
 					for (SyncCheckPacket cached : packetCache) {
 						if (cached.getTurn() == turnSequence) {
-							System.err.println("INFO : Resolved out-of-sequence sync packet for turn " + turnSequence);
-							System.err.println("DEBUG : Packet cache size="+packetCache.size()+" (about to remove 1 entry)");
-							debugSynchedRandom.performSyncCheck(turnSequence, debugSynchedRandom.count, cached.getCount());
+							if (!SYNC_CHECK_QUIET) System.err.println("INFO : Resolved out-of-sequence sync packet for turn " + turnSequence);
+							if (!SYNC_CHECK_QUIET) System.err.println("DEBUG : Packet cache size="+packetCache.size()+" (about to remove 1 entry)");
+							debugSynchedRandom.performSyncCheck(turnSequence, debugSynchedRandom.getCount(), cached.getCount());
 							packetCache.remove(cached);
 							syncCheckCache.remove(turnSequence);
 							debugSynchedRandom.cleanupStacksCache(turnSequence);
@@ -168,7 +168,7 @@ public class TurnSynchronizer {
 					}
 				}
 			} else {
-				System.err.println("WARNING: Sync check hash full, skipping sync check packet for turn " + turnSequence);
+				if (!SYNC_CHECK_QUIET) System.err.println("WARNING: Sync check hash full, skipping sync check packet for turn " + turnSequence);
 			}
 		}
 	}
@@ -206,12 +206,12 @@ public class TurnSynchronizer {
 				syncCheckCache.remove(packet.getTurn());
 				debugSynchedRandom.performSyncCheck(packet.getTurn(), localCount, remoteCount);
 			} else {
-				System.err.println("WARNING: Receive sync check packet for a turn that was not cached (turn " + packet.getTurn() + ")");
+				if (!SYNC_CHECK_QUIET) System.err.println("WARNING: Receive sync check packet for a turn that was not cached (turn " + packet.getTurn() + ")");
 				if (packetCache.size() < 100) {
 					deferCleanup = true;
 					packetCache.add(packet);
 				} else {
-					System.err.println("WARNING: Packet cache overflow");
+					if (!SYNC_CHECK_QUIET) System.err.println("WARNING: Packet cache overflow");
 				}
 			}
 
@@ -219,7 +219,7 @@ public class TurnSynchronizer {
 			if (!deferCleanup) {
 				debugSynchedRandom.cleanupStacksCache(packet.getTurn());
 			} else {
-				System.err.println("DEBUG : Defer cleanup of stacks cache");
+				if (!SYNC_CHECK_QUIET) System.err.println("DEBUG : Defer cleanup of stacks cache");
 			}
 		}
 	}

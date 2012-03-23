@@ -14,6 +14,7 @@ import com.mojang.mojam.entity.mob.Team;
 import com.mojang.mojam.gameinput.GameInput;
 import com.mojang.mojam.gameinput.LogicalInputs.LogicalInput;
 import com.mojang.mojam.gameinput.NetworkGameInput;
+import com.mojang.mojam.gameview.GameView;
 import com.mojang.mojam.gameview.NetworkGameView;
 import com.mojang.mojam.gameview.SimpleGameView;
 import com.mojang.mojam.network.CommandListener;
@@ -53,6 +54,7 @@ public class SyncServerGameLogic extends LocalGameLogic implements CommandListen
 		System.err.println("Server");
 		
 		level = game.generateLevel();
+		
 		addOrUpdatePlayer(PLAYER_ID, new PlayerInformation(Team.Team1, Options.getCharacter(), new NetworkGameInput(), new SimpleGameView()));
 		startGame();
 	}
@@ -75,8 +77,8 @@ public class SyncServerGameLogic extends LocalGameLogic implements CommandListen
 	public void handle(int playerId, NetworkCommand packet) {
 		if (packet instanceof CharacterCommand) {
 			CharacterCommand charCommand = (CharacterCommand) packet;
-			System.err.println("Calling add player from CharacterCommand with id=" + charCommand.getPlayerID());
-			addOrUpdatePlayer(charCommand.getPlayerID(), new PlayerInformation(Team.Team2, charCommand.getCharacter(), new NetworkGameInput(), new NetworkGameView()));
+			GameView view = this instanceof SyncClientGameLogic ? new SimpleGameView() : new NetworkGameView(); // FIXME
+			addOrUpdatePlayer(charCommand.getPlayerID(), new PlayerInformation(Team.Team2, charCommand.getCharacter(), new NetworkGameInput(), view));
 		}
 		
 		if (!(players.get(playerId).getInput() instanceof NetworkGameInput)) return;

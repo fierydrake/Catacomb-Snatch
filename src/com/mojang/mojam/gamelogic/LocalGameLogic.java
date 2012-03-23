@@ -66,13 +66,6 @@ public class LocalGameLogic implements GameLogic {
 			}
 			Point start = getStartPosition(playerId);
 			int facing = getPlayerFacing(playerId);
-			System.err.println("Adding player");
-			System.err.println("- X: " + start.x);
-			System.err.println("- Y: " + start.y);
-			System.err.println("- T: " + playerInfo.team);
-			System.err.println("- C: " + playerInfo.character);
-			System.err.println("- F: " + facing);
-			System.err.println("- I: " + playerInfo.input.getClass().getSimpleName());
 			Player player = new Player(start.x, start.y, playerInfo.team, playerInfo.character, 
 					facing, playerInfo.input);
 			player.setCanSee(true); // FIXME: Looks like we have a per-logic fog of war, rather than per-player :( players share fog of war

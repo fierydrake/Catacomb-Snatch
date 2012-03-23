@@ -14,6 +14,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import com.mojang.mojam.gamelogic.SyncClientGameLogic;
+import com.mojang.mojam.network.TurnSynchronizer;
 
 public class DebugSynchedRandom extends Random {
     private static final long serialVersionUID = 1L;
@@ -21,10 +22,12 @@ public class DebugSynchedRandom extends Random {
     private static SortedMap<Integer,String[]> useStacks = new TreeMap<Integer, String[]>();
     private static List<String> useStacksCurrentTurn = new ArrayList<String>(150000);
     private static boolean shownCacheWarningThisTurn = false;
-    public int count = 0; // If this wraps, it should be okay we just need a recent match
+    private int count = 0; // If this wraps, it should be okay we just need a recent match
 
     public DebugSynchedRandom() {
     }
+    
+    public int getCount() { return count; }
     
     @Override
     public int next(int bits) {
@@ -45,7 +48,7 @@ public class DebugSynchedRandom extends Random {
         } else {
             if (!shownCacheWarningThisTurn) {
                 // only show warning once
-                System.err.println("WARNING: Overflowed syncedRandom debug stack cache");
+            	if (!TurnSynchronizer.SYNC_CHECK_QUIET) System.err.println("WARNING: Overflowed syncedRandom debug stack cache");
                 shownCacheWarningThisTurn = true;
             }
         }
@@ -59,14 +62,14 @@ public class DebugSynchedRandom extends Random {
     }
     
     public void cleanupStacksCache(int turn) {
-        System.err.println("DEBUG : Before clean: Stacks cache size=" + useStacks.size());
+    	if (!TurnSynchronizer.SYNC_CHECK_QUIET) System.err.println("DEBUG : Before clean: Stacks cache size=" + useStacks.size());
         Iterator<Integer> it = useStacks.keySet().iterator();
         int key, cleaned=0;
         while (it.hasNext() && (key = it.next()) <= turn) {
             cleaned += useStacks.get(key).length;
             it.remove();
         }
-        System.err.println("DEBUG : After clean : Stacks cache size=" + useStacks.size() + " (cleaned "+cleaned+" stacks)");
+        if (!TurnSynchronizer.SYNC_CHECK_QUIET) System.err.println("DEBUG : After clean : Stacks cache size=" + useStacks.size() + " (cleaned "+cleaned+" stacks)");
     }
     
     public void performSyncCheck(int turn, int localCount, int remoteCount) {
@@ -99,11 +102,13 @@ public class DebugSynchedRandom extends Random {
             }
             System.exit(1);
         } else {
-            System.err.println("INFO : *");
-            System.err.println("INFO : * Sync check OK (turn="+turn+", count="+localCount + ") [" + stackFlywheel.size() + "]");
-            System.err.println("INFO : *");
-            Runtime r = Runtime.getRuntime();
-            System.err.println("DEBUG : Heap: " + (r.totalMemory()/(1024*1024)) + " MB /" + (r.maxMemory()/(1024*1024)) + " MB ("+(r.freeMemory()/(1024*1024)) +" MB free)");
+        	if (!TurnSynchronizer.SYNC_CHECK_QUIET) {
+        		System.err.println("INFO : *");
+        		System.err.println("INFO : * Sync check OK (turn="+turn+", count="+localCount + ") [" + stackFlywheel.size() + "]");
+        		System.err.println("INFO : *");
+        		Runtime r = Runtime.getRuntime();
+        		System.err.println("DEBUG : Heap: " + (r.totalMemory()/(1024*1024)) + " MB /" + (r.maxMemory()/(1024*1024)) + " MB ("+(r.freeMemory()/(1024*1024)) +" MB free)");
+        	}
         }
     }
 }
